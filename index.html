@@ -57,20 +57,27 @@
                         <input type="hidden" id="edit-trip-id">
                         <div class="form-row">
                             <div class="form-control"> <label for="trip-name">Nome Viaggio:</label> <input type="text" id="trip-name" required> </div>
-                            <div class="form-control"> <label for="trip-destination">Destinazione (Città/Paese/IATA):</label> <input type="text" id="trip-destination"> </div>
-                            <!-- Potresti aggiungere un input per l'origine qui -->
-                            <!--
-                            <div class="form-control"> <label for="trip-origin">Origine (Città/Paese/IATA):</label> <input type="text" id="trip-origin" placeholder="Es. FCO, Roma, Italia"> </div>
-                            -->
+                            <!-- Spostato Destinazione/Origine sotto -->
                         </div>
                         <div class="form-row">
-                            <div class="form-control"> <label for="trip-start-date">Data Inizio:</label> <input type="date" id="trip-start-date"> </div>
-                            <div class="form-control"> <label for="trip-end-date">Data Fine:</label> <input type="date" id="trip-end-date"> </div>
+                            <div class="form-control">
+                                <label for="trip-origin-iata">Origine (Codice IATA Aeroporto):</label>
+                                <input type="text" id="trip-origin-iata" placeholder="Es. FCO, MXP" maxlength="3" style="text-transform: uppercase;">
+                                 <small class="muted">Codice 3 lettere aeroporto partenza.</small>
+                            </div>
+                             <div class="form-control">
+                                <label for="trip-destination-iata">Destinazione (Codice IATA Aeroporto):</label>
+                                <input type="text" id="trip-destination-iata" placeholder="Es. ATH, JFK" maxlength="3" style="text-transform: uppercase;">
+                                 <small class="muted">Codice 3 lettere aeroporto arrivo.</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-control"> <label for="trip-start-date">Data Partenza:</label> <input type="date" id="trip-start-date"> </div>
+                            <div class="form-control"> <label for="trip-end-date">Data Ritorno:</label> <input type="date" id="trip-end-date"> </div>
                         </div>
                         <div class="form-control"> <label for="trip-notes">Note Generali:</label> <textarea id="trip-notes" rows="4"></textarea> </div>
                         <div class="form-actions">
                              <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salva Info</button>
-                             <button type="button" id="search-skyscanner-btn" class="btn btn-info"> <i class="fab fa-skyscanner"></i> Cerca Voli (Skyscanner) </button>
                         </div>
                     </form>
                 </div>
@@ -79,32 +86,20 @@
                      <h3><i class="fas fa-plane"></i> Gestione Trasporti</h3>
                      <form id="add-transport-item-form" class="add-item-form">
                          <input type="hidden" id="edit-transport-item-id">
-                         <div class="form-row">
-                            <div class="form-control"> <label for="transport-type">Tipo:</label> <select id="transport-type" required> <option value="Volo">Volo</option> <option value="Treno">Treno</option> <option value="Auto">Auto</option> <option value="Bus">Bus</option> <option value="Traghetto">Traghetto/Nave</option> <option value="Metro/Mezzi Pubblici">Metro/Mezzi Pubblici</option> <option value="Taxi/Ride Sharing">Taxi/Ride Sharing</option> <option value="Altro">Altro</option> </select> </div>
-                            <div class="form-control"> <label for="transport-description">Descrizione Breve:</label> <input type="text" id="transport-description" placeholder="Es. Volo AZ123..." required> </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-control"> <label for="transport-departure-loc">Partenza (Luogo):</label> <input type="text" id="transport-departure-loc"> </div>
-                            <div class="form-control"> <label for="transport-departure-datetime">Partenza (Data/Ora):</label> <input type="datetime-local" id="transport-departure-datetime"> </div>
-                        </div>
-                         <div class="form-row">
-                            <div class="form-control"> <label for="transport-arrival-loc">Arrivo (Luogo):</label> <input type="text" id="transport-arrival-loc"> </div>
-                            <div class="form-control"> <label for="transport-arrival-datetime">Arrivo (Data/Ora):</label> <input type="datetime-local" id="transport-arrival-datetime"> </div>
-                        </div>
-                        <div class="form-row">
-                             <div class="form-control"> <label for="transport-booking-ref">Rif. Prenotazione:</label> <input type="text" id="transport-booking-ref"> </div>
-                            <div class="form-control"> <label for="transport-cost">Costo (€, opzionale):</label> <input type="number" id="transport-cost" step="0.01" min="0" placeholder="0.00"> </div>
-                        </div>
-                        <div class="form-control"> <label for="transport-notes">Note Aggiuntive:</label> <input type="text" id="transport-notes"> </div>
-                        <div class="form-actions">
-                            <button type="submit" id="transport-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Aggiungi Trasporto</button>
-                            <button type="button" id="transport-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button>
-                        </div>
-                    </form>
+                         <div class="form-row"> <div class="form-control"> <label for="transport-type">Tipo:</label> <select id="transport-type" required> <option value="Volo">Volo</option> <option value="Treno">Treno</option> <option value="Auto">Auto</option> <option value="Bus">Bus</option> <option value="Traghetto">Traghetto/Nave</option> <option value="Metro/Mezzi Pubblici">Metro/Mezzi Pubblici</option> <option value="Taxi/Ride Sharing">Taxi/Ride Sharing</option> <option value="Altro">Altro</option> </select> </div> <div class="form-control"> <label for="transport-description">Descrizione Breve:</label> <input type="text" id="transport-description" placeholder="Es. Volo AZ123..." required> </div> </div>
+                         <div class="form-row"> <div class="form-control"> <label for="transport-departure-loc">Partenza (Luogo):</label> <input type="text" id="transport-departure-loc"> </div> <div class="form-control"> <label for="transport-departure-datetime">Partenza (Data/Ora):</label> <input type="datetime-local" id="transport-departure-datetime"> </div> </div>
+                         <div class="form-row"> <div class="form-control"> <label for="transport-arrival-loc">Arrivo (Luogo):</label> <input type="text" id="transport-arrival-loc"> </div> <div class="form-control"> <label for="transport-arrival-datetime">Arrivo (Data/Ora):</label> <input type="datetime-local" id="transport-arrival-datetime"> </div> </div>
+                         <div class="form-row"> <div class="form-control"> <label for="transport-booking-ref">Rif. Prenotazione:</label> <input type="text" id="transport-booking-ref"> </div> <div class="form-control"> <label for="transport-cost">Costo (€, opzionale):</label> <input type="number" id="transport-cost" step="0.01" min="0" placeholder="0.00"> </div> </div>
+                         <div class="form-control"> <label for="transport-notes">Note Aggiuntive:</label> <input type="text" id="transport-notes"> </div>
+                         <div class="form-actions"> <button type="submit" id="transport-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Aggiungi Trasporto</button> <button type="button" id="transport-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button> </div>
+                     </form>
                     <div class="item-list-container">
                         <div class="list-header-actions">
                              <h4>Trasporti Pianificati:</h4>
-                             <button id="add-transport-total-to-budget-btn" class="btn btn-outline btn-sm"> <i class="fas fa-calculator"></i> Aggiungi Totale al Budget </button>
+                             <div> <!-- Contenitore per pulsanti -->
+                                 <button id="search-skyscanner-btn" class="btn btn-info btn-sm"> <i class="fab fa-skyscanner"></i> Cerca Voli </button>
+                                 <button id="add-transport-total-to-budget-btn" class="btn btn-outline btn-sm"> <i class="fas fa-calculator"></i> Agg. Totale Budget </button>
+                             </div>
                         </div>
                         <ul id="transport-list" class="item-list"></ul>
                          <p id="no-transport-items" class="center-text muted" style="display: none;">Nessun trasporto aggiunto.</p>
