@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Planner Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1><i class="fas fa-plane-departure"></i> Travel Planner Pro</h1>
+        </header>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <h2><i class="fas fa-suitcase"></i> I Miei Viaggi</h2>
+                <div class="trip-list-controls">
+                    <button id="new-trip-btn" class="btn btn-primary"><i class="fas fa-plus"></i> Nuovo Viaggio</button>
+                </div>
+                <ul id="trip-list" class="trip-list"></ul>
+                 <p id="no-trips-message" class="center-text muted" style="display: none;">Nessun viaggio.</p>
+            </aside>
+
+            <!-- Area Dettagli -->
+            <main id="trip-details-area" class="trip-details-area" style="display: none;">
+                <!-- Header Dettagli -->
+                <div class="trip-header card">
+                    <h2 id="trip-title">Dettagli Viaggio</h2>
+                    <div class="trip-actions">
+                        <button id="download-excel-btn" class="btn btn-success btn-sm" title="Scarica Excel"><i class="fas fa-file-excel"></i> Excel</button>
+                        <button id="download-text-btn" class="btn btn-secondary btn-sm" title="Scarica Testo"><i class="fas fa-download"></i> Testo</button>
+                        <button id="delete-trip-btn" class="btn btn-danger btn-sm" title="Elimina Viaggio"><i class="fas fa-trash-alt"></i> Elimina</button>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-link active" data-tab="info-tab"><i class="fas fa-info-circle"></i> Info</button>
+                    <button class="tab-link" data-tab="transport-tab"><i class="fas fa-plane"></i> Trasporti</button>
+                    <button class="tab-link" data-tab="itinerary-tab"><i class="fas fa-route"></i> Itinerario</button>
+                    <button class="tab-link" data-tab="budget-tab"><i class="fas fa-coins"></i> Budget</button>
+                    <button class="tab-link" data-tab="packing-tab"><i class="fas fa-suitcase-rolling"></i> Packing List</button>
+                </div>
+
+                <!-- == CONTENUTO TABS == -->
+                <!-- Tab: Info -->
+                <div id="info-tab" class="tab-content card active">
+                    <h3><i class="fas fa-info-circle"></i> Informazioni Generali</h3>
+                    <form id="trip-info-form">
+                        <input type="hidden" id="edit-trip-id">
+                        <div class="form-row">
+                            <div class="form-control"> <label for="trip-name">Nome Viaggio:</label> <input type="text" id="trip-name" required> </div>
+                            <div class="form-control"> <label for="trip-destination">Destinazione (Città/Paese/IATA):</label> <input type="text" id="trip-destination"> </div>
+                            <!-- Potresti aggiungere un input per l'origine qui -->
+                            <!--
+                            <div class="form-control"> <label for="trip-origin">Origine (Città/Paese/IATA):</label> <input type="text" id="trip-origin" placeholder="Es. FCO, Roma, Italia"> </div>
+                            -->
+                        </div>
+                        <div class="form-row">
+                            <div class="form-control"> <label for="trip-start-date">Data Inizio:</label> <input type="date" id="trip-start-date"> </div>
+                            <div class="form-control"> <label for="trip-end-date">Data Fine:</label> <input type="date" id="trip-end-date"> </div>
+                        </div>
+                        <div class="form-control"> <label for="trip-notes">Note Generali:</label> <textarea id="trip-notes" rows="4"></textarea> </div>
+                        <div class="form-actions">
+                             <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salva Info</button>
+                             <button type="button" id="search-skyscanner-btn" class="btn btn-info"> <i class="fab fa-skyscanner"></i> Cerca Voli (Skyscanner) </button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Tab: Trasporti -->
+                <div id="transport-tab" class="tab-content card">
+                     <h3><i class="fas fa-plane"></i> Gestione Trasporti</h3>
+                     <form id="add-transport-item-form" class="add-item-form">
+                         <input type="hidden" id="edit-transport-item-id">
+                         <div class="form-row">
+                            <div class="form-control"> <label for="transport-type">Tipo:</label> <select id="transport-type" required> <option value="Volo">Volo</option> <option value="Treno">Treno</option> <option value="Auto">Auto</option> <option value="Bus">Bus</option> <option value="Traghetto">Traghetto/Nave</option> <option value="Metro/Mezzi Pubblici">Metro/Mezzi Pubblici</option> <option value="Taxi/Ride Sharing">Taxi/Ride Sharing</option> <option value="Altro">Altro</option> </select> </div>
+                            <div class="form-control"> <label for="transport-description">Descrizione Breve:</label> <input type="text" id="transport-description" placeholder="Es. Volo AZ123..." required> </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-control"> <label for="transport-departure-loc">Partenza (Luogo):</label> <input type="text" id="transport-departure-loc"> </div>
+                            <div class="form-control"> <label for="transport-departure-datetime">Partenza (Data/Ora):</label> <input type="datetime-local" id="transport-departure-datetime"> </div>
+                        </div>
+                         <div class="form-row">
+                            <div class="form-control"> <label for="transport-arrival-loc">Arrivo (Luogo):</label> <input type="text" id="transport-arrival-loc"> </div>
+                            <div class="form-control"> <label for="transport-arrival-datetime">Arrivo (Data/Ora):</label> <input type="datetime-local" id="transport-arrival-datetime"> </div>
+                        </div>
+                        <div class="form-row">
+                             <div class="form-control"> <label for="transport-booking-ref">Rif. Prenotazione:</label> <input type="text" id="transport-booking-ref"> </div>
+                            <div class="form-control"> <label for="transport-cost">Costo (€, opzionale):</label> <input type="number" id="transport-cost" step="0.01" min="0" placeholder="0.00"> </div>
+                        </div>
+                        <div class="form-control"> <label for="transport-notes">Note Aggiuntive:</label> <input type="text" id="transport-notes"> </div>
+                        <div class="form-actions">
+                            <button type="submit" id="transport-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Aggiungi Trasporto</button>
+                            <button type="button" id="transport-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button>
+                        </div>
+                    </form>
+                    <div class="item-list-container">
+                        <div class="list-header-actions">
+                             <h4>Trasporti Pianificati:</h4>
+                             <button id="add-transport-total-to-budget-btn" class="btn btn-outline btn-sm"> <i class="fas fa-calculator"></i> Aggiungi Totale al Budget </button>
+                        </div>
+                        <ul id="transport-list" class="item-list"></ul>
+                         <p id="no-transport-items" class="center-text muted" style="display: none;">Nessun trasporto aggiunto.</p>
+                    </div>
+                </div>
+                <!-- Tab: Itinerario -->
+                <div id="itinerary-tab" class="tab-content card">
+                    <h3><i class="fas fa-route"></i> Itinerario</h3>
+                    <form id="add-itinerary-item-form" class="add-item-form">
+                        <input type="hidden" id="edit-itinerary-item-id">
+                         <div class="form-row"> <div class="form-control"> <label for="itinerary-day">Giorno:</label> <input type="date" id="itinerary-day" required> </div> <div class="form-control"> <label for="itinerary-time">Ora (opzionale):</label> <input type="time" id="itinerary-time"> </div> </div>
+                        <div class="form-control"> <label for="itinerary-activity">Attività/Evento:</label> <input type="text" id="itinerary-activity" required> </div>
+                        <div class="form-control"> <label for="itinerary-location">Luogo (opzionale):</label> <input type="text" id="itinerary-location"> </div>
+                        <div class="form-control"> <label for="itinerary-notes">Note Aggiuntive:</label> <input type="text" id="itinerary-notes"> </div>
+                        <div class="form-actions"> <button type="submit" id="itinerary-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Aggiungi</button> <button type="button" id="itinerary-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button> </div>
+                    </form>
+                    <div class="item-list-container"> <h4>Programma:</h4> <ul id="itinerary-list" class="item-list"></ul> <p id="no-itinerary-items" class="center-text muted" style="display: none;">Nessun evento.</p> </div>
+                </div>
+                <!-- Tab: Budget -->
+                <div id="budget-tab" class="tab-content card">
+                    <h3><i class="fas fa-coins"></i> Budget</h3>
+                    <form id="add-budget-item-form" class="add-item-form">
+                        <input type="hidden" id="edit-budget-item-id">
+                         <div class="form-row"> <div class="form-control"> <label for="budget-category">Categoria:</label> <select id="budget-category" required> <option value="Trasporti">Trasporti</option> <option value="Alloggio">Alloggio</option> <option value="Cibo">Cibo</option> <option value="Attività">Attività</option> <option value="Shopping">Shopping</option> <option value="Altro">Altro</option> </select> </div> <div class="form-control"> <label for="budget-description">Descrizione:</label> <input type="text" id="budget-description" required> </div> </div>
+                         <div class="form-row"> <div class="form-control"> <label for="budget-estimated">Costo Stimato (€):</label> <input type="number" id="budget-estimated" step="0.01" min="0" placeholder="0.00" required> </div> <div class="form-control"> <label for="budget-actual">Costo Effettivo (€):</label> <input type="number" id="budget-actual" step="0.01" min="0" placeholder="0.00"> </div> </div>
+                        <div class="form-actions"> <button type="submit" id="budget-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Aggiungi</button> <button type="button" id="budget-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button> </div>
+                    </form>
+                    <div class="budget-summary"> <h4>Riepilogo Budget:</h4> <p>Totale Stimato: <strong id="budget-total-estimated">€ 0.00</strong></p> <p>Totale Effettivo: <strong id="budget-total-actual">€ 0.00</strong></p> <p>Differenza: <strong id="budget-difference">€ 0.00</strong></p> </div>
+                    <div class="item-list-container"> <h4>Voci di Spesa:</h4> <ul id="budget-list" class="item-list"></ul> <p id="no-budget-items" class="center-text muted" style="display: none;">Nessuna spesa.</p> </div>
+                </div>
+                <!-- Tab: Packing List -->
+                <div id="packing-tab" class="tab-content card">
+                    <h3><i class="fas fa-suitcase-rolling"></i> Packing List</h3>
+                     <div class="predefined-checklists"> <h4>Importa lista predefinita:</h4> <button type="button" class="btn btn-outline btn-sm" data-checklist="beach"><i class="fas fa-umbrella-beach"></i> Spiaggia</button> <button type="button" class="btn btn-outline btn-sm" data-checklist="city"><i class="fas fa-city"></i> Città</button> <button type="button" class="btn btn-outline btn-sm" data-checklist="mountain"><i class="fas fa-mountain"></i> Montagna</button> <button type="button" class="btn btn-outline btn-sm" data-checklist="camping"><i class="fas fa-campground"></i> Campeggio</button> </div>
+                    <form id="add-packing-item-form" class="add-item-form"> <input type="hidden" id="edit-packing-item-id"> <div class="form-control"> <label for="packing-item-name">Oggetto:</label> <input type="text" id="packing-item-name" required> </div> <div class="form-actions"> <button type="submit" id="packing-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Aggiungi</button> <button type="button" id="packing-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button> </div> </form>
+                    <div class="item-list-container"> <h4>Checklist:</h4> <ul id="packing-list" class="item-list packing-list"></ul> <p id="no-packing-items" class="center-text muted" style="display: none;">Lista vuota.</p> </div>
+                </div>
+                <!-- == FINE CONTENUTO TABS == -->
+            </main>
+            <div id="welcome-message" class="welcome-message card"> <h2>Benvenuto in Travel Planner Pro!</h2> <p>Seleziona un viaggio dalla lista o creane uno nuovo.</p> </div>
+        </div>
+        <footer> <p>© 2023 Travel Planner Pro</p> </footer>
+    </div>
+
+    <!-- Modals e Toast -->
+    <div id="new-trip-modal" class="modal"> <div class="modal-content"> <span class="close-button modal-close">×</span> <h2>Nuovo Viaggio</h2> <div class="form-control"> <label for="new-trip-name-input">Nome Viaggio:</label> <input type="text" id="new-trip-name-input" required placeholder="Es. Weekend a Roma"> <p id="new-trip-modal-error" class="error-message" style="display: none;"></p> </div> <div class="modal-footer"> <button type="button" class="btn btn-secondary modal-close">Annulla</button> <button type="button" id="create-trip-confirm-btn" class="btn btn-primary">Crea Viaggio</button> </div> </div> </div>
+    <div id="confirmation-modal" class="modal"> <div class="modal-content"> <span class="close-button modal-close">×</span> <h2 id="confirmation-modal-title">Conferma Azione</h2> <p id="confirmation-modal-message" style="margin-bottom: 20px;">Sei sicuro?</p> <div class="modal-footer"> <button type="button" class="btn btn-secondary modal-close">Annulla</button> <button type="button" id="confirmation-modal-confirm-btn" class="btn btn-danger">Conferma</button> </div> </div> </div>
+    <div id="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
