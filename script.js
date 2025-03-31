@@ -601,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
             */
 
              // TEST 6: Aggiungi Accommodations (dopo che TEST 5 funziona)
-            
+            /*
             dataToSend = {
                  name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
                  participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
@@ -610,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
                  sharedAt: Timestamp.now()
             };
-            
+            */
 
              // TEST 7: Aggiungi Itinerary (dopo che TEST 6 funziona)
             /*
@@ -640,7 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
             */
 
             // TEST 9: Aggiungi Packing List (dopo che TEST 8 funziona)
-            /*
+            
             dataToSend = {
                  name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
                  participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
@@ -652,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  packingList: (cleanTripBase.packingList || []).map(p => ({ name: p.name || '?', category: p.category || 'Altro', quantity: safeToPositiveIntegerOrDefault(p.quantity), packed: p.packed || false })),
                  sharedAt: Timestamp.now()
             };
-            */
+            
 
             // ==================================================
             // === FINE SEZIONE DI TEST ===
