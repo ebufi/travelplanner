@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 timestamp: Timestamp.now()
             };
             */
-
+            /*
             // TEST 2: Info base (ATTIVO)
             dataToSend = {
                 name: cleanTripBase.name || 'Senza Nome',
@@ -559,10 +559,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 endDate: toTimestampOrNull(cleanTripBase.endDate),
                 sharedAt: Timestamp.now() // Aggiungiamo sempre un timestamp di condivisione
             };
-
+              */
 
             // TEST 3: Aggiungi Participants (COMMENTATO)
-            /*
+            
             dataToSend = {
                  name: cleanTripBase.name || 'Senza Nome',
                  originCity: cleanTripBase.originCity || null,
@@ -576,7 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  })),
                  sharedAt: Timestamp.now()
             };
-            */
+            
 
             // ... (Altri TEST commentati: Reminder, Transport, Accommodation, Itinerary, Budget, Packing) ...
              // TEST 4: Aggiungi Reminders (dopo che TEST 3 funziona)
