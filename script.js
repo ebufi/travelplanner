@@ -274,8 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleDeleteTrip = (id) => { const item = findTripById(id); if (!item) return; const type = item.isTemplate ? 'Template' : 'Viaggio'; showConfirmationModal( `Conferma Eliminazione ${type}`, `Eliminare "${item.name || 'S.N.'}"? L'azione è irreversibile.`, () => { trips = trips.filter(trip => trip.id !== id); saveTrips(); if (currentTripId === id) deselectTrip(); else renderTripList(); showToast(`${type} eliminato.`, 'info'); }); };
     const openSelectTemplateModal = () => { const templates = trips.filter(trip => trip.isTemplate); if (templates.length === 0) { showToast("Nessun template trovato. Crea un viaggio e spunta 'È un template'.", "info"); return; } templateSelectInput.innerHTML = '<option value="">-- Seleziona Template --</option>'; templates.forEach(t => { const option = document.createElement('option'); option.value = t.id; option.textContent = t.name; templateSelectInput.appendChild(option); }); if (selectTemplateErrorP) selectTemplateErrorP.style.display = 'none'; openModal(selectTemplateModal); };
     const closeSelectTemplateModal = () => closeModal(selectTemplateModal);
-    const handleCreateFromTemplateConfirm = () => { const templateId = templateSelectInput.value; if (!templateId) { if(selectTemplateErrorP) { selectTemplateErrorP.textContent = 'Seleziona un template.'; selectTemplateErrorP.style.display = 'block';} return; } const template = findTripById(templateId); if (!template) { showToast("Template non valido.", "error"); return; } const newTrip = cloneAndRegenerateTripIds(template); // Usa la funzione helper
-        trips.push(newTrip); saveTrips(); closeSelectTemplateModal(); selectTrip(newTrip.id); showToast(`Viaggio creato dal template "${template.name}"!`, 'success'); };
+    const handleCreateFromTemplateConfirm = () => { const templateId = templateSelectInput.value; if (!templateId) { if(selectTemplateErrorP) { selectTemplateErrorP.textContent = 'Seleziona un template.'; selectTemplateErrorP.style.display = 'block';} return; } const template = findTripById(templateId); if (!template) { showToast("Template non valido.", "error"); return; } const newTrip = cloneAndRegenerateTripIds(template); trips.push(newTrip); saveTrips(); closeSelectTemplateModal(); selectTrip(newTrip.id); showToast(`Viaggio creato dal template "${template.name}"!`, 'success'); };
     const handleSearchTrip = (e) => { currentSearchTerm.trip = e.target.value; renderTripList(); };
 
     // ==========================================================================
@@ -333,10 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // == FUNZIONI CONDIVISIONE VIA FIREBASE (v9 Syntax) ==
     // ==========================================================================
     const handleShareTrip = async () => {
-        if (!db) { // Controlla se Firebase è inizializzato
-            showToast("Funzionalità di condivisione non disponibile.", "error");
-            return;
-        }
+        if (!db) { showToast("Funzionalità di condivisione non disponibile.", "error"); return; }
         if (!currentTripId) { showToast("Seleziona un viaggio da condividere.", "warning"); return; }
         const tripToShare = findTripById(currentTripId);
         if (!tripToShare) { showToast("Errore: viaggio non trovato.", "error"); return; }
@@ -348,7 +344,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const tripDataForFirebase = JSON.parse(JSON.stringify(tripToShare));
-            // Sintassi v9 per aggiungere un documento
             const docRef = await addDoc(collection(db, "sharedTrips"), tripDataForFirebase);
             console.log("Viaggio condiviso con ID: ", docRef.id);
 
@@ -421,10 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const checkForSharedTrip = async () => {
-         if (!db) { // Controlla se Firebase è inizializzato
-            console.warn("Firestore non inizializzato, impossibile controllare viaggi condivisi.");
-            return;
-        }
+         if (!db) { console.warn("Firestore non inizializzato, impossibile controllare viaggi condivisi."); return; }
         const urlParams = new URLSearchParams(window.location.search);
         const shareId = urlParams.get('shareId');
 
@@ -432,7 +424,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Trovato shareId:", shareId);
             showToast("Recupero viaggio condiviso...", "info");
             try {
-                // Sintassi v9 per ottenere un documento
                 const docRef = doc(db, "sharedTrips", shareId);
                 const docSnap = await getDoc(docRef);
 
