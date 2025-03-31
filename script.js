@@ -449,10 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const idx = list.findIndex(i => i && i.id === currentEditId);
             if (idx > -1) {
                  const oldItem = list[idx];
-                 let preservedState = {};
-                 if(listType === 'packing') preservedState.packed = oldItem.packed;
-                 // Lo status reminder viene già aggiornato dal form
-                 list[idx] = { ...oldItem, ...itemData, ...preservedState };
+                 list[idx] = { ...oldItem, ...itemData, ...(listType === 'packing' ? { packed: oldItem.packed } : {}) };
              } else { console.error(`Item ${currentEditId} non trovato`); return; }
         } else {
             itemData.id = generateId(listType);
@@ -498,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // == FUNZIONI UI ==
     // ==========================================================================
     const switchTab = (tabId) => { if (!tabId) return; document.querySelectorAll(".tab-content").forEach(t => { t.style.display="none"; t.classList.remove("active"); }); document.querySelectorAll(".tab-link").forEach(l => l.classList.remove("active")); const c = document.getElementById(tabId); const l = tabsContainer?.querySelector(`.tab-link[data-tab="${tabId}"]`); if(c){ c.style.display="block"; setTimeout(()=>c.classList.add("active"),10); } else { console.error(`Contenuto tab ${tabId} non trovato`); } if(l) l.classList.add("active"); else { console.error(`Link tab ${tabId} non trovato`); }};
-    const toggleSearchButtonsVisibility = () => { const type = transportTypeSelect?.value; if(searchSkyscannerBtn) searchSkyscannerBtn.style.display = (type === 'Volo') ? 'inline-flex' : 'none'; if(searchTrainlineBtn) searchTrainlineBtn.style.display = (type === 'Treno') ? 'inline-flex' : 'none'; };
+    const toggleSearchButtonsVisibility = () => { if (!transportTypeSelect) return; const type = transportTypeSelect.value; if(searchSkyscannerBtn) searchSkyscannerBtn.style.display = (type === 'Volo') ? 'inline-flex' : 'none'; if(searchTrainlineBtn) searchTrainlineBtn.style.display = (type === 'Treno') ? 'inline-flex' : 'none'; };
     const handleSortChange = (listType, selectElement) => { if (!currentTripId) return; const trip = findTripById(currentTripId); if (!trip) return; currentSort[listType] = selectElement.value; switch(listType) { case 'reminder': renderReminders(trip.reminders); break; case 'transport': renderTransportations(trip.transportations); break; case 'itinerary': renderItinerary(trip.itinerary); break; case 'budget': renderBudget(trip.budget); break; case 'packing': renderPackingList(trip.packingList); break; } };
     const applyCurrentSortToControls = () => { if(reminderSortControl) reminderSortControl.value = currentSort.reminder; if(transportSortControl) transportSortControl.value = currentSort.transport; if(itinerarySortControl) itinerarySortControl.value = currentSort.itinerary; if(budgetSortControl) budgetSortControl.value = currentSort.budget; if(packingSortControl) packingSortControl.value = currentSort.packing; };
     const handleInternalSearch = (listType, inputElement) => { if (!currentTripId) return; const trip = findTripById(currentTripId); if (!trip) return; currentSearchTerm[listType] = inputElement.value.toLowerCase(); if (listType === 'itinerary') renderItinerary(trip.itinerary); else if (listType === 'packing') renderPackingList(trip.packingList); };
@@ -516,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleDownloadExcel = () => { if (!currentTripId) { showToast("Seleziona un viaggio.", "error"); return; } const trip = findTripById(currentTripId); if (!trip) return; try { const wb = XLSX.utils.book_new(); const cf = '#,##0.00 €'; const nf = '#,##0'; const summary = [ ["Voce","Dettaglio"], ["Viaggio", trip.name||'S.N.'], ["Template", trip.isTemplate ? 'Sì' : 'No'], ["Origine", trip.originCity||'N/D'], ["Dest.", trip.destination||'N/D'], ["Periodo", `${formatDate(trip.startDate)} - ${formatDate(trip.endDate)}`], ["Note", trip.notes||'-'], ["Extra Info", trip.extraInfo||'-'], [], ["Budget Est.",{t:'n',v:trip.budget?.estimatedTotal||0,z:cf}], ["Budget Act.",{t:'n',v:trip.budget?.actualTotal||0,z:cf}], ["Diff.",{t:'n',v:(trip.budget?.actualTotal||0)-(trip.budget?.estimatedTotal||0),z:cf}], [], ["# Partecipanti", (trip.participants||[]).length], ["# Promemoria", (trip.reminders||[]).length], ["# Trasporti", (trip.transportations||[]).length], ["# Alloggi", (trip.accommodations||[]).length], ["# Itin.", (trip.itinerary||[]).length], ["# Budget", (trip.budget?.items||[]).length], ["# Packing", (trip.packingList||[]).length]]; const wsSum = XLSX.utils.aoa_to_sheet(summary); wsSum['!cols']=[{wch:15},{wch:50}]; XLSX.utils.book_append_sheet(wb, wsSum, "Riepilogo"); const partH = ["Nome", "Note", "Extra Info"]; const partD = (trip.participants||[]).slice().sort((a,b)=>(a?.name||'').localeCompare(b?.name||'')).map(p=>[p.name, p.notes, p.extraInfo]); const wsPart = XLSX.utils.aoa_to_sheet([partH, ...partD]); wsPart['!cols']=[{wch:30},{wch:40},{wch:40}]; XLSX.utils.book_append_sheet(wb, wsPart, "Partecipanti"); const remH = ["Stato", "Descrizione", "Scadenza"]; const remD = (trip.reminders||[]).slice().sort((a,b)=>(a?.dueDate || '9999').localeCompare(b?.dueDate || '9999')).map(r => [r.status === 'done' ? 'Fatto' : 'Da Fare', r.description, formatDate(r.dueDate)]); const wsRem = XLSX.utils.aoa_to_sheet([remH, ...remD]); wsRem['!cols'] = [{wch:10}, {wch:50}, {wch:12}]; XLSX.utils.book_append_sheet(wb, wsRem, "Promemoria"); const th = ["Tipo","Desc.","Da Luogo","Da Data/Ora","A Luogo","A Data/Ora","Rif.","Costo","Note","Link/File"]; const td = (trip.transportations||[]).slice().sort((a,b)=>(a?.departureDateTime||'').localeCompare(b?.departureDateTime||'')).map(i=>[i.type, i.description, i.departureLoc, formatDateTime(i.departureDateTime), i.arrivalLoc, formatDateTime(i.arrivalDateTime), i.bookingRef, i.cost===null?null:{t:'n',v:i.cost,z:cf}, i.notes, i.link]); const wsT = XLSX.utils.aoa_to_sheet([th, ...td]); wsT['!cols']=[{wch:12},{wch:25},{wch:18},{wch:16},{wch:18},{wch:16},{wch:15},{wch:12},{wch:25},{wch:30}]; XLSX.utils.book_append_sheet(wb, wsT, "Trasporti"); const ah = ["Nome","Tipo","Indirizzo","CheckIn","CheckOut","Rif.","Costo","Note","Link/File"]; const ad = (trip.accommodations||[]).slice().sort((a,b)=>(a?.checkinDateTime||'').localeCompare(b?.checkinDateTime||'')).map(i=>[i.name,i.type,i.address,formatDateTime(i.checkinDateTime),formatDateTime(i.checkoutDateTime),i.bookingRef,i.cost===null?null:{t:'n',v:i.cost,z:cf},i.notes, i.link]); const wsA = XLSX.utils.aoa_to_sheet([ah,...ad]); wsA['!cols']=[{wch:25},{wch:10},{wch:35},{wch:16},{wch:16},{wch:20},{wch:12},{wch:30},{wch:30}]; XLSX.utils.book_append_sheet(wb, wsA, "Alloggi"); const ih = ["Giorno","Ora","Attività","Luogo","Rif. Pren.","Costo","Note","Link/File"]; const idata = (trip.itinerary||[]).slice().sort((a,b)=>{const d=(a?.day||'').localeCompare(b?.day||''); return d!==0?d:(a?.time||'').localeCompare(b?.time||'');}).map(i=>[formatDate(i.day),i.time,i.activity,i.location,i.bookingRef,i.cost===null?null:{t:'n',v:i.cost,z:cf},i.notes, i.link]); const wsI = XLSX.utils.aoa_to_sheet([ih, ...idata]); wsI['!cols']=[{wch:10},{wch:8},{wch:30},{wch:25},{wch:20},{wch:12},{wch:30},{wch:30}]; XLSX.utils.book_append_sheet(wb, wsI, "Itinerario"); const bh = ["Cat.","Desc.","Est. (€)","Act. (€)", "Pagato Da", "Diviso Tra"]; const bd = (trip.budget?.items||[]).slice().sort((a,b)=>(a?.category||'').localeCompare(b?.category||'')).map(i=>[i.category,i.description,{t:'n',v:i.estimated||0,z:cf},i.actual===null?null:{t:'n',v:i.actual,z:cf}, i.paidBy, i.splitBetween]); bd.push([],["TOTALI","", {t:'n',v:trip.budget?.estimatedTotal||0,z:cf}, {t:'n',v:trip.budget?.actualTotal||0,z:cf}, "", ""]); const wsB = XLSX.utils.aoa_to_sheet([bh, ...bd]); wsB['!cols']=[{wch:15},{wch:35},{wch:15},{wch:15},{wch:20},{wch:20}]; XLSX.utils.book_append_sheet(wb, wsB, "Budget"); const ph = ["Categoria", "Oggetto", "Qtà", "Fatto?"]; const pd = (trip.packingList||[]).slice().sort((a,b)=>(a?.category||'zzz').localeCompare(b?.category||'zzz') || (a?.name||'').localeCompare(b?.name||'')).map(i=>[i.category, i.name, {t:'n', v:i.quantity, z:nf}, i.packed?'Sì':'No']); const wsP = XLSX.utils.aoa_to_sheet([ph, ...pd]); wsP['!cols']=[{wch:20}, {wch:40},{wch:5},{wch:8}]; XLSX.utils.book_append_sheet(wb, wsP, "Packing List"); const fn = `Viaggio-${(trip.name||'SN').replace(/[^a-z0-9]/gi,'_')}.xlsx`; XLSX.writeFile(wb, fn); } catch(e){ console.error("Err Excel:",e); showToast("Errore creazione Excel.", "error"); } };
 
     // ==========================================================================
-    // == FUNZIONI CONDIVISIONE VIA FIREBASE (DEBUGGING - Solo TEST 2 attivo) ==
+    // == FUNZIONI CONDIVISIONE VIA FIREBASE (Versione Finale) ==
     // ==========================================================================
     const handleShareTrip = async () => {
         if (!db) { showToast("Funzionalità di condivisione non disponibile (Errore Init Firebase).", "error"); return; }
@@ -530,25 +527,10 @@ document.addEventListener('DOMContentLoaded', () => {
             shareTripBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparando...';
         }
 
-        let dataToSend = {}; // Inizializza come oggetto vuoto
+        let dataToSend = null;
 
         try {
-            // Copia pulita per evitare modifiche all'originale
-             const cleanTripBase = JSON.parse(JSON.stringify(originalTrip));
-
-            // ==================================================
-            // === SEZIONE DI TEST - TEST 2 ATTIVO ===
-            // ==================================================
-
-            // TEST 1: Solo nome e timestamp (COMMENTATO)
-            /*
-            dataToSend = {
-                message: "Hello Firestore! Test 1",
-                timestamp: Timestamp.now()
-            };
-            */
-            /*
-            // TEST 2: Info base (ATTIVO)
+            const cleanTripBase = JSON.parse(JSON.stringify(originalTrip));
             dataToSend = {
                 name: cleanTripBase.name || 'Senza Nome',
                 originCity: cleanTripBase.originCity || null,
@@ -557,124 +539,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 extraInfo: cleanTripBase.extraInfo || null,
                 startDate: toTimestampOrNull(cleanTripBase.startDate),
                 endDate: toTimestampOrNull(cleanTripBase.endDate),
-                sharedAt: Timestamp.now() // Aggiungiamo sempre un timestamp di condivisione
+                participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
+                reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
+                transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
+                accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
+                itinerary: (cleanTripBase.itinerary || []).map(i => ({ day: i.day || null, time: i.time || null, activity: i.activity || '?', location: i.location || null, bookingRef: i.bookingRef || null, cost: safeToNumberOrNull(i.cost), notes: i.notes || null, link: i.link || null })),
+                budget: { items: (cleanTripBase.budget?.items || []).map(b => ({ category: b.category || 'Altro', description: b.description || '?', estimated: safeToNumberOrNull(b.estimated), actual: safeToNumberOrNull(b.actual), paidBy: b.paidBy || null, splitBetween: b.splitBetween || null })) },
+                packingList: (cleanTripBase.packingList || []).map(p => ({ name: p.name || '?', category: p.category || 'Altro', quantity: safeToPositiveIntegerOrDefault(p.quantity), packed: p.packed || false })),
+                sharedAt: Timestamp.now()
             };
-              */
 
-            // TEST 3: Aggiungi Participants (COMMENTATO)
-            /*
-            dataToSend = {
-                 name: cleanTripBase.name || 'Senza Nome',
-                 originCity: cleanTripBase.originCity || null,
-                 destination: cleanTripBase.destination || null,
-                 notes: cleanTripBase.notes || null,
-                 extraInfo: cleanTripBase.extraInfo || null,
-                 startDate: toTimestampOrNull(cleanTripBase.startDate),
-                 endDate: toTimestampOrNull(cleanTripBase.endDate),
-                 participants: (cleanTripBase.participants || []).map(p => ({
-                     name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null
-                 })),
-                 sharedAt: Timestamp.now()
-            };
-            */
-
-            // ... (Altri TEST commentati: Reminder, Transport, Accommodation, Itinerary, Budget, Packing) ...
-             // TEST 4: Aggiungi Reminders (dopo che TEST 3 funziona)
-            /*
-            dataToSend = {
-                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
-                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
-                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
-                 sharedAt: Timestamp.now()
-            };
-            */
-
-             // TEST 5: Aggiungi Transportations (dopo che TEST 4 funziona)
-            /*
-            dataToSend = {
-                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
-                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
-                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
-                 transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
-                 sharedAt: Timestamp.now()
-            };
-            */
-
-             // TEST 6: Aggiungi Accommodations (dopo che TEST 5 funziona)
-            /*
-            dataToSend = {
-                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
-                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
-                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
-                 transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
-                 accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
-                 sharedAt: Timestamp.now()
-            };
-            */
-
-             // TEST 7: Aggiungi Itinerary (dopo che TEST 6 funziona)
-            /*
-            dataToSend = {
-                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
-                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
-                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
-                 transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
-                 accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
-                 itinerary: (cleanTripBase.itinerary || []).map(i => ({ day: i.day || null, time: i.time || null, activity: i.activity || '?', location: i.location || null, bookingRef: i.bookingRef || null, cost: safeToNumberOrNull(i.cost), notes: i.notes || null, link: i.link || null })),
-                 sharedAt: Timestamp.now()
-            };
-            */
-
-            // TEST 8: Aggiungi Budget (dopo che TEST 7 funziona)
-            /*
-            dataToSend = {
-                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
-                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
-                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
-                 transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
-                 accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
-                 itinerary: (cleanTripBase.itinerary || []).map(i => ({ day: i.day || null, time: i.time || null, activity: i.activity || '?', location: i.location || null, bookingRef: i.bookingRef || null, cost: safeToNumberOrNull(i.cost), notes: i.notes || null, link: i.link || null })),
-                 budget: { items: (cleanTripBase.budget?.items || []).map(b => ({ category: b.category || 'Altro', description: b.description || '?', estimated: safeToNumberOrNull(b.estimated), actual: safeToNumberOrNull(b.actual), paidBy: b.paidBy || null, splitBetween: b.splitBetween || null })) },
-                 sharedAt: Timestamp.now()
-            };
-            */
-
-            // TEST 9: Aggiungi Packing List (dopo che TEST 8 funziona)
-            
-            dataToSend = {
-                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
-                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
-                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
-                 transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
-                 accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
-                 itinerary: (cleanTripBase.itinerary || []).map(i => ({ day: i.day || null, time: i.time || null, activity: i.activity || '?', location: i.location || null, bookingRef: i.bookingRef || null, cost: safeToNumberOrNull(i.cost), notes: i.notes || null, link: i.link || null })),
-                 budget: { items: (cleanTripBase.budget?.items || []).map(b => ({ category: b.category || 'Altro', description: b.description || '?', estimated: safeToNumberOrNull(b.estimated), actual: safeToNumberOrNull(b.actual), paidBy: b.paidBy || null, splitBetween: b.splitBetween || null })) },
-                 packingList: (cleanTripBase.packingList || []).map(p => ({ name: p.name || '?', category: p.category || 'Altro', quantity: safeToPositiveIntegerOrDefault(p.quantity), packed: p.packed || false })),
-                 sharedAt: Timestamp.now()
-            };
-            
-
-            // ==================================================
-            // === FINE SEZIONE DI TEST ===
-            // ==================================================
-
-            if (!dataToSend || Object.keys(dataToSend).length === 0) {
-                throw new Error("Nessun dato preparato per l'invio (errore di debug o tutti i test commentati).");
-            }
-
-            console.log("Invio TEST DATA (Test 2) a Firestore:", JSON.stringify(dataToSend, null, 2)); // Log prima dell'invio
+            console.log("Invio a Firestore (versione completa):", JSON.stringify(dataToSend, null, 2));
             if (shareTripBtn) shareTripBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
 
             const docRef = await addDoc(collection(db, "sharedTrips"), dataToSend);
-            console.log("TEST 2 RIUSCITO! Documento creato con ID: ", docRef.id);
-            showToast("Test 2 (Info Base) Firestore riuscito!", "success");
-             alert("Test 2 (Info Base) OK! Controlla il database Firestore.");
-            // Non generiamo il link per questo test
+            console.log("Viaggio condiviso con ID: ", docRef.id);
+
+            const shareLink = `${window.location.origin}${window.location.pathname}?shareId=${docRef.id}`;
+            prompt("Copia questo link per condividere il viaggio:", shareLink);
+            showToast("Link di condivisione generato!", "success");
 
         } catch (error) {
-            console.error("TEST 2 FALLITO - Errore scrittura Firestore:", error);
-            console.error("Dati inviati nel test 2:", dataToSend); // Logga i dati specifici del test
-            showToast("Errore nel Test 2 (Info Base). Controlla console.", "error");
+            console.error("Errore durante la condivisione del viaggio:", error);
+            console.error("Dati inviati (potrebbero essere parziali o problematici):", dataToSend);
+            showToast("Errore durante la condivisione. Controlla la console.", "error");
         } finally {
             if (shareTripBtn) {
                 shareTripBtn.disabled = false;
@@ -682,7 +570,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     };
-    // --- FINE VERSIONE DI DEBUG DI handleShareTrip ---
 
     const cloneAndRegenerateTripIds = (tripDataFromFirebase) => {
         const tripDataWithStrings = convertTimestampsToStrings(tripDataFromFirebase);
@@ -724,11 +611,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const newTrip = cloneAndRegenerateTripIds(sharedTripData);
             trips.push(newTrip);
             saveTrips();
-            currentTripId = null; // Deseleziona prima
+            currentTripId = null;
             renderTripList();
-            selectTrip(newTrip.id); // Seleziona il nuovo
+            selectTrip(newTrip.id);
             showToast(`Viaggio "${newTrip.name || 'Senza Nome'}" importato con successo!`, "success");
-            // URL già pulito
+            // URL già pulito da checkForSharedTrip
         } catch (error) {
             console.error("Errore durante l'importazione del viaggio condiviso:", error);
             showToast("Errore durante l'importazione del viaggio.", "error");
@@ -769,6 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     };
+
     // ==========================================================================
     // == INIZIALIZZAZIONE E EVENT LISTENER ==
     // ==========================================================================
@@ -791,9 +679,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (downloadTextBtn) downloadTextBtn.addEventListener('click', handleDownloadText);
         if (downloadExcelBtn) downloadExcelBtn.addEventListener('click', handleDownloadExcel);
         if (tabsContainer) tabsContainer.addEventListener('click', (e) => { const tl = e.target.closest('.tab-link'); if (tl?.dataset.tab) switchTab(tl.dataset.tab); });
-        if (shareTripBtn) shareTripBtn.addEventListener('click', handleShareTrip); // Usa la versione di DEBUG
+        if (shareTripBtn) shareTripBtn.addEventListener('click', handleShareTrip);
 
-        // Listener Submit Forms (assicurati che handleItemFormSubmit usi i safe helpers)
+        // Listener Submit Forms
         if (addParticipantForm) addParticipantForm.addEventListener('submit', (e) => handleItemFormSubmit(e, 'participant'));
         if (addReminderItemForm) addReminderItemForm.addEventListener('submit', (e) => handleItemFormSubmit(e, 'reminder'));
         if (addTransportItemForm) addTransportItemForm.addEventListener('submit', (e) => handleItemFormSubmit(e, 'transport'));
