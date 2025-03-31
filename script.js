@@ -562,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
               */
 
             // TEST 3: Aggiungi Participants (COMMENTATO)
-            
+            /*
             dataToSend = {
                  name: cleanTripBase.name || 'Senza Nome',
                  originCity: cleanTripBase.originCity || null,
@@ -576,18 +576,18 @@ document.addEventListener('DOMContentLoaded', () => {
                  })),
                  sharedAt: Timestamp.now()
             };
-            
+            */
 
             // ... (Altri TEST commentati: Reminder, Transport, Accommodation, Itinerary, Budget, Packing) ...
              // TEST 4: Aggiungi Reminders (dopo che TEST 3 funziona)
-            /*
+            
             dataToSend = {
                  name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
                  participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
                  reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
                  sharedAt: Timestamp.now()
             };
-            */
+            
 
              // TEST 5: Aggiungi Transportations (dopo che TEST 4 funziona)
             /*
