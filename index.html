@@ -10,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- NOTA: Non servono più gli script Firebase CDN qui se usi 'import' in JS -->
 </head>
 <body>
     <div class="app-container">
@@ -22,14 +21,12 @@
             <!-- Sidebar -->
             <aside class="sidebar">
                 <h2><i class="fas fa-suitcase"></i> I Miei Viaggi</h2>
-                 <!-- Ricerca Viaggi -->
-                <div class="search-bar">
+                 <div class="search-bar">
                     <input type="search" id="search-trip-input" placeholder="Cerca viaggio...">
                     <i class="fas fa-search"></i>
                 </div>
                 <div class="trip-list-controls">
                     <button id="new-trip-btn" class="btn btn-primary"><i class="fas fa-plus"></i> Nuovo</button>
-                    <!-- Crea da Template -->
                     <button id="create-from-template-btn" class="btn btn-secondary"><i class="fas fa-paste"></i> Da Template</button>
                 </div>
                 <ul id="trip-list" class="trip-list"></ul>
@@ -38,18 +35,20 @@
 
             <!-- Area Dettagli -->
             <main id="trip-details-area" class="trip-details-area" style="display: none;">
-                <!-- Header Dettagli -->
+                <!-- Header Dettagli (Pulsanti aggiornati) -->
                 <div class="trip-header card">
                     <h2 id="trip-title">Dettagli Viaggio</h2>
                     <div class="trip-actions">
-                        <button id="share-trip-btn" class="btn btn-info btn-sm" title="Condividi Viaggio" disabled><i class="fas fa-share-alt"></i> Condividi</button>
+                        <button id="share-trip-btn" class="btn btn-info btn-sm" title="Condividi Viaggio (Link/App)" disabled><i class="fas fa-share-alt"></i> Condividi</button>
+                        <button id="email-summary-btn" class="btn btn-warning btn-sm" title="Invia Riepilogo via Email" disabled><i class="fas fa-envelope"></i> Email</button>
+                        <button id="copy-summary-btn" class="btn btn-success btn-sm" title="Copia Riepilogo per Chat" disabled><i class="fas fa-copy"></i> Copia Testo</button>
                         <button id="download-excel-btn" class="btn btn-success btn-sm" title="Scarica Excel" disabled><i class="fas fa-file-excel"></i> Excel</button>
-                        <button id="download-text-btn" class="btn btn-secondary btn-sm" title="Scarica Testo" disabled><i class="fas fa-download"></i> Testo</button>
+                        <button id="download-text-btn" class="btn btn-secondary btn-sm" title="Scarica Testo Completo" disabled><i class="fas fa-download"></i> TXT</button>
                         <button id="delete-trip-btn" class="btn btn-danger btn-sm" title="Elimina Viaggio" disabled><i class="fas fa-trash-alt"></i> Elimina</button>
                     </div>
                 </div>
 
-                <!-- Tabs -->
+                <!-- Tabs (Aggiunto Bilancio) -->
                 <div class="tabs">
                     <button class="tab-link active" data-tab="info-tab"><i class="fas fa-info-circle"></i> Info</button>
                     <button class="tab-link" data-tab="participants-tab"><i class="fas fa-users"></i> Partecipanti</button>
@@ -58,12 +57,14 @@
                     <button class="tab-link" data-tab="accommodation-tab"><i class="fas fa-bed"></i> Alloggio</button>
                     <button class="tab-link" data-tab="itinerary-tab"><i class="fas fa-route"></i> Itinerario</button>
                     <button class="tab-link" data-tab="budget-tab"><i class="fas fa-coins"></i> Budget</button>
+                    <button class="tab-link" data-tab="balance-tab"><i class="fas fa-balance-scale"></i> Bilancio Spese</button>
                     <button class="tab-link" data-tab="packing-tab"><i class="fas fa-suitcase-rolling"></i> Packing List</button>
                 </div>
 
                 <!-- == CONTENUTO TABS == -->
                 <!-- Tab: Info -->
                 <div id="info-tab" class="tab-content card active">
+                     <!-- ... (Contenuto Info Tab invariato) ... -->
                     <h3><i class="fas fa-info-circle"></i> Informazioni Generali</h3>
                     <form id="trip-info-form">
                         <input type="hidden" id="edit-trip-id">
@@ -90,12 +91,14 @@
                 </div>
                 <!-- Tab: Partecipanti -->
                 <div id="participants-tab" class="tab-content card">
-                    <h3><i class="fas fa-users"></i> Partecipanti</h3>
+                     <!-- ... (Contenuto Partecipanti Tab invariato) ... -->
+                     <h3><i class="fas fa-users"></i> Partecipanti</h3>
                      <form id="add-participant-form" class="add-item-form"> <input type="hidden" id="edit-participant-id"> <div class="form-row"> <div class="form-control"> <label for="participant-name">Nome Partecipante:</label> <input type="text" id="participant-name" required placeholder="Nome Cognome"> </div> <div class="form-control"> <label for="participant-notes">Note (Es. Email, Tel):</label> <input type="text" id="participant-notes" placeholder="Contatti, Allergie..."> </div> </div> <div class="form-control"> <label for="participant-extra-info">Info Aggiuntive:</label> <textarea id="participant-extra-info" rows="2"></textarea> </div> <div class="form-actions"> <button type="submit" id="participant-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Partecipante</button> <button type="button" id="participant-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button> </div> </form>
                      <div class="item-list-container"> <h4>Lista Partecipanti:</h4> <ul id="participant-list" class="item-list"></ul> <p id="no-participants-items" class="center-text muted" style="display: none;">Nessun partecipante.</p> </div>
                 </div>
                  <!-- Tab: Promemoria -->
                 <div id="reminders-tab" class="tab-content card">
+                     <!-- ... (Contenuto Promemoria Tab invariato) ... -->
                     <h3><i class="fas fa-check-double"></i> Promemoria / Da Fare</h3>
                     <form id="add-reminder-item-form" class="add-item-form">
                         <input type="hidden" id="edit-reminder-item-id">
@@ -124,6 +127,7 @@
                 </div>
                 <!-- Tab: Trasporti -->
                 <div id="transport-tab" class="tab-content card">
+                     <!-- ... (Contenuto Trasporti Tab invariato) ... -->
                      <h3><i class="fas fa-plane"></i> Gestione Trasporti</h3>
                      <form id="add-transport-item-form" class="add-item-form"> <input type="hidden" id="edit-transport-item-id"> <div class="form-row"> <div class="form-control"> <label for="transport-type">Tipo:</label> <select id="transport-type" required> <option value="Volo">Volo</option> <option value="Treno">Treno</option> <option value="Auto">Auto</option> <option value="Bus">Bus</option> <option value="Traghetto">Traghetto/Nave</option> <option value="Metro/Mezzi Pubblici">Metro/Mezzi Pubblici</option> <option value="Taxi/Ride Sharing">Taxi/Ride Sharing</option> <option value="Altro">Altro</option> </select> </div> <div class="form-control"> <label for="transport-description">Descrizione Breve:</label> <input type="text" id="transport-description" placeholder="Es. Volo AZ123..." required> </div> </div> <div class="form-row"> <div class="form-control"> <label for="transport-departure-loc">Partenza (Aeroporto/Stazione/Città):</label> <input type="text" id="transport-departure-loc" placeholder="Es. FCO, Roma Termini"> </div> <div class="form-control"> <label for="transport-departure-datetime">Partenza (Data/Ora Esatta):</label> <input type="datetime-local" id="transport-departure-datetime"> </div> </div> <div class="form-row"> <div class="form-control"> <label for="transport-arrival-loc">Arrivo (Aeroporto/Stazione/Città):</label> <input type="text" id="transport-arrival-loc" placeholder="Es. ATH, Milano Centrale"> </div> <div class="form-control"> <label for="transport-arrival-datetime">Arrivo (Data/Ora Esatta):</label> <input type="datetime-local" id="transport-arrival-datetime"> </div> </div> <div class="form-row"> <div class="form-control"> <label for="transport-booking-ref">Rif. Prenotazione:</label> <input type="text" id="transport-booking-ref"> </div> <div class="form-control"> <label for="transport-cost">Costo (€, opzionale):</label> <input type="number" id="transport-cost" step="0.01" min="0" placeholder="0.00"> </div> </div> <div class="form-control"> <label for="transport-notes">Note Aggiuntive:</label> <input type="text" id="transport-notes"> </div> <div class="form-control"> <label for="transport-link">Link/Rif. File (opzionale):</label> <input type="text" id="transport-link" placeholder="Link prenotazione, nome file..."> </div> <div class="form-actions"> <button type="submit" id="transport-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Trasporto</button> <button type="button" id="transport-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button> <button type="button" id="search-skyscanner-btn" class="btn btn-info btn-sm" style="display: none;"> <i class="fab fa-skyscanner"></i> Cerca Volo </button> <button type="button" id="search-trainline-btn" class="btn btn-success btn-sm" style="display: none;"> <i class="fas fa-train"></i> Cerca Treno </button> </div> </form>
                     <div class="item-list-container">
@@ -142,12 +146,14 @@
                 </div>
                 <!-- Tab: Alloggio -->
                 <div id="accommodation-tab" class="tab-content card">
+                     <!-- ... (Contenuto Alloggio Tab invariato) ... -->
                      <h3><i class="fas fa-bed"></i> Alloggi</h3>
                      <form id="add-accommodation-item-form" class="add-item-form"> <input type="hidden" id="edit-accommodation-item-id"> <div class="form-row"> <div class="form-control"> <label for="accommodation-name">Nome Hotel/Appartamento:</label> <input type="text" id="accommodation-name" required> </div> <div class="form-control"> <label for="accommodation-type">Tipo:</label> <select id="accommodation-type"> <option value="Hotel">Hotel</option> <option value="Appartamento">Appartamento</option> <option value="B&B">B&B</option> <option value="Ostello">Ostello</option> <option value="Casa Vacanze">Casa Vacanze</option> <option value="Altro">Altro</option> </select> </div> </div> <div class="form-control"> <label for="accommodation-address">Indirizzo:</label> <input type="text" id="accommodation-address"> </div> <div class="form-row"> <div class="form-control"> <label for="accommodation-checkin">Check-in (Data/Ora):</label> <input type="datetime-local" id="accommodation-checkin"> </div> <div class="form-control"> <label for="accommodation-checkout">Check-out (Data/Ora):</label> <input type="datetime-local" id="accommodation-checkout"> </div> </div> <div class="form-row"> <div class="form-control"> <label for="accommodation-booking-ref">Rif. Prenotazione/Contatto:</label> <input type="text" id="accommodation-booking-ref"> </div> <div class="form-control"> <label for="accommodation-cost">Costo Totale (€, opzionale):</label> <input type="number" id="accommodation-cost" step="0.01" min="0" placeholder="0.00"> </div> </div> <div class="form-control"> <label for="accommodation-notes">Note Aggiuntive:</label> <input type="text" id="accommodation-notes"> </div> <div class="form-control"> <label for="accommodation-link">Link/Rif. File (opzionale):</label> <input type="text" id="accommodation-link" placeholder="Link conferma, nome file..."> </div> <div class="form-actions"> <button type="submit" id="accommodation-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Alloggio</button> <button type="button" id="accommodation-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button> </div> </form>
                      <div class="item-list-container"> <h4>Alloggi Previsti:</h4> <ul id="accommodation-list" class="item-list"></ul> <p id="no-accommodation-items" class="center-text muted" style="display: none;">Nessun alloggio.</p> </div>
                 </div>
                 <!-- Tab: Itinerario -->
                 <div id="itinerary-tab" class="tab-content card">
+                     <!-- ... (Contenuto Itinerario Tab invariato) ... -->
                     <h3><i class="fas fa-route"></i> Itinerario</h3>
                     <form id="add-itinerary-item-form" class="add-item-form"> <input type="hidden" id="edit-itinerary-item-id"> <div class="form-row"> <div class="form-control"> <label for="itinerary-day">Giorno:</label> <input type="date" id="itinerary-day" required> </div> <div class="form-control"> <label for="itinerary-time">Ora (opzionale):</label> <input type="time" id="itinerary-time"> </div> </div> <div class="form-control"> <label for="itinerary-activity">Attività/Evento:</label> <input type="text" id="itinerary-activity" required> </div> <div class="form-control"> <label for="itinerary-location">Luogo (opzionale):</label> <input type="text" id="itinerary-location"> </div> <div class="form-row"> <div class="form-control"> <label for="itinerary-booking-ref">Rif. Prenotazione/Biglietto (opz.):</label> <input type="text" id="itinerary-booking-ref"> </div> <div class="form-control"> <label for="itinerary-cost">Costo (€, opzionale):</label> <input type="number" id="itinerary-cost" step="0.01" min="0" placeholder="0.00"> </div> </div> <div class="form-control"> <label for="itinerary-notes">Note Aggiuntive:</label> <input type="text" id="itinerary-notes"> </div> <div class="form-control"> <label for="itinerary-link">Link/Rif. File (opzionale):</label> <input type="text" id="itinerary-link" placeholder="Link biglietto, sito web..."> </div> <div class="form-actions"> <button type="submit" id="itinerary-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Attività</button> <button type="button" id="itinerary-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button> </div> </form>
                     <div class="item-list-container">
@@ -166,24 +172,56 @@
                 <!-- Tab: Budget -->
                 <div id="budget-tab" class="tab-content card">
                     <h3><i class="fas fa-coins"></i> Budget</h3>
-                    <form id="add-budget-item-form" class="add-item-form"> <input type="hidden" id="edit-budget-item-id"> <div class="form-row"> <div class="form-control"> <label for="budget-category">Categoria:</label> <select id="budget-category" required> <option value="Trasporti">Trasporti</option> <option value="Alloggio">Alloggio</option> <option value="Cibo">Cibo</option> <option value="Attività">Attività</option> <option value="Shopping">Shopping</option> <option value="Altro">Altro</option> </select> </div> <div class="form-control"> <label for="budget-description">Descrizione:</label> <input type="text" id="budget-description" required> </div> </div> <div class="form-row"> <div class="form-control"> <label for="budget-estimated">Costo Stimato (€):</label> <input type="number" id="budget-estimated" step="0.01" min="0" placeholder="0.00" required> </div> <div class="form-control"> <label for="budget-actual">Costo Effettivo (€):</label> <input type="number" id="budget-actual" step="0.01" min="0" placeholder="0.00"> </div> </div> <div class="form-row"> <div class="form-control"> <label for="budget-paid-by">Pagato da (opzionale):</label> <input type="text" id="budget-paid-by" list="participant-datalist" placeholder="Nome o 'Tutti'"> </div> <div class="form-control"> <label for="budget-split-between">Diviso tra (opzionale):</label> <input type="text" id="budget-split-between" placeholder="Nomi, 'Tutti', 'Non diviso'"> </div> </div> <div class="form-actions"> <button type="submit" id="budget-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Spesa</button> <button type="button" id="budget-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button> </div> </form>
+                    <form id="add-budget-item-form" class="add-item-form">
+                        <input type="hidden" id="edit-budget-item-id">
+                        <div class="form-row">
+                            <div class="form-control"> <label for="budget-category">Categoria:</label> <select id="budget-category" required> <option value="Trasporti">Trasporti</option> <option value="Alloggio">Alloggio</option> <option value="Cibo">Cibo</option> <option value="Attività">Attività</option> <option value="Shopping">Shopping</option> <option value="Altro">Altro</option> </select> </div>
+                            <div class="form-control"> <label for="budget-description">Descrizione:</label> <input type="text" id="budget-description" required> </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-control"> <label for="budget-estimated">Costo Stimato (€):</label> <input type="number" id="budget-estimated" step="0.01" min="0" placeholder="0.00" required> </div>
+                            <div class="form-control"> <label for="budget-actual">Costo Effettivo (€):</label> <input type="number" id="budget-actual" step="0.01" min="0" placeholder="0.00"> </div>
+                        </div>
+                        <div class="form-row">
+                             <div class="form-control">
+                                <label for="budget-paid-by">Pagato da (1 nome):</label>
+                                <input type="text" id="budget-paid-by" list="participant-datalist" placeholder="Nome partecipante">
+                                <small class="muted">Chi ha anticipato i soldi?</small>
+                            </div>
+                            <div class="form-control">
+                                <label for="budget-split-between">Dividi tra ('Tutti' o nomi separati da virgola):</label>
+                                <input type="text" id="budget-split-between" placeholder="Es: Tutti / Mario, Anna">
+                                <small class="muted">Lascia vuoto se non va divisa.</small>
+                            </div>
+                        </div>
+                        <div class="form-actions"> <button type="submit" id="budget-submit-btn" class="btn btn-secondary"><i class="fas fa-plus"></i> Spesa</button> <button type="button" id="budget-cancel-edit-btn" class="btn btn-cancel" style="display: none;"><i class="fas fa-times"></i> Annulla</button> </div>
+                    </form>
                     <div class="budget-summary"> <h4>Riepilogo Budget:</h4> <p>Totale Stimato: <strong id="budget-total-estimated">€ 0.00</strong></p> <p>Totale Effettivo: <strong id="budget-total-actual">€ 0.00</strong></p> <p>Differenza: <strong id="budget-difference">€ 0.00</strong></p> </div>
                     <div class="item-list-container">
-                        <div class="list-header-actions">
-                            <h4>Voci di Spesa:</h4>
-                            <select id="budget-sort-control" class="sort-control">
-                                <option value="category">Ordina per Categoria</option>
-                                <option value="estimatedDesc">Ordina per Stima (Decr)</option>
-                                <option value="actualDesc">Ordina per Effettivo (Decr)</option>
-                                <option value="description">Ordina per Descrizione</option>
-                            </select>
-                        </div>
+                        <div class="list-header-actions"> <h4>Voci di Spesa:</h4> <select id="budget-sort-control" class="sort-control"> <option value="category">Ordina per Categoria</option> <option value="estimatedDesc">Ordina per Stima (Decr)</option> <option value="actualDesc">Ordina per Effettivo (Decr)</option> <option value="description">Ordina per Descrizione</option> </select> </div>
                         <ul id="budget-list" class="item-list"></ul>
                         <p id="no-budget-items" class="center-text muted" style="display: none;">Nessuna spesa.</p>
                     </div>
                 </div>
+
+                 <!-- Tab Bilancio Spese -->
+                <div id="balance-tab" class="tab-content card">
+                    <h3><i class="fas fa-balance-scale"></i> Bilancio Divisione Spese</h3>
+                    <p>Questa sezione calcola quanto ogni partecipante deve dare o ricevere in base alle spese effettive inserite nel budget e alle indicazioni 'Pagato da' e 'Dividi tra'. Considera solo le spese con costo effettivo > 0.</p>
+                    <div class="form-actions">
+                        <button id="calculate-balance-btn" class="btn btn-primary"><i class="fas fa-calculator"></i> Calcola Saldo</button>
+                    </div>
+                    <div id="balance-results-container" style="margin-top: 20px; display: none;">
+                        <h4>Risultati Bilancio:</h4>
+                        <ul id="balance-results" class="balance-list"></ul>
+                        <div id="balance-summary" style="margin-top: 15px; font-weight: bold;"></div>
+                        <p id="balance-error-message" class="error-message" style="display: none;"></p>
+                    </div>
+                </div>
+
                 <!-- Tab: Packing List -->
                 <div id="packing-tab" class="tab-content card">
+                     <!-- ... (Contenuto Packing List Tab invariato) ... -->
                     <h3><i class="fas fa-suitcase-rolling"></i> Packing List</h3>
                     <div class="predefined-checklists"> <h4>Importa lista predefinita:</h4> <button type="button" class="btn btn-outline btn-sm" data-checklist="beach"><i class="fas fa-umbrella-beach"></i> Spiaggia</button> <button type="button" class="btn btn-outline btn-sm" data-checklist="city"><i class="fas fa-city"></i> Città</button> <button type="button" class="btn btn-outline btn-sm" data-checklist="mountain"><i class="fas fa-mountain"></i> Montagna</button> <button type="button" class="btn btn-outline btn-sm" data-checklist="camping"><i class="fas fa-campground"></i> Campeggio</button> </div>
                     <form id="add-packing-item-form" class="add-item-form">
@@ -211,7 +249,7 @@
                 </div>
                 <!-- == FINE CONTENUTO TABS == -->
             </main>
-            <div id="welcome-message" class="welcome-message card"> <h2>Benvenuto in Travel Planner Pro!</h2> <p>Seleziona un viaggio dalla lista, creane uno nuovo o parti da un template.</p> </div>
+             <div id="welcome-message" class="welcome-message card"> <h2>Benvenuto in Travel Planner Pro!</h2> <p>Seleziona un viaggio dalla lista, creane uno nuovo o parti da un template.</p> </div>
         </div>
         <footer> <p>© 2024 Travel Planner Pro</p> </footer>
     </div>
