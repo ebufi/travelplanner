@@ -449,18 +449,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const idx = list.findIndex(i => i && i.id === currentEditId);
             if (idx > -1) {
                  const oldItem = list[idx];
-                 // Preserva lo stato 'packed' o 'status' se non è nel form di modifica
                  let preservedState = {};
                  if(listType === 'packing') preservedState.packed = oldItem.packed;
-                 if(listType === 'reminder') preservedState.status = oldItem.status; // Lo stato viene dal form, quindi non serve qui?
-                                                                                  // No, lo stato VIENE dal form, quindi NON serve preservarlo.
-                                                                                  // Manteniamo packed per sicurezza.
-                 list[idx] = { ...oldItem, ...itemData, ...(listType === 'packing' ? { packed: oldItem.packed } : {}) };
+                 // Lo status reminder viene già aggiornato dal form
+                 list[idx] = { ...oldItem, ...itemData, ...preservedState };
              } else { console.error(`Item ${currentEditId} non trovato`); return; }
         } else {
             itemData.id = generateId(listType);
             if (listType === 'packing') itemData.packed = false;
-            // Lo status reminder viene già impostato nel try/catch
+            if (listType === 'reminder') itemData.status = itemData.status || 'todo';
             if (Array.isArray(list)) { list.push(itemData); } else { console.error(`Lista ${listType} non array`); showToast("Errore interno.", "error"); return; }
         }
 
@@ -471,6 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(listType === 'participant') populateDatalists(trip);
         if(listType === 'packing') populatePackingCategoriesDatalist(trip.packingList);
     };
+
 
     // ==========================================================================
     // == FUNZIONI RENDER LISTE ==
@@ -514,44 +512,169 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
     // == FUNZIONI DOWNLOAD ==
     // ==========================================================================
-    const handleDownloadText = () => { /* ... come prima ... */ };
-    const handleDownloadExcel = () => { /* ... come prima ... */ };
+    const handleDownloadText = () => { if (!currentTripId) { showToast("Seleziona un viaggio.", "error"); return; } const trip = findTripById(currentTripId); if (!trip) return; let content = `Riepilogo Viaggio: ${trip.name || 'S.N.'} ${trip.isTemplate ? '(TEMPLATE)' : ''}\n========================\n\n`; content += `**INFO**\nOrigine: ${trip.originCity || 'N/D'}\nDest.: ${trip.destination || 'N/D'}\nDate: ${formatDate(trip.startDate)} - ${formatDate(trip.endDate)}\nNote: ${trip.notes || '-'}\nExtra Info: ${trip.extraInfo || '-'}\n\n`; content += `**PARTECIPANTI** (${(trip.participants || []).length})\n`; (trip.participants || []).slice().sort((a,b)=>(a?.name||'').localeCompare(b?.name||'')).forEach(p => { content += `- ${p.name}${p.notes ? ' ('+p.notes+')':''}${p.extraInfo ? ' [Extra: '+p.extraInfo+']':''}\n`}); if((trip.participants || []).length === 0) content += "Nessuno\n"; content += "\n"; content += `**PROMEMORIA** (${(trip.reminders || []).length})\n`; (trip.reminders || []).slice().sort((a,b)=>(a?.dueDate || '9999').localeCompare(b?.dueDate || '9999')).forEach(r => { content += `- [${r.status==='done'?'X':' '}] ${r.description}${r.dueDate ? ' (Scad: '+formatDate(r.dueDate)+')':''}\n`}); if((trip.reminders || []).length === 0) content += "Nessuno\n"; content += "\n"; content += `**TRASPORTI** (${(trip.transportations || []).length})\n`; (trip.transportations || []).slice().sort((a,b)=>(a?.departureDateTime||'').localeCompare(b?.departureDateTime||'')).forEach(i => { content += `- ${i.type} (${i.description}): Da ${i.departureLoc||'?'} (${formatDateTime(i.departureDateTime)}) a ${i.arrivalLoc||'?'} (${formatDateTime(i.arrivalDateTime)})${i.cost!==null ? ' Costo: '+formatCurrency(i.cost):''}${i.bookingRef ? ' Rif: '+i.bookingRef:''}${i.notes ? ' Note: '+i.notes:''}${i.link ? ' Link: '+i.link:''}\n` }); if((trip.transportations || []).length === 0) content += "Nessuno\n"; content += "\n"; content += `**ALLOGGI** (${(trip.accommodations || []).length})\n`; (trip.accommodations || []).slice().sort((a,b)=>(a?.checkinDateTime||'').localeCompare(b?.checkinDateTime||'')).forEach(i => { content += `- ${i.name} (${i.type}): ${i.address||'?'}. CheckIn: ${formatDateTime(i.checkinDateTime)}, CheckOut: ${formatDateTime(i.checkoutDateTime)}${i.cost!==null ? ' Costo: '+formatCurrency(i.cost):''}${i.bookingRef ? ' Rif: '+i.bookingRef:''}${i.notes ? ' Note: '+i.notes:''}${i.link ? ' Link: '+i.link:''}\n` }); if((trip.accommodations || []).length === 0) content += "Nessuno\n"; content += "\n"; content += `**ITINERARIO** (${(trip.itinerary || []).length})\n`; (trip.itinerary || []).slice().sort((a,b)=>{const d=(a?.day||'').localeCompare(b?.day||''); return d!==0?d:(a?.time||'').localeCompare(b?.time||'');}).forEach(i => { content += `- ${formatDate(i.day)}${i.time?' ('+i.time+')':''} ${i.activity}${i.location?' @'+i.location:''}${i.bookingRef?' [Rif:'+i.bookingRef+']':''}${i.cost!==null?' Costo:'+formatCurrency(i.cost):''}${i.notes?' ('+i.notes+')':''}${i.link?' Link:'+i.link:''}\n` }); if((trip.itinerary || []).length === 0) content += "Nessuno\n"; content += "\n"; content += `**BUDGET** (${(trip.budget?.items || []).length} voci)\n`; (trip.budget?.items || []).slice().sort((a,b)=>(a?.category||'').localeCompare(b?.category||'')).forEach(i => { content += `- ${i.category}: ${i.description} (Est: ${formatCurrency(i.estimated)}, Act: ${i.actual===null?'N/A':formatCurrency(i.actual)})${i.paidBy ? ' Pagato da: '+i.paidBy:''}${i.splitBetween ? ' Diviso: '+i.splitBetween:''}\n` }); if((trip.budget?.items || []).length > 0) content += `> Tot Est: ${formatCurrency(trip.budget?.estimatedTotal||0)}, Tot Act: ${formatCurrency(trip.budget?.actualTotal||0)}, Diff: ${formatCurrency((trip.budget?.actualTotal||0) - (trip.budget?.estimatedTotal||0))}\n`; else content += "Nessuna spesa\n"; content += "\n"; content += `**PACKING LIST** (${(trip.packingList || []).length})\n`; (trip.packingList || []).slice().sort((a,b)=>(a?.category||'zzz').localeCompare(b?.category||'zzz') || (a?.name||'').localeCompare(b?.name||'')).forEach(i => { content += `- [${i.packed?'X':' '}] ${i.name}${i.quantity>1?' (x'+i.quantity+')':''} [${i.category||'Altro'}]\n` }); if((trip.packingList || []).length === 0) content += "Lista vuota\n"; const blob = new Blob([content],{type:'text/plain;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`Viaggio-${(trip.name||'SN').replace(/[^a-z0-9]/gi,'_')}.txt`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); };
+    const handleDownloadExcel = () => { if (!currentTripId) { showToast("Seleziona un viaggio.", "error"); return; } const trip = findTripById(currentTripId); if (!trip) return; try { const wb = XLSX.utils.book_new(); const cf = '#,##0.00 €'; const nf = '#,##0'; const summary = [ ["Voce","Dettaglio"], ["Viaggio", trip.name||'S.N.'], ["Template", trip.isTemplate ? 'Sì' : 'No'], ["Origine", trip.originCity||'N/D'], ["Dest.", trip.destination||'N/D'], ["Periodo", `${formatDate(trip.startDate)} - ${formatDate(trip.endDate)}`], ["Note", trip.notes||'-'], ["Extra Info", trip.extraInfo||'-'], [], ["Budget Est.",{t:'n',v:trip.budget?.estimatedTotal||0,z:cf}], ["Budget Act.",{t:'n',v:trip.budget?.actualTotal||0,z:cf}], ["Diff.",{t:'n',v:(trip.budget?.actualTotal||0)-(trip.budget?.estimatedTotal||0),z:cf}], [], ["# Partecipanti", (trip.participants||[]).length], ["# Promemoria", (trip.reminders||[]).length], ["# Trasporti", (trip.transportations||[]).length], ["# Alloggi", (trip.accommodations||[]).length], ["# Itin.", (trip.itinerary||[]).length], ["# Budget", (trip.budget?.items||[]).length], ["# Packing", (trip.packingList||[]).length]]; const wsSum = XLSX.utils.aoa_to_sheet(summary); wsSum['!cols']=[{wch:15},{wch:50}]; XLSX.utils.book_append_sheet(wb, wsSum, "Riepilogo"); const partH = ["Nome", "Note", "Extra Info"]; const partD = (trip.participants||[]).slice().sort((a,b)=>(a?.name||'').localeCompare(b?.name||'')).map(p=>[p.name, p.notes, p.extraInfo]); const wsPart = XLSX.utils.aoa_to_sheet([partH, ...partD]); wsPart['!cols']=[{wch:30},{wch:40},{wch:40}]; XLSX.utils.book_append_sheet(wb, wsPart, "Partecipanti"); const remH = ["Stato", "Descrizione", "Scadenza"]; const remD = (trip.reminders||[]).slice().sort((a,b)=>(a?.dueDate || '9999').localeCompare(b?.dueDate || '9999')).map(r => [r.status === 'done' ? 'Fatto' : 'Da Fare', r.description, formatDate(r.dueDate)]); const wsRem = XLSX.utils.aoa_to_sheet([remH, ...remD]); wsRem['!cols'] = [{wch:10}, {wch:50}, {wch:12}]; XLSX.utils.book_append_sheet(wb, wsRem, "Promemoria"); const th = ["Tipo","Desc.","Da Luogo","Da Data/Ora","A Luogo","A Data/Ora","Rif.","Costo","Note","Link/File"]; const td = (trip.transportations||[]).slice().sort((a,b)=>(a?.departureDateTime||'').localeCompare(b?.departureDateTime||'')).map(i=>[i.type, i.description, i.departureLoc, formatDateTime(i.departureDateTime), i.arrivalLoc, formatDateTime(i.arrivalDateTime), i.bookingRef, i.cost===null?null:{t:'n',v:i.cost,z:cf}, i.notes, i.link]); const wsT = XLSX.utils.aoa_to_sheet([th, ...td]); wsT['!cols']=[{wch:12},{wch:25},{wch:18},{wch:16},{wch:18},{wch:16},{wch:15},{wch:12},{wch:25},{wch:30}]; XLSX.utils.book_append_sheet(wb, wsT, "Trasporti"); const ah = ["Nome","Tipo","Indirizzo","CheckIn","CheckOut","Rif.","Costo","Note","Link/File"]; const ad = (trip.accommodations||[]).slice().sort((a,b)=>(a?.checkinDateTime||'').localeCompare(b?.checkinDateTime||'')).map(i=>[i.name,i.type,i.address,formatDateTime(i.checkinDateTime),formatDateTime(i.checkoutDateTime),i.bookingRef,i.cost===null?null:{t:'n',v:i.cost,z:cf},i.notes, i.link]); const wsA = XLSX.utils.aoa_to_sheet([ah,...ad]); wsA['!cols']=[{wch:25},{wch:10},{wch:35},{wch:16},{wch:16},{wch:20},{wch:12},{wch:30},{wch:30}]; XLSX.utils.book_append_sheet(wb, wsA, "Alloggi"); const ih = ["Giorno","Ora","Attività","Luogo","Rif. Pren.","Costo","Note","Link/File"]; const idata = (trip.itinerary||[]).slice().sort((a,b)=>{const d=(a?.day||'').localeCompare(b?.day||''); return d!==0?d:(a?.time||'').localeCompare(b?.time||'');}).map(i=>[formatDate(i.day),i.time,i.activity,i.location,i.bookingRef,i.cost===null?null:{t:'n',v:i.cost,z:cf},i.notes, i.link]); const wsI = XLSX.utils.aoa_to_sheet([ih, ...idata]); wsI['!cols']=[{wch:10},{wch:8},{wch:30},{wch:25},{wch:20},{wch:12},{wch:30},{wch:30}]; XLSX.utils.book_append_sheet(wb, wsI, "Itinerario"); const bh = ["Cat.","Desc.","Est. (€)","Act. (€)", "Pagato Da", "Diviso Tra"]; const bd = (trip.budget?.items||[]).slice().sort((a,b)=>(a?.category||'').localeCompare(b?.category||'')).map(i=>[i.category,i.description,{t:'n',v:i.estimated||0,z:cf},i.actual===null?null:{t:'n',v:i.actual,z:cf}, i.paidBy, i.splitBetween]); bd.push([],["TOTALI","", {t:'n',v:trip.budget?.estimatedTotal||0,z:cf}, {t:'n',v:trip.budget?.actualTotal||0,z:cf}, "", ""]); const wsB = XLSX.utils.aoa_to_sheet([bh, ...bd]); wsB['!cols']=[{wch:15},{wch:35},{wch:15},{wch:15},{wch:20},{wch:20}]; XLSX.utils.book_append_sheet(wb, wsB, "Budget"); const ph = ["Categoria", "Oggetto", "Qtà", "Fatto?"]; const pd = (trip.packingList||[]).slice().sort((a,b)=>(a?.category||'zzz').localeCompare(b?.category||'zzz') || (a?.name||'').localeCompare(b?.name||'')).map(i=>[i.category, i.name, {t:'n', v:i.quantity, z:nf}, i.packed?'Sì':'No']); const wsP = XLSX.utils.aoa_to_sheet([ph, ...pd]); wsP['!cols']=[{wch:20}, {wch:40},{wch:5},{wch:8}]; XLSX.utils.book_append_sheet(wb, wsP, "Packing List"); const fn = `Viaggio-${(trip.name||'SN').replace(/[^a-z0-9]/gi,'_')}.xlsx`; XLSX.writeFile(wb, fn); } catch(e){ console.error("Err Excel:",e); showToast("Errore creazione Excel.", "error"); } };
 
     // ==========================================================================
-    // == FUNZIONI CONDIVISIONE VIA FIREBASE (DEBUGGING - Solo TEST 1 attivo) ==
+    // == FUNZIONI CONDIVISIONE VIA FIREBASE (DEBUGGING - Solo TEST 2 attivo) ==
     // ==========================================================================
-     const handleShareTrip = async () => {
+    const handleShareTrip = async () => {
         if (!db) { showToast("Funzionalità di condivisione non disponibile (Errore Init Firebase).", "error"); return; }
-        if (!currentTripId) { showToast("Seleziona un viaggio da condividere.", "warning"); return; } // Riattivato controllo
-        const originalTrip = findTripById(currentTripId); // Serve per sapere se è template
+        if (!currentTripId) { showToast("Seleziona un viaggio da condividere.", "warning"); return; }
+        const originalTrip = findTripById(currentTripId);
         if (!originalTrip) { showToast("Errore: viaggio non trovato.", "error"); return; }
         if (originalTrip.isTemplate) { showToast("Non puoi condividere un template.", "warning"); return; }
 
         if (shareTripBtn) {
             shareTripBtn.disabled = true;
-            shareTripBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testando...';
+            shareTripBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparando...';
         }
 
-        // --- TEST 1: Oggetto minimale ---
-        const dataToSend = {
-            message: "Hello Firestore! Test 1",
-            timestamp: Timestamp.now() // Usa Timestamp per sicurezza
-        };
-        // --- FINE TEST 1 ---
-
-        console.log("Invio TEST DATA a Firestore:", dataToSend);
+        let dataToSend = {}; // Inizializza come oggetto vuoto
 
         try {
+            // Copia pulita per evitare modifiche all'originale
+             const cleanTripBase = JSON.parse(JSON.stringify(originalTrip));
+
+            // ==================================================
+            // === SEZIONE DI TEST - TEST 2 ATTIVO ===
+            // ==================================================
+
+            // TEST 1: Solo nome e timestamp (COMMENTATO)
+            /*
+            dataToSend = {
+                message: "Hello Firestore! Test 1",
+                timestamp: Timestamp.now()
+            };
+            */
+
+            // TEST 2: Info base (ATTIVO)
+            dataToSend = {
+                name: cleanTripBase.name || 'Senza Nome',
+                originCity: cleanTripBase.originCity || null,
+                destination: cleanTripBase.destination || null,
+                notes: cleanTripBase.notes || null,
+                extraInfo: cleanTripBase.extraInfo || null,
+                startDate: toTimestampOrNull(cleanTripBase.startDate),
+                endDate: toTimestampOrNull(cleanTripBase.endDate),
+                sharedAt: Timestamp.now() // Aggiungiamo sempre un timestamp di condivisione
+            };
+
+
+            // TEST 3: Aggiungi Participants (COMMENTATO)
+            /*
+            dataToSend = {
+                 name: cleanTripBase.name || 'Senza Nome',
+                 originCity: cleanTripBase.originCity || null,
+                 destination: cleanTripBase.destination || null,
+                 notes: cleanTripBase.notes || null,
+                 extraInfo: cleanTripBase.extraInfo || null,
+                 startDate: toTimestampOrNull(cleanTripBase.startDate),
+                 endDate: toTimestampOrNull(cleanTripBase.endDate),
+                 participants: (cleanTripBase.participants || []).map(p => ({
+                     name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null
+                 })),
+                 sharedAt: Timestamp.now()
+            };
+            */
+
+            // ... (Altri TEST commentati: Reminder, Transport, Accommodation, Itinerary, Budget, Packing) ...
+             // TEST 4: Aggiungi Reminders (dopo che TEST 3 funziona)
+            /*
+            dataToSend = {
+                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
+                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
+                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
+                 sharedAt: Timestamp.now()
+            };
+            */
+
+             // TEST 5: Aggiungi Transportations (dopo che TEST 4 funziona)
+            /*
+            dataToSend = {
+                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
+                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
+                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
+                 transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
+                 sharedAt: Timestamp.now()
+            };
+            */
+
+             // TEST 6: Aggiungi Accommodations (dopo che TEST 5 funziona)
+            /*
+            dataToSend = {
+                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
+                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
+                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
+                 transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
+                 accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
+                 sharedAt: Timestamp.now()
+            };
+            */
+
+             // TEST 7: Aggiungi Itinerary (dopo che TEST 6 funziona)
+            /*
+            dataToSend = {
+                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
+                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
+                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
+                 transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
+                 accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
+                 itinerary: (cleanTripBase.itinerary || []).map(i => ({ day: i.day || null, time: i.time || null, activity: i.activity || '?', location: i.location || null, bookingRef: i.bookingRef || null, cost: safeToNumberOrNull(i.cost), notes: i.notes || null, link: i.link || null })),
+                 sharedAt: Timestamp.now()
+            };
+            */
+
+            // TEST 8: Aggiungi Budget (dopo che TEST 7 funziona)
+            /*
+            dataToSend = {
+                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
+                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
+                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
+                 transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
+                 accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
+                 itinerary: (cleanTripBase.itinerary || []).map(i => ({ day: i.day || null, time: i.time || null, activity: i.activity || '?', location: i.location || null, bookingRef: i.bookingRef || null, cost: safeToNumberOrNull(i.cost), notes: i.notes || null, link: i.link || null })),
+                 budget: { items: (cleanTripBase.budget?.items || []).map(b => ({ category: b.category || 'Altro', description: b.description || '?', estimated: safeToNumberOrNull(b.estimated), actual: safeToNumberOrNull(b.actual), paidBy: b.paidBy || null, splitBetween: b.splitBetween || null })) },
+                 sharedAt: Timestamp.now()
+            };
+            */
+
+            // TEST 9: Aggiungi Packing List (dopo che TEST 8 funziona)
+            /*
+            dataToSend = {
+                 name: cleanTripBase.name || 'Senza Nome', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate),
+                 participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
+                 reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
+                 transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
+                 accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
+                 itinerary: (cleanTripBase.itinerary || []).map(i => ({ day: i.day || null, time: i.time || null, activity: i.activity || '?', location: i.location || null, bookingRef: i.bookingRef || null, cost: safeToNumberOrNull(i.cost), notes: i.notes || null, link: i.link || null })),
+                 budget: { items: (cleanTripBase.budget?.items || []).map(b => ({ category: b.category || 'Altro', description: b.description || '?', estimated: safeToNumberOrNull(b.estimated), actual: safeToNumberOrNull(b.actual), paidBy: b.paidBy || null, splitBetween: b.splitBetween || null })) },
+                 packingList: (cleanTripBase.packingList || []).map(p => ({ name: p.name || '?', category: p.category || 'Altro', quantity: safeToPositiveIntegerOrDefault(p.quantity), packed: p.packed || false })),
+                 sharedAt: Timestamp.now()
+            };
+            */
+
+            // ==================================================
+            // === FINE SEZIONE DI TEST ===
+            // ==================================================
+
+            if (!dataToSend || Object.keys(dataToSend).length === 0) {
+                throw new Error("Nessun dato preparato per l'invio (errore di debug o tutti i test commentati).");
+            }
+
+            console.log("Invio TEST DATA (Test 2) a Firestore:", JSON.stringify(dataToSend, null, 2)); // Log prima dell'invio
+            if (shareTripBtn) shareTripBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
             const docRef = await addDoc(collection(db, "sharedTrips"), dataToSend);
-            console.log("TEST RIUSCITO! Documento creato con ID: ", docRef.id);
-            showToast("Test di scrittura Firestore riuscito!", "success");
-            alert("Test Firestore OK! Controlla il database Firestore (collezione 'sharedTrips') per vedere il documento di test.");
+            console.log("TEST 2 RIUSCITO! Documento creato con ID: ", docRef.id);
+            showToast("Test 2 (Info Base) Firestore riuscito!", "success");
+             alert("Test 2 (Info Base) OK! Controlla il database Firestore.");
             // Non generiamo il link per questo test
 
         } catch (error) {
-            console.error("TEST FALLITO - Errore scrittura Firestore:", error);
-            console.error("Dati inviati nel test:", dataToSend);
-            showToast("Errore nel test di scrittura Firestore. Controlla console.", "error");
+            console.error("TEST 2 FALLITO - Errore scrittura Firestore:", error);
+            console.error("Dati inviati nel test 2:", dataToSend); // Logga i dati specifici del test
+            showToast("Errore nel Test 2 (Info Base). Controlla console.", "error");
         } finally {
             if (shareTripBtn) {
                 shareTripBtn.disabled = false;
@@ -559,32 +682,118 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     };
+    // --- FINE VERSIONE DI DEBUG DI handleShareTrip ---
 
-    // --- Le funzioni di importazione rimangono invariate ---
-    const cloneAndRegenerateTripIds = (tripDataFromFirebase) => { /* ... come prima ... */ };
-    const handleImportSharedTrip = (sharedTripData) => { /* ... come prima ... */ };
-    const checkForSharedTrip = async () => { /* ... come prima ... */ };
+    const cloneAndRegenerateTripIds = (tripDataFromFirebase) => {
+        const tripDataWithStrings = convertTimestampsToStrings(tripDataFromFirebase);
+        const newTrip = JSON.parse(JSON.stringify(tripDataWithStrings));
+        newTrip.id = generateId('trip');
+        newTrip.isTemplate = false;
 
+        const regenerateSubItemsIds = (items) => {
+            if (!Array.isArray(items)) return [];
+            return items.map(item => ({ ...item, id: generateId(item?.id?.split('_')[0] || 'item') }));
+        };
+
+        newTrip.participants = regenerateSubItemsIds(newTrip.participants);
+        newTrip.reminders = regenerateSubItemsIds(newTrip.reminders);
+        newTrip.transportations = regenerateSubItemsIds(newTrip.transportations);
+        newTrip.accommodations = regenerateSubItemsIds(newTrip.accommodations);
+        newTrip.itinerary = regenerateSubItemsIds(newTrip.itinerary);
+        if (!newTrip.budget) newTrip.budget = { items: [], estimatedTotal: 0, actualTotal: 0 };
+        newTrip.budget.items = regenerateSubItemsIds(newTrip.budget.items);
+        newTrip.packingList = regenerateSubItemsIds(newTrip.packingList);
+
+        let calcEst = 0;
+        let calcAct = 0;
+        (newTrip.budget.items || []).forEach(item => {
+            const est = safeToNumberOrNull(item.estimated);
+            const act = safeToNumberOrNull(item.actual);
+            if (est !== null) calcEst += est;
+            if (act !== null) calcAct += act;
+        });
+        newTrip.budget.estimatedTotal = calcEst;
+        newTrip.budget.actualTotal = calcAct;
+
+        return newTrip;
+    }
+
+    const handleImportSharedTrip = (sharedTripData) => {
+        if (!sharedTripData) return;
+        try {
+            const newTrip = cloneAndRegenerateTripIds(sharedTripData);
+            trips.push(newTrip);
+            saveTrips();
+            currentTripId = null; // Deseleziona prima
+            renderTripList();
+            selectTrip(newTrip.id); // Seleziona il nuovo
+            showToast(`Viaggio "${newTrip.name || 'Senza Nome'}" importato con successo!`, "success");
+            // URL già pulito
+        } catch (error) {
+            console.error("Errore durante l'importazione del viaggio condiviso:", error);
+            showToast("Errore durante l'importazione del viaggio.", "error");
+        }
+    };
+
+    const checkForSharedTrip = async () => {
+         if (!db) { console.warn("Firestore non inizializzato, impossibile controllare viaggi condivisi."); return; }
+        const urlParams = new URLSearchParams(window.location.search);
+        const shareId = urlParams.get('shareId');
+
+        if (shareId) {
+            console.log("Trovato shareId:", shareId);
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.delete('shareId');
+            history.replaceState(null, '', currentUrl.toString());
+
+            showToast("Recupero viaggio condiviso...", "info");
+            try {
+                const docRef = doc(db, "sharedTrips", shareId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const sharedTripData = docSnap.data();
+                    console.log("Dati viaggio recuperati:", sharedTripData);
+                    showConfirmationModal(
+                        'Importa Viaggio Condiviso',
+                        `È stato condiviso con te il viaggio "${sharedTripData.name || 'Senza Nome'}". Vuoi importarlo?`,
+                        () => handleImportSharedTrip(sharedTripData)
+                    );
+                } else {
+                    console.warn("Nessun viaggio trovato con questo shareId:", shareId);
+                    showToast("Viaggio condiviso non trovato o scaduto.", "error");
+                }
+            } catch (error) {
+                console.error("Errore nel recuperare il viaggio condiviso:", error);
+                showToast("Errore nel recuperare il viaggio condiviso.", "error");
+            }
+        }
+    };
     // ==========================================================================
     // == INIZIALIZZAZIONE E EVENT LISTENER ==
     // ==========================================================================
-    const executeConfirmAction = () => { /* ... come prima ... */ };
-    const init = () => { /* ... come prima ... */
+    const executeConfirmAction = () => { if (typeof confirmActionCallback === 'function') { try { confirmActionCallback(); } catch(err) { console.error("Errore durante esecuzione callback conferma:", err); showToast("Si è verificato un errore.", "error"); } } closeConfirmationModal(); };
+
+    const init = () => {
         loadTrips();
         renderTripList();
         deselectTrip();
         applyCurrentSortToControls();
 
-        // Listeners... (assicurati che tutti i listener siano qui come nell'ultimo codice completo)
+        // Listener Globali Sidebar
         if (newTripBtn) newTripBtn.addEventListener('click', handleNewTrip);
         if (createFromTemplateBtn) createFromTemplateBtn.addEventListener('click', openSelectTemplateModal);
         if (searchTripInput) searchTripInput.addEventListener('input', handleSearchTrip);
+
+        // Listener Dettagli Viaggio Generali
         if (tripInfoForm) tripInfoForm.addEventListener('submit', handleSaveTripInfo);
         if (deleteTripBtn) deleteTripBtn.addEventListener('click', () => { if (currentTripId) handleDeleteTrip(currentTripId); });
         if (downloadTextBtn) downloadTextBtn.addEventListener('click', handleDownloadText);
         if (downloadExcelBtn) downloadExcelBtn.addEventListener('click', handleDownloadExcel);
         if (tabsContainer) tabsContainer.addEventListener('click', (e) => { const tl = e.target.closest('.tab-link'); if (tl?.dataset.tab) switchTab(tl.dataset.tab); });
-        if (shareTripBtn) shareTripBtn.addEventListener('click', handleShareTrip); // USA LA VERSIONE DI TEST ORA
+        if (shareTripBtn) shareTripBtn.addEventListener('click', handleShareTrip); // Usa la versione di DEBUG
+
+        // Listener Submit Forms (assicurati che handleItemFormSubmit usi i safe helpers)
         if (addParticipantForm) addParticipantForm.addEventListener('submit', (e) => handleItemFormSubmit(e, 'participant'));
         if (addReminderItemForm) addReminderItemForm.addEventListener('submit', (e) => handleItemFormSubmit(e, 'reminder'));
         if (addTransportItemForm) addTransportItemForm.addEventListener('submit', (e) => handleItemFormSubmit(e, 'transport'));
@@ -592,6 +801,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (addItineraryItemForm) addItineraryItemForm.addEventListener('submit', (e) => handleItemFormSubmit(e, 'itinerary'));
         if (addBudgetItemForm) addBudgetItemForm.addEventListener('submit', (e) => handleItemFormSubmit(e, 'budget'));
         if (addPackingItemForm) addPackingItemForm.addEventListener('submit', (e) => handleItemFormSubmit(e, 'packing'));
+
+        // Listener Annulla Modifica
         if (participantCancelEditBtn) participantCancelEditBtn.addEventListener('click', () => resetEditState('participant'));
         if (reminderCancelEditBtn) reminderCancelEditBtn.addEventListener('click', () => resetEditState('reminder'));
         if (transportCancelEditBtn) transportCancelEditBtn.addEventListener('click', () => resetEditState('transport'));
@@ -599,24 +810,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (itineraryCancelEditBtn) itineraryCancelEditBtn.addEventListener('click', () => resetEditState('itinerary'));
         if (budgetCancelEditBtn) budgetCancelEditBtn.addEventListener('click', () => resetEditState('budget'));
         if (packingCancelEditBtn) packingCancelEditBtn.addEventListener('click', () => resetEditState('packing'));
+
+         // Listener Delegati per Azioni Liste
         if (tripDetailsAreaDiv) tripDetailsAreaDiv.addEventListener('click', (e) => { const editBtn = e.target.closest('.btn-icon.edit'); const deleteBtn = e.target.closest('.btn-icon.delete'); const packingCheckbox = e.target.closest('.packing-checkbox'); if (editBtn) { const itemId = editBtn.dataset.itemId; if(!itemId) return; if (editBtn.classList.contains('participant-edit-btn')) startEditItem('participant', itemId); else if (editBtn.classList.contains('reminder-edit-btn')) startEditItem('reminder', itemId); else if (editBtn.classList.contains('transport-edit-btn')) startEditItem('transport', itemId); else if (editBtn.classList.contains('accommodation-edit-btn')) startEditItem('accommodation', itemId); else if (editBtn.classList.contains('itinerary-edit-btn')) startEditItem('itinerary', itemId); else if (editBtn.classList.contains('budget-edit-btn')) startEditItem('budget', itemId); else if (editBtn.classList.contains('packing-edit-btn')) startEditItem('packing', itemId); } else if (deleteBtn) { const itemId = deleteBtn.dataset.itemId; if(!itemId) return; if (deleteBtn.classList.contains('participant-delete-btn')) handleDeleteItem('participant', itemId); else if (deleteBtn.classList.contains('reminder-delete-btn')) handleDeleteItem('reminder', itemId); else if (deleteBtn.classList.contains('transport-delete-btn')) handleDeleteItem('transport', itemId); else if (deleteBtn.classList.contains('accommodation-delete-btn')) handleDeleteItem('accommodation', itemId); else if (deleteBtn.classList.contains('itinerary-delete-btn')) handleDeleteItem('itinerary', itemId); else if (deleteBtn.classList.contains('budget-delete-btn')) handleDeleteItem('budget', itemId); else if (deleteBtn.classList.contains('packing-delete-btn')) handleDeleteItem('packing', itemId); } else if (packingCheckbox) { const itemId = packingCheckbox.dataset.itemId; if(itemId) handleTogglePacked(itemId, packingCheckbox.checked); } });
-        if (predefinedChecklistsContainer) { predefinedChecklistsContainer.addEventListener('click', (e) => { const btn = e.target.closest('button[data-checklist]'); if (btn?.dataset.checklist) handleImportPackingList(btn.dataset.checklist); }); }
-        if (newTripModal) { createTripConfirmBtn?.addEventListener('click', handleCreateTripConfirm); newTripModal.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', closeNewTripModal)); newTripNameInput?.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleCreateTripConfirm(); }); newTripModal.addEventListener('click', (e) => { if (e.target === newTripModal) closeNewTripModal(); }); }
-        if (selectTemplateModal) { createFromTemplateConfirmBtn?.addEventListener('click', handleCreateFromTemplateConfirm); selectTemplateModal.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', closeSelectTemplateModal)); selectTemplateModal.addEventListener('click', (e) => { if (e.target === selectTemplateModal) closeSelectTemplateModal(); }); }
-        if (confirmationModal) { const confirmBtn = confirmationModal.querySelector('#confirmation-modal-confirm-btn'); const closeBtns = confirmationModal.querySelectorAll('.modal-close'); if(confirmBtn) { const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); newConfirmBtn.addEventListener('click', executeConfirmAction); } else { console.error("Bottone conferma modale non trovato");} closeBtns.forEach(btn => btn.addEventListener('click', closeConfirmationModal)); confirmationModal.addEventListener('click', (e) => { if (e.target === confirmationModal) closeConfirmationModal(); }); }
-        if (addTransportTotalToBudgetBtn) { addTransportTotalToBudgetBtn.addEventListener('click', handleCalculateAndAddTransportCost); }
-        if (searchSkyscannerBtn) { searchSkyscannerBtn.addEventListener('click', handleSearchFlights); }
-        if (searchTrainlineBtn) { searchTrainlineBtn.addEventListener('click', handleSearchTrains); }
-        if(transportTypeSelect) { transportTypeSelect.addEventListener('change', toggleSearchButtonsVisibility); }
-        if(reminderSortControl) reminderSortControl.addEventListener('change', (e) => handleSortChange('reminder', e.target));
-        if(transportSortControl) transportSortControl.addEventListener('change', (e) => handleSortChange('transport', e.target));
-        if(itinerarySortControl) itinerarySortControl.addEventListener('change', (e) => handleSortChange('itinerary', e.target));
-        if(budgetSortControl) budgetSortControl.addEventListener('change', (e) => handleSortChange('budget', e.target));
-        if(packingSortControl) packingSortControl.addEventListener('change', (e) => handleSortChange('packing', e.target));
+
+         // Listener Import Checklist Predefinite
+         if (predefinedChecklistsContainer) { predefinedChecklistsContainer.addEventListener('click', (e) => { const btn = e.target.closest('button[data-checklist]'); if (btn?.dataset.checklist) handleImportPackingList(btn.dataset.checklist); }); }
+
+         // Listener Modals
+         if (newTripModal) { createTripConfirmBtn?.addEventListener('click', handleCreateTripConfirm); newTripModal.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', closeNewTripModal)); newTripNameInput?.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleCreateTripConfirm(); }); newTripModal.addEventListener('click', (e) => { if (e.target === newTripModal) closeNewTripModal(); }); }
+         if (selectTemplateModal) { createFromTemplateConfirmBtn?.addEventListener('click', handleCreateFromTemplateConfirm); selectTemplateModal.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', closeSelectTemplateModal)); selectTemplateModal.addEventListener('click', (e) => { if (e.target === selectTemplateModal) closeSelectTemplateModal(); }); }
+         if (confirmationModal) { const confirmBtn = confirmationModal.querySelector('#confirmation-modal-confirm-btn'); const closeBtns = confirmationModal.querySelectorAll('.modal-close'); if(confirmBtn) { const newConfirmBtn = confirmBtn.cloneNode(true); confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); newConfirmBtn.addEventListener('click', executeConfirmAction); } else { console.error("Bottone conferma modale non trovato");} closeBtns.forEach(btn => btn.addEventListener('click', closeConfirmationModal)); confirmationModal.addEventListener('click', (e) => { if (e.target === confirmationModal) closeConfirmationModal(); }); }
+
+         // Listener Calcolo Budget Trasporti
+         if (addTransportTotalToBudgetBtn) { addTransportTotalToBudgetBtn.addEventListener('click', handleCalculateAndAddTransportCost); }
+
+         // Listener Cerca Voli/Treni
+         if (searchSkyscannerBtn) { searchSkyscannerBtn.addEventListener('click', handleSearchFlights); }
+         if (searchTrainlineBtn) { searchTrainlineBtn.addEventListener('click', handleSearchTrains); }
+         if(transportTypeSelect) { transportTypeSelect.addEventListener('change', toggleSearchButtonsVisibility); }
+
+         // Listener per Controlli Ordinamento
+         if(reminderSortControl) reminderSortControl.addEventListener('change', (e) => handleSortChange('reminder', e.target));
+         if(transportSortControl) transportSortControl.addEventListener('change', (e) => handleSortChange('transport', e.target));
+         if(itinerarySortControl) itinerarySortControl.addEventListener('change', (e) => handleSortChange('itinerary', e.target));
+         if(budgetSortControl) budgetSortControl.addEventListener('change', (e) => handleSortChange('budget', e.target));
+         if(packingSortControl) packingSortControl.addEventListener('change', (e) => handleSortChange('packing', e.target));
+
+        // Listener per Ricerca Interna
         if(searchItineraryInput) searchItineraryInput.addEventListener('input', (e) => handleInternalSearch('itinerary', e.target));
         if(searchPackingInput) searchPackingInput.addEventListener('input', (e) => handleInternalSearch('packing', e.target));
 
-        checkForSharedTrip(); // Controllo URL per viaggi condivisi all'avvio
+        // Controllo URL per viaggi condivisi all'avvio
+        checkForSharedTrip();
 
     }; // Fine init
 
