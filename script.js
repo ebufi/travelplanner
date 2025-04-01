@@ -318,10 +318,10 @@ async function loadSelectedTripDetails(tripId) {
             // Imposta listener per sottocollezioni
             setupSubcollectionListener(tripId, 'participant', renderParticipants, orderBy('name', 'asc'));
             setupSubcollectionListener(tripId, 'reminder', renderReminders, orderBy('dueDate', 'asc'), orderBy('createdAt', 'desc')); // aggiunto createdAt per tie-break
-            setupSubcollectionListener(tripId, 'transportation', renderTransportations, orderBy('departureDateTime', 'asc'));
+            setupSubcollectionListener(tripId, 'trasport', renderTransportations, orderBy('departureDateTime', 'asc'));
             setupSubcollectionListener(tripId, 'accommodation', renderAccommodations, orderBy('checkinDateTime', 'asc'));
             setupSubcollectionListener(tripId, 'itinerary', renderItinerary, orderBy('day', 'asc'), orderBy('time', 'asc'));
-            setupSubcollectionListener(tripId, 'budgetItem', renderBudget, orderBy('category', 'asc'), orderBy('createdAt', 'desc')); // budgetItems!
+            setupSubcollectionListener(tripId, 'budgetItems', renderBudget, orderBy('category', 'asc'), orderBy('createdAt', 'desc')); // budgetItems!
             setupSubcollectionListener(tripId, 'packingList', renderPackingList, orderBy('category', 'asc'), orderBy('name', 'asc'));
             populateDatalistsFromCache(); // Popola inizialmente dalla cache
             enableTripActionButtons(true, currentTripDataCache.isTemplate || false);
