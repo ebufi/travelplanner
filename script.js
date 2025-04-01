@@ -868,6 +868,10 @@ const calculateExpenseBalance = () => {
   return { balances, totalSharedExpense, errors: calculationErrors };
 };
 const renderBalanceResults = (result) => {
+    console.log('RENDER Balance - Container:', balanceResultsContainer);
+    console.log('RENDER Balance - UL:', balanceResultsUl);
+    console.log('RENDER Balance - Summary:', balanceSummaryDiv);
+    console.log('RENDER Balance - Error P:', balanceErrorMessageP);
   /* ... (invariato) ... */ if (
     !balanceResultsContainer ||
     !balanceResultsUl ||
