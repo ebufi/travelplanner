@@ -37,11 +37,11 @@ body {
     padding: 30px 40px;
     width: 100%;
     max-width: 480px;
-    margin-top: 5vh;
+    margin-top: 5vh; /* Spazio dall'alto relativo */
     margin-bottom: 5vh;
     text-align: center;
     display: none; /* Gestito da JS */
-    flex-shrink: 0;
+    flex-shrink: 0; /* Non si restringe se body è flex */
 }
 .auth-container h2 { margin-bottom: 25px; color: #007991; font-weight: 600; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
 .auth-container form { text-align: left; margin-top: 25px; }
@@ -62,16 +62,16 @@ body {
 .app-container {
     background-color: #ffffff;
     width: 100%;
-    flex: 1; /* Occupa spazio nel body */
-    min-height: 0;
-    display: none; /* Gestito da JS, diventa flex */
+    flex: 1; /* Occupa lo spazio rimanente nel body */
+    min-height: 0; /* Sicurezza per flex child */
+    display: none; /* Gestito da JS, DEVE diventare flex */
     flex-direction: column;
     overflow: hidden; /* Contiene tutto */
 }
 
 /* --- Header e Footer --- */
 header {
-    background: linear-gradient(to right, #007991, #68dabb); color: white; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; position: relative; z-index: 10;
+    background: linear-gradient(to right, #007991, #68dabb); color: white; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; /* Fondamentale */ position: relative; z-index: 10;
 }
 header h1 { font-weight: 600; font-size: 1.7rem; margin: 0; }
 header h1 i { margin-right: 10px; }
@@ -82,22 +82,24 @@ header h1 i { margin-right: 10px; }
 #logout-btn i { margin-right: 5px; }
 
 footer {
-    text-align: center; padding: 15px; background-color: #e9ecef; color: #6c757d; font-size: 0.9rem; border-top: 1px solid #dee2e6; flex-shrink: 0; position: relative; z-index: 10;
+    text-align: center; padding: 15px; background-color: #e9ecef; color: #6c757d; font-size: 0.9rem; border-top: 1px solid #dee2e6; flex-shrink: 0; /* Fondamentale */ position: relative; z-index: 10;
 }
 
 /* --- Area Principale --- */
 .main-content {
-    display: flex;
-    flex: 1;
-    min-height: 0; /* CRUCIALE */
+    display: flex; /* Affianca sidebar e dettagli */
+    flex: 1; /* Occupa spazio verticale rimanente */
+    min-height: 0; /* CRUCIALE per overflow figli flex */
+    overflow: hidden; /* Impedisce overflow accidentale */
 }
 
 /* --- Sidebar --- */
 .sidebar {
     width: 320px; background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; flex-shrink: 0;
-    overflow-y: auto; /* SCROLL INTERNO */
+    overflow-y: auto; /* SCROLL INTERNO SIDEBAR */
     min-height: 0;
 }
+/* ... (stili interni sidebar: h2, search, list, etc., come prima) ... */
 .sidebar h2 { font-size: 1.3rem; color: #005f73; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .search-bar { position: relative; margin-bottom: 15px; }
 .search-bar input { width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9rem; }
@@ -117,44 +119,66 @@ footer {
 .trip-list li:hover .btn-delete-trip, .trip-list li .btn-delete-trip:hover { opacity: 1; color: #dc3545; }
 .trip-list li.active:not(.is-template) .btn-delete-trip:hover { color: #f8d7da; }
 
-
 /* --- Area Dettagli --- */
 .trip-details-area {
     flex: 1;
-    padding: 25px;
-    background-color: #f8f9fa;
-    /* MODIFICATO: Scroll interno, min-height, e display flex per gestire tab content */
-    overflow-y: auto; /* SCROLL INTERNO */
+    background-color: #f8f9fa; /* Sfondo area esterna */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Impedisce a quest'area di scrollare */
     min-height: 0;
-    display: flex; /* Contesto Flex */
-    flex-direction: column; /* Impila Header, Tabs, Tab Content */
 }
-.trip-details-area > .trip-header,
+.trip-details-area > .trip-header {
+    flex-shrink: 0; padding-left: 25px; padding-right: 25px; padding-top: 25px;
+    display: flex; justify-content: space-between; align-items: center;
+    /* Stili rimossi dal .card originale */
+     margin-bottom: 0; border-bottom: none; background-color: transparent; box-shadow: none; border-radius: 0; padding-bottom: 0;
+}
+.trip-details-area > .trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; }
+.trip-details-area > .trip-header .trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .trip-details-area > .tabs {
-    flex-shrink: 0; /* Header e Tabs non crescono verticalmente */
+    flex-shrink: 0; margin-bottom: 0; /* Rimuovi margine inferiore */ border-bottom: 2px solid #dee2e6; display: flex; flex-wrap: nowrap; overflow-x: auto; background: #f8f9fa; padding-bottom: 0; -webkit-overflow-scrolling: touch;
+    /* Aggiungi padding laterale se non è presente nell'header */
+    padding-left: 25px; padding-right: 25px;
 }
-.trip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
-.trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; }
-.trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.card { background-color: #ffffff; border-radius: 6px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07); padding: 20px; margin-bottom: 20px; }
-.card h3 { display: flex; align-items: center; gap: 10px; color: #005f73; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; font-size: 1.3rem; }
-.card h4 { font-size: 1.1rem; color: #343a40; margin-bottom: 10px; }
-.tabs { margin-bottom: 20px; border-bottom: 2px solid #dee2e6; display: flex; flex-wrap: nowrap; overflow-x: auto; background: #f8f9fa; padding-bottom: 0; -webkit-overflow-scrolling: touch; }
 .tab-link { background-color: transparent; border: none; padding: 12px 14px; cursor: pointer; font-size: 0.85rem; color: #6c757d; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s ease; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; }
 .tab-link i { margin-right: 3px; } .tab-link:hover { color: #005f73; } .tab-link.active { color: #007991; font-weight: 600; border-bottom-color: #007991; }
 
-/* --- Contenuto Tab (Espande Verticalmente) --- */
+/* --- Contenuto Tab (Wrapper che espande) --- */
 .tab-content { display: none; /* Nascosto di default */ }
 .tab-content.active {
-    display: flex; /* MODIFICATO: Usa Flexbox */
-    flex-direction: column; /* Impila elementi interni verticalmente */
-    flex-grow: 1; /* FONDAMENTALE: Occupa spazio rimanente in .trip-details-area */
+    display: flex; /* Usa Flexbox */
+    flex-direction: column; /* Impila il card interno */
+    flex-grow: 1; /* Occupa spazio rimanente in .trip-details-area */
     min-height: 0; /* Sicurezza flex */
+    overflow: hidden; /* Impedisce a questo wrapper di scrollare */
     animation: fadeIn 0.4s;
-    /* Rimuovi margin-bottom dal card se è l'unico elemento a crescere */
-    margin-bottom: 0; /* Sovrascrive il default dei .card se applicato qui */
 }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- Card INTERNO al Tab Content (Elemento che SCROLLA) --- */
+.tab-content.active > .card {
+    flex-grow: 1; /* Fa espandere il card per riempire .tab-content.active */
+    min-height: 0; /* Necessario per overflow */
+    overflow-y: auto; /* Abilita scroll verticale INTERNO al card */
+    margin-bottom: 0; /* Occupa tutto lo spazio, no margine sotto */
+    display: flex; /* Rendi card un flex container */
+    flex-direction: column; /* Impila h3, form, liste dentro il card */
+    padding: 20px; /* Padding interno al card */
+    background-color: #ffffff; border-radius: 6px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
+     /* border: 2px solid lime; /* DEBUG: Per vedere l'area scrollabile */
+}
+/* Elementi dentro il card */
+.tab-content.active > .card > h3 { flex-shrink: 0; display: flex; align-items: center; gap: 10px; color: #005f73; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; font-size: 1.3rem; }
+.tab-content.active > .card > h4 { flex-shrink: 0; font-size: 1.1rem; color: #343a40; margin-bottom: 10px; }
+.tab-content.active > .card > .add-item-form { flex-shrink: 0; background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; position: relative; }
+.tab-content.active > .card > .budget-summary { flex-shrink: 0; background-color: #e7f5ff; border: 1px solid #bde0fe; border-radius: 5px; padding: 15px; margin: 20px 0; }
+.tab-content.active > .card > .predefined-checklists { flex-shrink: 0; background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; }
+.tab-content.active > .card > .item-list-container { flex-shrink: 0; /* La lista non si espande di default */ margin-top: 25px; padding-top: 20px; border-top: 1px solid #dee2e6; }
+/* Se vuoi che una specifica lista si espanda, dovrai dargli flex-grow: 1 */
+/* Es: .tab-content.active > .card > #specific-list-container { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; } */
+/* Es: .tab-content.active > .card > #specific-list-container > ul { flex-grow: 1; } */
+
 
 /* --- Form Generali --- */
 .form-control label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #495057; }
@@ -170,47 +194,27 @@ footer {
 .tab-content .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 .tab-content .form-row .form-control { flex: 1 1 45%; min-width: 200px; margin-bottom: 0; }
 .tab-content .form-control { margin-bottom: 12px; }
-.add-item-form { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; position: relative; flex-shrink: 0; /* Form aggiunta item non cresce */ }
-.tab-content .form-actions { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; align-items: center; flex-shrink: 0; /* Area azioni non cresce (tranne se spinta in fondo) */ }
+.tab-content .form-actions { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; align-items: center; flex-shrink: 0; }
 
 /* --- Layout Flessibile per Form Info Generali --- */
-#info-tab { /* Applica solo alla tab info */
-    /* .card h3 non è più flex child diretto, non serve flex-shrink */
+#info-tab.tab-content.active > .card > form#trip-info-form {
+    display: flex; flex-direction: column; flex-grow: 1; min-height: 0;
 }
-#info-tab form#trip-info-form {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1; /* Fa crescere il form per riempire la tab */
-    min-height: 0;
+#info-tab form#trip-info-form .form-row { flex-shrink: 0; }
+/* Usa :has() o classe alternativa per far crescere textarea */
+#info-tab form#trip-info-form .form-control:has(#trip-notes),
+#info-tab form#trip-info-form .form-control:has(#trip-extra-info) {
+    flex-grow: 1; display: flex; flex-direction: column; min-height: 80px;
 }
-/* Righe normali non crescono */
-#info-tab .form-row {
-    flex-shrink: 0;
+#info-tab form#trip-info-form .form-control:has(#trip-notes) textarea,
+#info-tab form#trip-info-form .form-control:has(#trip-extra-info) textarea {
+    flex-grow: 1; height: auto; min-height: 60px;
 }
-/* Controlli Textarea crescono */
-/* Usa :has() - verifica supporto browser o usa classe alternativa */
-#info-tab .form-control:has(#trip-notes),
-#info-tab .form-control:has(#trip-extra-info) {
-    flex-grow: 1; /* Occupa spazio verticale disponibile */
-    display: flex;
-    flex-direction: column;
-    min-height: 80px; /* Altezza minima */
-}
-#info-tab .form-control:has(#trip-notes) textarea,
-#info-tab .form-control:has(#trip-extra-info) textarea {
-    flex-grow: 1; /* Textarea riempie il suo contenitore */
-    height: auto; /* Altezza automatica basata su flex */
-    min-height: 60px;
-}
-/* Azioni in fondo */
-#info-tab #trip-info-form .form-actions {
-    margin-top: auto; /* Spinge in fondo */
-    padding-top: 20px; /* Spazio sopra */
-    flex-shrink: 0;
-}
+#info-tab form#trip-info-form .form-actions { margin-top: auto; padding-top: 20px; flex-shrink: 0; }
 
 
 /* --- Bottoni --- */
+/* (Stili bottoni invariati) */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s ease; text-decoration: none; white-space: nowrap; text-align: center; line-height: 1.4; }
 .btn-sm { padding: 6px 12px; font-size: 0.85rem; } .btn i { font-size: 1em; margin-right: 3px; } .btn:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; box-shadow: none; }
 .btn-primary { background-color: #007991; color: white; } .btn-primary:hover:not(:disabled) { background-color: #005f73; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); }
@@ -229,9 +233,7 @@ footer {
 .btn-map-link:hover { color: #117a8b; background-color: rgba(23, 162, 184, 0.1);}
 
 /* --- Liste Generali --- */
-.item-list-container { margin-top: 25px; }
-/* Separatore dentro i tab */
-.tab-content .item-list-container { padding-top: 20px; border-top: 1px solid #dee2e6; flex-shrink: 0; /* Liste non crescono di default */ }
+/* (Stili liste invariati) */
 .item-list-container h4 { margin-bottom: 10px; color: #005f73; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 .list-header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; } .list-header-actions h4 { margin-bottom: 0; } .list-header-actions div { display: flex; gap: 10px; }
 .list-controls { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; background-color: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #e9ecef;}
@@ -251,8 +253,6 @@ footer {
 .item-details a.external-link { color: #007bff; text-decoration: none; margin-left: 5px; }
 .item-details a.external-link:hover { text-decoration: underline; }
 .item-details a.external-link i { font-size: 0.8em; vertical-align: middle; }
-
-/* --- Stili Specifici Liste --- */
 .packing-list li { align-items: center; }
 .packing-list .item-details { display: flex; flex-direction: column; margin-left: 10px; flex-grow: 1; }
 .packing-list .form-check { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
@@ -264,10 +264,8 @@ footer {
 .packing-list-category-group { margin-bottom: 15px; }
 .packing-list-category-group h5 { margin: 10px 0 5px; padding-bottom: 3px; border-bottom: 1px dashed #ccc; color: #333; font-size: 1rem; font-weight: 600; }
 .packing-list ul.nested { margin-top: 5px; padding-left: 15px; }
-.predefined-checklists { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; }
 .predefined-checklists h4 { margin-top: 0; margin-bottom: 10px; font-size: 1rem; color: #495057; border: none; padding: 0; }
 .predefined-checklists button { margin-right: 8px; margin-bottom: 8px; }
-.budget-summary { background-color: #e7f5ff; border: 1px solid #bde0fe; border-radius: 5px; padding: 15px; margin: 20px 0; flex-shrink: 0; /* Summary non cresce */ }
 .budget-summary h4 { margin-bottom: 10px; color: #0361a1; border: none; padding: 0; }
 .budget-summary p { margin-bottom: 5px; font-size: 1rem; } .budget-summary strong { font-weight: 600; }
 #budget-difference.positive { color: #198754; } #budget-difference.negative { color: #dc3545; }
@@ -285,7 +283,7 @@ footer {
 .balance-list li.negative-balance { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
 .balance-list li span:first-child { font-weight: 600; } .balance-list li span:last-child { font-weight: bold; }
 #balance-summary { border-top: 1px solid #ccc; padding-top: 10px; margin-top: 15px; color: #555; font-weight: bold; }
-#balance-results-container { flex-shrink: 0; /* Risultati bilancio non crescono di default */ }
+#balance-results-container { flex-shrink: 0; }
 
 /* --- Welcome Message --- */
 .welcome-message { text-align: center; padding: 50px 30px; flex: 1; display: none; /* Nascosto se .app-container è visibile */ flex-direction: column; justify-content: center; align-items: center; background-color: #f8f9fa; }
@@ -312,64 +310,24 @@ footer {
 /* --- Responsiveness --- */
 /* Ripristina scroll normale su mobile/tablet (< 992px) */
 @media (max-width: 991.98px) {
-    html, body {
-        height: auto;
-        overflow: visible !important; /* Ripristina scroll */
-    }
-    .app-container {
-        height: auto;
-        min-height: 100vh;
-        flex: none;
-    }
-    .main-content {
-        flex-direction: column;
-        height: auto;
-        min-height: auto;
-        flex: none;
-    }
-    .sidebar {
-        width: 100%;
-        max-height: none;
-        height: auto;
-        min-height: auto;
-        overflow-y: visible; /* No scroll interno */
-        border-bottom: 1px solid #dee2e6;
-        border-right: none;
-    }
-    .trip-details-area {
-        overflow-y: visible; /* No scroll interno */
-        min-height: auto;
-        padding: 15px;
-        flex: none;
-        display: block; /* Ripristina display normale */
-    }
-    /* Resetta layout flex per tab content e form info */
-     .tab-content.active {
-         display: block;
-         flex-grow: 0;
-         height: auto;
-    }
-     #info-tab form#trip-info-form {
-         display: block;
-         flex-grow: 0;
-    }
-    /* Usa selettore :has() o classe alternativa */
-    #info-tab .form-control:has(#trip-notes),
-    #info-tab .form-control:has(#trip-extra-info) {
-        flex-grow: 0;
-        display: block;
-    }
-    #info-tab .form-control:has(#trip-notes) textarea,
-    #info-tab .form-control:has(#trip-extra-info) textarea {
-        flex-grow: 0;
-        height: auto; /* Altezza torna auto o imposta una fissa es. 150px */
-    }
-    #info-tab #trip-info-form .form-actions {
-        margin-top: 15px; /* Ripristina margine normale */
-        padding-top: 0;
-    }
+    html, body { height: auto; overflow: visible !important; }
+    .app-container { height: auto; min-height: 100vh; flex: none; }
+    .main-content { flex-direction: column; height: auto; min-height: auto; flex: none; overflow: visible; }
+    .sidebar { width: 100%; max-height: none; height: auto; min-height: auto; overflow-y: visible; border-bottom: 1px solid #dee2e6; border-right: none; }
+    .trip-details-area { overflow: visible; min-height: auto; padding: 15px; flex: none; display: block; }
+    /* Resetta stili flex per tab content e card */
+    .tab-content.active { display: block; flex-grow: 0; height: auto; overflow: visible; }
+    .tab-content.active > .card { flex-grow: 0; height: auto; overflow: visible; display: block; margin-bottom: 20px; }
+    /* Resetta layout flex per form info */
+    #info-tab.tab-content.active > .card > form#trip-info-form { display: block; flex-grow: 0; }
+    #info-tab form#trip-info-form .form-control:has(#trip-notes),
+    #info-tab form#trip-info-form .form-control:has(#trip-extra-info) { flex-grow: 0; display: block; min-height: auto;} /* Rimuovi min-height */
+    #info-tab form#trip-info-form .form-control:has(#trip-notes) textarea,
+    #info-tab form#trip-info-form .form-control:has(#trip-extra-info) textarea { flex-grow: 0; height: auto; min-height: 100px; /* Dai un min-height ragionevole */}
+    #info-tab #trip-info-form .form-actions { margin-top: 15px; padding-top: 0; }
     /* Fine reset layout flex */
-    .trip-header { align-items: flex-start; }
+    .trip-header { align-items: flex-start; padding-left: 15px; padding-right: 15px; } /* Adatta padding */
+    .trip-details-area > .tabs { padding-left: 15px; padding-right: 15px; }
     .trip-header h2 { width: 100%; margin-bottom: 10px; }
     .trip-actions { width: 100%; justify-content: flex-start; }
     .form-row .form-control { flex-basis: 100%; }
@@ -385,6 +343,8 @@ footer {
     #user-status { width: 100%; justify-content: center; order: 2; margin-top: 5px; gap: 10px;}
     .sidebar { padding: 15px; }
     .trip-details-area { padding: 10px; }
+    .trip-details-area > .trip-header,
+    .trip-details-area > .tabs { padding-left: 10px; padding-right: 10px; }
     .trip-header h2 { font-size: 1.3rem; }
     .tab-link { padding: 10px 10px; font-size: 0.8rem; gap: 4px; }
     .btn { padding: 8px 12px; font-size: 0.85rem; }
