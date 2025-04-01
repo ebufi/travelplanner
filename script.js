@@ -316,7 +316,7 @@ async function loadSelectedTripDetails(tripId) {
             console.log("Dati principali viaggio caricati:", currentTripDataCache);
             populateTripInfoForm(tripId, currentTripDataCache);
             // Imposta listener per sottocollezioni
-            setupSubcollectionListener(tripId, 'participants', renderParticipants, orderBy('name', 'asc'));
+            setupSubcollectionListener(tripId, 'participant', renderParticipants, orderBy('name', 'asc'));
             setupSubcollectionListener(tripId, 'reminders', renderReminders, orderBy('dueDate', 'asc'), orderBy('createdAt', 'desc')); // aggiunto createdAt per tie-break
             setupSubcollectionListener(tripId, 'transportations', renderTransportations, orderBy('departureDateTime', 'asc'));
             setupSubcollectionListener(tripId, 'accommodations', renderAccommodations, orderBy('checkinDateTime', 'asc'));
