@@ -872,6 +872,12 @@ const renderBalanceResults = (result) => {
     console.log('RENDER Balance - UL:', balanceResultsUl);
     console.log('RENDER Balance - Summary:', balanceSummaryDiv);
     console.log('RENDER Balance - Error P:', balanceErrorMessageP);
+    balanceResultsContainer.style.visibility = 'visible';
+    balanceResultsContainer.style.opacity = '1';
+    balanceResultsContainer.style.height = 'auto'; // Assicura non sia altezza 0
+    balanceResultsContainer.style.border = '2px solid red'; // Rendi evidente dov'è!
+    console.log('RENDER Balance: Stili visibilità forzati.');
+
   /* ... (invariato) ... */ if (
     !balanceResultsContainer ||
     !balanceResultsUl ||
@@ -884,6 +890,7 @@ const renderBalanceResults = (result) => {
   balanceErrorMessageP.textContent = "";
   balanceErrorMessageP.style.display = "none";
   balanceResultsContainer.style.display = "block";
+
   if (result.error) {
     balanceErrorMessageP.textContent = `Errore: ${result.error}`;
     balanceErrorMessageP.style.display = "block";
