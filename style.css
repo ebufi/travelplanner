@@ -8,8 +8,9 @@
 }
 
 html {
-    height: 100%;
-    overflow: hidden; /* Impedisce scroll su HTML (per layout desktop) */
+    height: 100vh; /* Usa vh per essere esplicito sull'altezza viewport */
+    overflow-y: hidden !important; /* Forza no scroll verticale sulla pagina */
+    overflow-x: hidden; /* Forza no scroll orizzontale */
     font-size: 15px;
 }
 
@@ -19,30 +20,21 @@ body {
     color: #333;
     line-height: 1.6;
     padding: 0;
-    height: 100%; /* Occupa altezza html */
+    height: 100vh; /* Occupa altezza html/viewport */
     margin: 0;
-    overflow: hidden; /* Impedisce scroll BODY (per layout desktop) */
-    display: flex; /* Usa Flex per gestire visibilità Auth vs App */
-    flex-direction: column; /* Impila Auth o App */
-    /* Centra Auth container quando visibile */
-    justify-content: flex-start; /* Allinea all'inizio */
-    align-items: center; /* Centra orizzontalmente */
+    overflow: hidden !important; /* Doppio check: Forza no scroll BODY */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
 }
 
-/* --- Stili Autenticazione --- */
+/* --- Auth Container --- */
+/* (Nessuna modifica necessaria qui per il layout) */
 .auth-container {
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    padding: 30px 40px;
-    width: 100%;
-    max-width: 480px;
-    margin-top: 5vh; /* Spazio dall'alto relativo */
-    margin-bottom: 5vh;
-    text-align: center;
-    display: none; /* Gestito da JS */
-    flex-shrink: 0; /* Non si restringe se body è flex */
+    background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); padding: 30px 40px; width: 100%; max-width: 480px; margin-top: 5vh; margin-bottom: 5vh; text-align: center; display: none; flex-shrink: 0;
 }
+/* ... stili interni auth ... */
 .auth-container h2 { margin-bottom: 25px; color: #007991; font-weight: 600; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
 .auth-container form { text-align: left; margin-top: 25px; }
 .auth-container h3 { font-size: 1.3rem; color: #005f73; margin-bottom: 20px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -58,30 +50,22 @@ body {
 .auth-toggle a:hover { text-decoration: underline; }
 
 
-/* --- App Container a Pieno Schermo --- */
+/* --- App Container --- */
 .app-container {
     background-color: #ffffff;
-    overflow: hidden; /* Contiene tutto, niente overflow visibile qui */
     width: 100%;
-    /* MODIFICATO: Occupa tutto lo spazio disponibile nel body */
-    flex: 1;
-    min-height: 0; /* Necessario come flex child per calcolare correttamente flex: 1 */
-    display: none; /* Gestito da JS, diventa 'flex' */
-    flex-direction: column; /* Stack: Header, Main, Footer */
+    flex: 1; /* Occupa lo spazio rimanente nel body */
+    min-height: 0; /* Sicurezza per flex child */
+    display: none; /* Gestito da JS, DEVE diventare flex */
+    flex-direction: column;
+    overflow: hidden; /* Contiene tutto */
 }
 
-/* --- Header e Footer (Altezze fisse) --- */
+/* --- Header e Footer --- */
 header {
-    background: linear-gradient(to right, #007991, #68dabb);
-    color: white;
-    padding: 12px 25px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0; /* Altezza fissa, non si restringe */
-    position: relative; /* Per z-index se necessario */
-    z-index: 10; /* Opzionale, per sicurezza sopra contenuti che scrollano */
+    background: linear-gradient(to right, #007991, #68dabb); color: white; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; /* Fondamentale */ position: relative; z-index: 10;
 }
+/* ... stili interni header ... */
 header h1 { font-weight: 600; font-size: 1.7rem; margin: 0; }
 header h1 i { margin-right: 10px; }
 #user-status { display: flex; align-items: center; gap: 15px; font-size: 0.9em; }
@@ -91,48 +75,32 @@ header h1 i { margin-right: 10px; }
 #logout-btn i { margin-right: 5px; }
 
 footer {
-    text-align: center;
-    padding: 15px;
-    background-color: #e9ecef;
-    color: #6c757d;
-    font-size: 0.9rem;
-    border-top: 1px solid #dee2e6;
-    flex-shrink: 0; /* Altezza fissa, non si restringe */
-    position: relative; /* Per z-index se necessario */
-    z-index: 10; /* Opzionale */
+    text-align: center; padding: 15px; background-color: #e9ecef; color: #6c757d; font-size: 0.9rem; border-top: 1px solid #dee2e6; flex-shrink: 0; /* Fondamentale */ position: relative; z-index: 10;
 }
 
-/* --- Area Principale Flessibile con Overflow Interno --- */
+/* --- Area Principale --- */
 .main-content {
-    display: flex; /* Sidebar e Dettagli affiancati */
-    flex: 1; /* Occupa TUTTO lo spazio verticale rimanente tra header e footer */
-    /* FONDAMENTALE: Permette ai figli (con overflow: auto) di calcolare la loro altezza
-       correttamente all'interno di un contenitore flex padre che si espande */
-    min-height: 0;
-    /* Rimosso overflow: hidden qui, non serve e può dare problemi */
+    display: flex; /* Affianca sidebar e dettagli */
+    flex: 1; /* Occupa spazio verticale rimanente */
+    min-height: 0; /* CRUCIALE per overflow figli flex */
+    /* Rimosso overflow qui */
 }
 
-/* --- Sidebar con Scroll Interno --- */
+/* --- Sidebar --- */
 .sidebar {
-    width: 320px; /* Larghezza fissa */
-    background-color: #e9ecef;
-    padding: 20px;
-    border-right: 1px solid #dee2e6;
-    display: flex;
-    flex-direction: column; /* Contenuto interno impilato */
-    flex-shrink: 0; /* Larghezza fissa, non si restringe */
-    /* MODIFICATO: Scroll interno e min-height */
-    overflow-y: auto; /* Mostra scrollbar solo se serve */
-    min-height: 0; /* Permette overflow corretto nel contesto flex */
+    width: 320px; background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; flex-shrink: 0;
+    /* === SCROLL INTERNO === */
+    overflow-y: auto;
+    min-height: 0; /* Aiuta overflow in flex */
 }
-/* ... (stili interni sidebar: h2, search, list, etc., come prima) ... */
+/* ... stili interni sidebar ... */
 .sidebar h2 { font-size: 1.3rem; color: #005f73; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .search-bar { position: relative; margin-bottom: 15px; }
 .search-bar input { width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9rem; }
 .search-bar input[placeholder*="disabilitato"] { background-color: #e9ecef; font-style: italic; cursor: not-allowed; }
 .search-bar i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6c757d; font-size: 0.9rem; }
 .trip-list-controls { margin-bottom: 15px; display: flex; gap: 10px; } .trip-list-controls button { flex: 1; }
-.trip-list { list-style: none; padding: 0; margin-top: 10px; } /* No margini negativi se vuoi scroll corretto */
+.trip-list { list-style: none; padding: 0; margin-top: 10px; }
 .trip-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; margin-bottom: 5px; border-radius: 5px; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; border: 1px solid transparent; overflow: hidden; font-size: 0.95rem; }
 .trip-list li.is-template { opacity: 0.7; font-style: italic; background-color: #f8f9fa; border-color: #e9ecef; }
 .trip-list li.is-template:hover { opacity: 1; }
@@ -145,16 +113,17 @@ footer {
 .trip-list li:hover .btn-delete-trip, .trip-list li .btn-delete-trip:hover { opacity: 1; color: #dc3545; }
 .trip-list li.active:not(.is-template) .btn-delete-trip:hover { color: #f8d7da; }
 
-/* --- Area Dettagli con Scroll Interno --- */
+
+/* --- Area Dettagli --- */
 .trip-details-area {
     flex: 1; /* Occupa spazio orizzontale rimanente */
     padding: 25px;
     background-color: #f8f9fa;
-    /* MODIFICATO: Scroll interno e min-height */
-    overflow-y: auto; /* Mostra scrollbar solo se serve */
-    min-height: 0; /* Permette overflow corretto nel contesto flex */
+    /* === SCROLL INTERNO === */
+    overflow-y: auto;
+    min-height: 0; /* Aiuta overflow in flex */
 }
-/* ... (stili interni area dettagli: header, card, tabs, form, liste etc., come prima, incluse riduzioni spazi) ... */
+/* ... (tutti gli altri stili interni all'area dettagli: .trip-header, .card, .tabs, form, liste, etc.) ... */
 .trip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
 .trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; }
 .trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -271,38 +240,39 @@ footer {
 .center-text { text-align: center; }
 .muted { color: #888; font-size: 0.9rem; margin-top: 10px; }
 
+
 /* --- Responsiveness --- */
-/* Ripristina scroll normale su mobile/tablet */
-@media (max-width: 992px) {
+/* Ripristina scroll normale su mobile/tablet (< 992px) */
+@media (max-width: 991.98px) { /* Usa .98 per breakpoint più preciso */
     html, body {
         height: auto; /* Permette al body di crescere */
-        overflow: visible; /* Ripristina scroll normale */
+        overflow: visible !important; /* Ripristina scroll normale, forza se necessario */
     }
     .app-container {
-        height: auto; /* Altezza definita dal contenuto */
-        min-height: 100vh; /* Occupa almeno l'altezza schermo */
+        height: auto;
+        min-height: 100vh;
         flex: none; /* Non è più flex item del body */
     }
     .main-content {
         flex-direction: column;
         height: auto;
-        min-height: auto; /* Non serve più 0 */
-        flex: none; /* Non si espande più nel container */
+        min-height: auto;
+        flex: none;
     }
     .sidebar {
         width: 100%;
         max-height: none;
         height: auto;
         min-height: auto;
-        overflow-y: visible; /* Non scrolla più internamente */
+        overflow-y: visible; /* Non scrolla internamente */
         border-bottom: 1px solid #dee2e6;
         border-right: none;
     }
     .trip-details-area {
-        overflow-y: visible; /* Non scrolla più internamente */
+        overflow-y: visible; /* Non scrolla internamente */
         min-height: auto;
         padding: 15px;
-        flex: none; /* Non si espande più */
+        flex: none;
     }
     .trip-header { align-items: flex-start; }
     .trip-header h2 { width: 100%; margin-bottom: 10px; }
@@ -311,8 +281,9 @@ footer {
     .form-control.quantity-control { flex-basis: 100px !important; }
 }
 
-@media (max-width: 576px) {
-    body { font-size: 14px; } /* Padding 0 ereditato */
+/* Stili specifici per schermi ancora più piccoli (< 576px) */
+@media (max-width: 575.98px) {
+    body { font-size: 14px; }
     .app-container { border-radius: 0; }
     header { padding: 10px 15px; flex-wrap: wrap; gap: 5px; }
     header h1 { font-size: 1.3rem; width: 100%; text-align: center; order: 1;}
@@ -330,6 +301,6 @@ footer {
     #toast-container { bottom: 10px; right: 10px; left: 10px; align-items: center; }
     .list-controls { flex-direction: column; gap: 10px; padding: 8px;}
     .list-controls .sort-control { width: 100%; }
-    .auth-container { padding: 20px; margin-top: 5vh; max-width: 95%; } /* Auth responsive */
+    .auth-container { padding: 20px; margin-top: 5vh; max-width: 95%; }
     .auth-container .form-actions .btn { padding: 12px 16px; }
 }
