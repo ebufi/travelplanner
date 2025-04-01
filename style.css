@@ -8,8 +8,8 @@
 }
 
 html {
-    height: 100vh; /* Usa vh per essere esplicito sull'altezza viewport */
-    overflow-y: hidden !important; /* Forza no scroll verticale sulla pagina */
+    height: 100vh; /* Usa vh per altezza viewport */
+    overflow-y: hidden !important; /* Forza no scroll verticale sulla pagina (desktop) */
     overflow-x: hidden; /* Forza no scroll orizzontale */
     font-size: 15px;
 }
@@ -22,19 +22,27 @@ body {
     padding: 0;
     height: 100vh; /* Occupa altezza html/viewport */
     margin: 0;
-    overflow: hidden !important; /* Doppio check: Forza no scroll BODY */
+    overflow: hidden !important; /* Doppio check: Forza no scroll BODY (desktop) */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
 }
 
-/* --- Auth Container --- */
-/* (Nessuna modifica necessaria qui per il layout) */
+/* --- Stili Autenticazione --- */
 .auth-container {
-    background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); padding: 30px 40px; width: 100%; max-width: 480px; margin-top: 5vh; margin-bottom: 5vh; text-align: center; display: none; flex-shrink: 0;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 30px 40px;
+    width: 100%;
+    max-width: 480px;
+    margin-top: 5vh;
+    margin-bottom: 5vh;
+    text-align: center;
+    display: none; /* Gestito da JS */
+    flex-shrink: 0;
 }
-/* ... stili interni auth ... */
 .auth-container h2 { margin-bottom: 25px; color: #007991; font-weight: 600; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
 .auth-container form { text-align: left; margin-top: 25px; }
 .auth-container h3 { font-size: 1.3rem; color: #005f73; margin-bottom: 20px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -54,18 +62,17 @@ body {
 .app-container {
     background-color: #ffffff;
     width: 100%;
-    flex: 1; /* Occupa lo spazio rimanente nel body */
-    min-height: 0; /* Sicurezza per flex child */
-    display: none; /* Gestito da JS, DEVE diventare flex */
+    flex: 1; /* Occupa spazio nel body */
+    min-height: 0;
+    display: none; /* Gestito da JS, diventa flex */
     flex-direction: column;
     overflow: hidden; /* Contiene tutto */
 }
 
 /* --- Header e Footer --- */
 header {
-    background: linear-gradient(to right, #007991, #68dabb); color: white; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; /* Fondamentale */ position: relative; z-index: 10;
+    background: linear-gradient(to right, #007991, #68dabb); color: white; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; position: relative; z-index: 10;
 }
-/* ... stili interni header ... */
 header h1 { font-weight: 600; font-size: 1.7rem; margin: 0; }
 header h1 i { margin-right: 10px; }
 #user-status { display: flex; align-items: center; gap: 15px; font-size: 0.9em; }
@@ -75,25 +82,22 @@ header h1 i { margin-right: 10px; }
 #logout-btn i { margin-right: 5px; }
 
 footer {
-    text-align: center; padding: 15px; background-color: #e9ecef; color: #6c757d; font-size: 0.9rem; border-top: 1px solid #dee2e6; flex-shrink: 0; /* Fondamentale */ position: relative; z-index: 10;
+    text-align: center; padding: 15px; background-color: #e9ecef; color: #6c757d; font-size: 0.9rem; border-top: 1px solid #dee2e6; flex-shrink: 0; position: relative; z-index: 10;
 }
 
 /* --- Area Principale --- */
 .main-content {
-    display: flex; /* Affianca sidebar e dettagli */
-    flex: 1; /* Occupa spazio verticale rimanente */
-    min-height: 0; /* CRUCIALE per overflow figli flex */
-    /* Rimosso overflow qui */
+    display: flex;
+    flex: 1;
+    min-height: 0; /* CRUCIALE */
 }
 
 /* --- Sidebar --- */
 .sidebar {
     width: 320px; background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; flex-shrink: 0;
-    /* === SCROLL INTERNO === */
-    overflow-y: auto;
-    min-height: 0; /* Aiuta overflow in flex */
+    overflow-y: auto; /* SCROLL INTERNO */
+    min-height: 0;
 }
-/* ... stili interni sidebar ... */
 .sidebar h2 { font-size: 1.3rem; color: #005f73; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .search-bar { position: relative; margin-bottom: 15px; }
 .search-bar input { width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9rem; }
@@ -116,14 +120,19 @@ footer {
 
 /* --- Area Dettagli --- */
 .trip-details-area {
-    flex: 1; /* Occupa spazio orizzontale rimanente */
+    flex: 1;
     padding: 25px;
     background-color: #f8f9fa;
-    /* === SCROLL INTERNO === */
-    overflow-y: auto;
-    min-height: 0; /* Aiuta overflow in flex */
+    /* MODIFICATO: Scroll interno, min-height, e display flex per gestire tab content */
+    overflow-y: auto; /* SCROLL INTERNO */
+    min-height: 0;
+    display: flex; /* Contesto Flex */
+    flex-direction: column; /* Impila Header, Tabs, Tab Content */
 }
-/* ... (tutti gli altri stili interni all'area dettagli: .trip-header, .card, .tabs, form, liste, etc.) ... */
+.trip-details-area > .trip-header,
+.trip-details-area > .tabs {
+    flex-shrink: 0; /* Header e Tabs non crescono verticalmente */
+}
 .trip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
 .trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; }
 .trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -133,21 +142,75 @@ footer {
 .tabs { margin-bottom: 20px; border-bottom: 2px solid #dee2e6; display: flex; flex-wrap: nowrap; overflow-x: auto; background: #f8f9fa; padding-bottom: 0; -webkit-overflow-scrolling: touch; }
 .tab-link { background-color: transparent; border: none; padding: 12px 14px; cursor: pointer; font-size: 0.85rem; color: #6c757d; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s ease; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; }
 .tab-link i { margin-right: 3px; } .tab-link:hover { color: #005f73; } .tab-link.active { color: #007991; font-weight: 600; border-bottom-color: #007991; }
-.tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.4s; } @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-.tab-content .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-.tab-content .form-row .form-control { flex: 1 1 45%; min-width: 200px; margin-bottom: 0; }
-.tab-content .form-control { margin-bottom: 12px; }
+
+/* --- Contenuto Tab (Espande Verticalmente) --- */
+.tab-content { display: none; /* Nascosto di default */ }
+.tab-content.active {
+    display: flex; /* MODIFICATO: Usa Flexbox */
+    flex-direction: column; /* Impila elementi interni verticalmente */
+    flex-grow: 1; /* FONDAMENTALE: Occupa spazio rimanente in .trip-details-area */
+    min-height: 0; /* Sicurezza flex */
+    animation: fadeIn 0.4s;
+    /* Rimuovi margin-bottom dal card se è l'unico elemento a crescere */
+    margin-bottom: 0; /* Sovrascrive il default dei .card se applicato qui */
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- Form Generali --- */
 .form-control label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #495057; }
 .form-control input, .form-control select, .form-control textarea { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s ease, box-shadow 0.2s ease; background-color: #fff; }
 .form-control ::placeholder { color: #a9b1b9; opacity: 1; } .form-control :-ms-input-placeholder { color: #a9b1b9; } .form-control ::-ms-input-placeholder { color: #a9b1b9; }
 .form-control input:focus, .form-control select:focus, .form-control textarea:focus { outline: none; border-color: #007991; box-shadow: 0 0 0 3px rgba(0, 121, 145, 0.15); }
 .form-control textarea { resize: vertical; min-height: 60px; }
-.add-item-form { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; position: relative; }
-.tab-content .form-actions { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; align-items: center;}
 .form-control small.muted { font-size: 0.8em; color: #6c757d; display: block; margin-top: 4px; }
 .form-control label.checkbox-label { display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer; }
 .form-control input[type="checkbox"] { width: auto; flex-shrink: 0;}
 .form-control.quantity-control { flex-basis: 100px !important; flex-grow: 0; }
+/* Spaziature ridotte dentro i tab */
+.tab-content .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab-content .form-row .form-control { flex: 1 1 45%; min-width: 200px; margin-bottom: 0; }
+.tab-content .form-control { margin-bottom: 12px; }
+.add-item-form { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; position: relative; flex-shrink: 0; /* Form aggiunta item non cresce */ }
+.tab-content .form-actions { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; align-items: center; flex-shrink: 0; /* Area azioni non cresce (tranne se spinta in fondo) */ }
+
+/* --- Layout Flessibile per Form Info Generali --- */
+#info-tab { /* Applica solo alla tab info */
+    /* .card h3 non è più flex child diretto, non serve flex-shrink */
+}
+#info-tab form#trip-info-form {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Fa crescere il form per riempire la tab */
+    min-height: 0;
+}
+/* Righe normali non crescono */
+#info-tab .form-row {
+    flex-shrink: 0;
+}
+/* Controlli Textarea crescono */
+/* Usa :has() - verifica supporto browser o usa classe alternativa */
+#info-tab .form-control:has(#trip-notes),
+#info-tab .form-control:has(#trip-extra-info) {
+    flex-grow: 1; /* Occupa spazio verticale disponibile */
+    display: flex;
+    flex-direction: column;
+    min-height: 80px; /* Altezza minima */
+}
+#info-tab .form-control:has(#trip-notes) textarea,
+#info-tab .form-control:has(#trip-extra-info) textarea {
+    flex-grow: 1; /* Textarea riempie il suo contenitore */
+    height: auto; /* Altezza automatica basata su flex */
+    min-height: 60px;
+}
+/* Azioni in fondo */
+#info-tab #trip-info-form .form-actions {
+    margin-top: auto; /* Spinge in fondo */
+    padding-top: 20px; /* Spazio sopra */
+    flex-shrink: 0;
+}
+
+
+/* --- Bottoni --- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s ease; text-decoration: none; white-space: nowrap; text-align: center; line-height: 1.4; }
 .btn-sm { padding: 6px 12px; font-size: 0.85rem; } .btn i { font-size: 1em; margin-right: 3px; } .btn:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; box-shadow: none; }
 .btn-primary { background-color: #007991; color: white; } .btn-primary:hover:not(:disabled) { background-color: #005f73; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); }
@@ -164,8 +227,11 @@ footer {
 .btn-icon.delete { color: #dc3545; } .btn-icon.delete:hover { color: #a0212e; background-color: rgba(220, 53, 69, 0.1); }
 .btn-map-link { color: #17a2b8; font-size: 0.95rem; padding: 2px 4px; margin-left: 5px; background: none; border: none; cursor: pointer; }
 .btn-map-link:hover { color: #117a8b; background-color: rgba(23, 162, 184, 0.1);}
+
+/* --- Liste Generali --- */
 .item-list-container { margin-top: 25px; }
-.tab-content .item-list-container { padding-top: 20px; border-top: 1px solid #dee2e6; }
+/* Separatore dentro i tab */
+.tab-content .item-list-container { padding-top: 20px; border-top: 1px solid #dee2e6; flex-shrink: 0; /* Liste non crescono di default */ }
 .item-list-container h4 { margin-bottom: 10px; color: #005f73; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 .list-header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; } .list-header-actions h4 { margin-bottom: 0; } .list-header-actions div { display: flex; gap: 10px; }
 .list-controls { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; background-color: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #e9ecef;}
@@ -185,6 +251,8 @@ footer {
 .item-details a.external-link { color: #007bff; text-decoration: none; margin-left: 5px; }
 .item-details a.external-link:hover { text-decoration: underline; }
 .item-details a.external-link i { font-size: 0.8em; vertical-align: middle; }
+
+/* --- Stili Specifici Liste --- */
 .packing-list li { align-items: center; }
 .packing-list .item-details { display: flex; flex-direction: column; margin-left: 10px; flex-grow: 1; }
 .packing-list .form-check { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
@@ -199,7 +267,7 @@ footer {
 .predefined-checklists { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; }
 .predefined-checklists h4 { margin-top: 0; margin-bottom: 10px; font-size: 1rem; color: #495057; border: none; padding: 0; }
 .predefined-checklists button { margin-right: 8px; margin-bottom: 8px; }
-.budget-summary { background-color: #e7f5ff; border: 1px solid #bde0fe; border-radius: 5px; padding: 15px; margin: 20px 0; }
+.budget-summary { background-color: #e7f5ff; border: 1px solid #bde0fe; border-radius: 5px; padding: 15px; margin: 20px 0; flex-shrink: 0; /* Summary non cresce */ }
 .budget-summary h4 { margin-bottom: 10px; color: #0361a1; border: none; padding: 0; }
 .budget-summary p { margin-bottom: 5px; font-size: 1rem; } .budget-summary strong { font-weight: 600; }
 #budget-difference.positive { color: #198754; } #budget-difference.negative { color: #dc3545; }
@@ -217,9 +285,10 @@ footer {
 .balance-list li.negative-balance { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
 .balance-list li span:first-child { font-weight: 600; } .balance-list li span:last-child { font-weight: bold; }
 #balance-summary { border-top: 1px solid #ccc; padding-top: 10px; margin-top: 15px; color: #555; font-weight: bold; }
+#balance-results-container { flex-shrink: 0; /* Risultati bilancio non crescono di default */ }
 
 /* --- Welcome Message --- */
-.welcome-message { text-align: center; padding: 50px 30px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #f8f9fa; }
+.welcome-message { text-align: center; padding: 50px 30px; flex: 1; display: none; /* Nascosto se .app-container è visibile */ flex-direction: column; justify-content: center; align-items: center; background-color: #f8f9fa; }
 .welcome-message h2 { color: #007991; margin-bottom: 15px;} .welcome-message p { color: #6c757d; }
 
 /* --- Modals --- */
@@ -240,18 +309,17 @@ footer {
 .center-text { text-align: center; }
 .muted { color: #888; font-size: 0.9rem; margin-top: 10px; }
 
-
 /* --- Responsiveness --- */
 /* Ripristina scroll normale su mobile/tablet (< 992px) */
-@media (max-width: 991.98px) { /* Usa .98 per breakpoint più preciso */
+@media (max-width: 991.98px) {
     html, body {
-        height: auto; /* Permette al body di crescere */
-        overflow: visible !important; /* Ripristina scroll normale, forza se necessario */
+        height: auto;
+        overflow: visible !important; /* Ripristina scroll */
     }
     .app-container {
         height: auto;
         min-height: 100vh;
-        flex: none; /* Non è più flex item del body */
+        flex: none;
     }
     .main-content {
         flex-direction: column;
@@ -264,16 +332,43 @@ footer {
         max-height: none;
         height: auto;
         min-height: auto;
-        overflow-y: visible; /* Non scrolla internamente */
+        overflow-y: visible; /* No scroll interno */
         border-bottom: 1px solid #dee2e6;
         border-right: none;
     }
     .trip-details-area {
-        overflow-y: visible; /* Non scrolla internamente */
+        overflow-y: visible; /* No scroll interno */
         min-height: auto;
         padding: 15px;
         flex: none;
+        display: block; /* Ripristina display normale */
     }
+    /* Resetta layout flex per tab content e form info */
+     .tab-content.active {
+         display: block;
+         flex-grow: 0;
+         height: auto;
+    }
+     #info-tab form#trip-info-form {
+         display: block;
+         flex-grow: 0;
+    }
+    /* Usa selettore :has() o classe alternativa */
+    #info-tab .form-control:has(#trip-notes),
+    #info-tab .form-control:has(#trip-extra-info) {
+        flex-grow: 0;
+        display: block;
+    }
+    #info-tab .form-control:has(#trip-notes) textarea,
+    #info-tab .form-control:has(#trip-extra-info) textarea {
+        flex-grow: 0;
+        height: auto; /* Altezza torna auto o imposta una fissa es. 150px */
+    }
+    #info-tab #trip-info-form .form-actions {
+        margin-top: 15px; /* Ripristina margine normale */
+        padding-top: 0;
+    }
+    /* Fine reset layout flex */
     .trip-header { align-items: flex-start; }
     .trip-header h2 { width: 100%; margin-bottom: 10px; }
     .trip-actions { width: 100%; justify-content: flex-start; }
