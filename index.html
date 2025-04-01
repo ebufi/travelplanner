@@ -87,6 +87,16 @@
                         <div class="form-control"> <label for="trip-notes">Note Generali:</label> <textarea id="trip-notes" rows="3"></textarea> </div>
                         <div class="form-control"> <label for="trip-extra-info">Altre Info (contatti emergenza, link utili, ecc.):</label> <textarea id="trip-extra-info" rows="3"></textarea> </div>
                         <div class="form-actions"> <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salva Info</button> </div>
+                         <!--Campo per Link di Condivisione -->
+                         <div class="form-control share-link-container" id="share-link-wrapper" style="display: none;"> <!-- Inizialmente nascosto -->
+                            <label for="trip-share-link-display">Link Condivisione:</label>
+                            <div class="input-group">
+                                <input type="text" id="trip-share-link-display" readonly title="Questo link permette ad altri di importare il viaggio">
+                                <button type="button" id="copy-share-link-btn" class="btn btn-secondary btn-sm" title="Copia Link"><i class="fas fa-copy"></i></button>
+                            </div>
+                             <small class="muted">Usa il pulsante "Condividi" per generare/aggiornare questo link.</small>
+                        </div>
+                        <!-- FINE NUOVO CAMPO -->
                     </form>
                 </div>
                 <!-- Tab: Partecipanti -->
