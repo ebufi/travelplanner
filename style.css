@@ -1,25 +1,33 @@
-/* --- Reset Base & Font --- */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* ===== MODIFICA Layout Base per Full Viewport ===== */
-html {
-    height: 100%; /* Necessario per height: 100% sul body */
-    overflow: hidden; /* Impedisce scroll su HTML */
+/* ================================================== */
+/* == Reset & Global Layout == */
+/* ================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
+
+html {
+    height: 100%;
+    overflow: hidden; /* Impedisce scroll su HTML (per layout desktop) */
+    font-size: 15px;
+}
+
 body {
     font-family: 'Poppins', sans-serif;
     background-color: #f4f7f6;
     color: #333;
     line-height: 1.6;
-    /* Rimosso display: flex per gestire auth vs app separatamente */
-    padding: 0; /* Rimosso padding */
-    font-size: 15px;
-    height: 100%; /* Occupa tutta l'altezza dell'html */
+    padding: 0;
+    height: 100%; /* Occupa altezza html */
     margin: 0;
-    overflow: hidden; /* Impedisce scroll su BODY */
+    overflow: hidden; /* Impedisce scroll BODY (per layout desktop) */
+    display: flex; /* Usa Flex per gestire visibilità Auth vs App */
+    flex-direction: column; /* Impila Auth o App */
+    /* Centra Auth container quando visibile */
+    justify-content: flex-start; /* Allinea all'inizio */
+    align-items: center; /* Centra orizzontalmente */
 }
-/* ===== FINE MODIFICA Layout Base ===== */
-
 
 /* --- Stili Autenticazione --- */
 .auth-container {
@@ -29,22 +37,13 @@ body {
     padding: 30px 40px;
     width: 100%;
     max-width: 480px;
-    /* Centratura con margini quando body non è flex */
-    margin: 50px auto;
+    margin-top: 5vh; /* Spazio dall'alto relativo */
+    margin-bottom: 5vh;
     text-align: center;
     display: none; /* Gestito da JS */
+    flex-shrink: 0; /* Non si restringe se body è flex */
 }
-.auth-container h2 {
-    margin-bottom: 25px;
-    color: #007991;
-    font-weight: 600;
-    font-size: 1.6rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-.auth-container h2 i { margin-right: 0; }
+.auth-container h2 { margin-bottom: 25px; color: #007991; font-weight: 600; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
 .auth-container form { text-align: left; margin-top: 25px; }
 .auth-container h3 { font-size: 1.3rem; color: #005f73; margin-bottom: 20px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 .auth-container .form-control label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #495057; }
@@ -62,12 +61,13 @@ body {
 /* --- App Container a Pieno Schermo --- */
 .app-container {
     background-color: #ffffff;
-    overflow: hidden; /* Contiene tutto */
+    overflow: hidden; /* Contiene tutto, niente overflow visibile qui */
     width: 100%;
-    /* MODIFICATO: Occupa tutta l'altezza */
-    height: 100%;
-    display: none; /* Gestito da JS, diventa 'flex' quando visibile */
-    flex-direction: column;
+    /* MODIFICATO: Occupa tutto lo spazio disponibile nel body */
+    flex: 1;
+    min-height: 0; /* Necessario come flex child per calcolare correttamente flex: 1 */
+    display: none; /* Gestito da JS, diventa 'flex' */
+    flex-direction: column; /* Stack: Header, Main, Footer */
 }
 
 /* --- Header e Footer (Altezze fisse) --- */
@@ -78,7 +78,9 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-shrink: 0; /* Non si restringe */
+    flex-shrink: 0; /* Altezza fissa, non si restringe */
+    position: relative; /* Per z-index se necessario */
+    z-index: 10; /* Opzionale, per sicurezza sopra contenuti che scrollano */
 }
 header h1 { font-weight: 600; font-size: 1.7rem; margin: 0; }
 header h1 i { margin-right: 10px; }
@@ -95,37 +97,42 @@ footer {
     color: #6c757d;
     font-size: 0.9rem;
     border-top: 1px solid #dee2e6;
-    flex-shrink: 0; /* Non si restringe */
+    flex-shrink: 0; /* Altezza fissa, non si restringe */
+    position: relative; /* Per z-index se necessario */
+    z-index: 10; /* Opzionale */
 }
 
 /* --- Area Principale Flessibile con Overflow Interno --- */
 .main-content {
-    display: flex;
-    flex: 1; /* Occupa TUTTO lo spazio verticale rimanente */
-    /* MODIFICATO: Cruciale per overflow figli */
+    display: flex; /* Sidebar e Dettagli affiancati */
+    flex: 1; /* Occupa TUTTO lo spazio verticale rimanente tra header e footer */
+    /* FONDAMENTALE: Permette ai figli (con overflow: auto) di calcolare la loro altezza
+       correttamente all'interno di un contenitore flex padre che si espande */
     min-height: 0;
+    /* Rimosso overflow: hidden qui, non serve e può dare problemi */
 }
 
 /* --- Sidebar con Scroll Interno --- */
 .sidebar {
-    width: 320px;
+    width: 320px; /* Larghezza fissa */
     background-color: #e9ecef;
     padding: 20px;
     border-right: 1px solid #dee2e6;
     display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
+    flex-direction: column; /* Contenuto interno impilato */
+    flex-shrink: 0; /* Larghezza fissa, non si restringe */
     /* MODIFICATO: Scroll interno e min-height */
-    overflow-y: auto;
-    min-height: 0;
+    overflow-y: auto; /* Mostra scrollbar solo se serve */
+    min-height: 0; /* Permette overflow corretto nel contesto flex */
 }
+/* ... (stili interni sidebar: h2, search, list, etc., come prima) ... */
 .sidebar h2 { font-size: 1.3rem; color: #005f73; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .search-bar { position: relative; margin-bottom: 15px; }
 .search-bar input { width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9rem; }
 .search-bar input[placeholder*="disabilitato"] { background-color: #e9ecef; font-style: italic; cursor: not-allowed; }
 .search-bar i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6c757d; font-size: 0.9rem; }
 .trip-list-controls { margin-bottom: 15px; display: flex; gap: 10px; } .trip-list-controls button { flex: 1; }
-.trip-list { list-style: none; /* margin/padding gestiti da JS o no? Se serve scroll, meglio non negativi */ padding: 0; }
+.trip-list { list-style: none; padding: 0; margin-top: 10px; } /* No margini negativi se vuoi scroll corretto */
 .trip-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; margin-bottom: 5px; border-radius: 5px; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; border: 1px solid transparent; overflow: hidden; font-size: 0.95rem; }
 .trip-list li.is-template { opacity: 0.7; font-style: italic; background-color: #f8f9fa; border-color: #e9ecef; }
 .trip-list li.is-template:hover { opacity: 1; }
@@ -140,44 +147,38 @@ footer {
 
 /* --- Area Dettagli con Scroll Interno --- */
 .trip-details-area {
-    flex: 1; /* Occupa spazio orizzontale */
+    flex: 1; /* Occupa spazio orizzontale rimanente */
     padding: 25px;
     background-color: #f8f9fa;
     /* MODIFICATO: Scroll interno e min-height */
-    overflow-y: auto;
-    min-height: 0;
+    overflow-y: auto; /* Mostra scrollbar solo se serve */
+    min-height: 0; /* Permette overflow corretto nel contesto flex */
 }
+/* ... (stili interni area dettagli: header, card, tabs, form, liste etc., come prima, incluse riduzioni spazi) ... */
 .trip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
 .trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; }
 .trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .card { background-color: #ffffff; border-radius: 6px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07); padding: 20px; margin-bottom: 20px; }
 .card h3 { display: flex; align-items: center; gap: 10px; color: #005f73; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; font-size: 1.3rem; }
 .card h4 { font-size: 1.1rem; color: #343a40; margin-bottom: 10px; }
-
-/* --- Tabs --- */
 .tabs { margin-bottom: 20px; border-bottom: 2px solid #dee2e6; display: flex; flex-wrap: nowrap; overflow-x: auto; background: #f8f9fa; padding-bottom: 0; -webkit-overflow-scrolling: touch; }
 .tab-link { background-color: transparent; border: none; padding: 12px 14px; cursor: pointer; font-size: 0.85rem; color: #6c757d; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s ease; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; }
 .tab-link i { margin-right: 3px; } .tab-link:hover { color: #005f73; } .tab-link.active { color: #007991; font-weight: 600; border-bottom-color: #007991; }
 .tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.4s; } @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-/* --- Form Generali (con leggera riduzione spazio nei tab) --- */
-.tab-content .form-row { display: flex; gap: 12px; /* Ridotto */ margin-bottom: 12px; /* Ridotto */ flex-wrap: wrap; }
+.tab-content .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 .tab-content .form-row .form-control { flex: 1 1 45%; min-width: 200px; margin-bottom: 0; }
-.tab-content .form-control { margin-bottom: 12px; /* Ridotto */ }
-/* Stili form generali applicati a tutti i form-control */
+.tab-content .form-control { margin-bottom: 12px; }
 .form-control label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #495057; }
 .form-control input, .form-control select, .form-control textarea { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s ease, box-shadow 0.2s ease; background-color: #fff; }
 .form-control ::placeholder { color: #a9b1b9; opacity: 1; } .form-control :-ms-input-placeholder { color: #a9b1b9; } .form-control ::-ms-input-placeholder { color: #a9b1b9; }
 .form-control input:focus, .form-control select:focus, .form-control textarea:focus { outline: none; border-color: #007991; box-shadow: 0 0 0 3px rgba(0, 121, 145, 0.15); }
 .form-control textarea { resize: vertical; min-height: 60px; }
 .add-item-form { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; position: relative; }
-.tab-content .form-actions { display: flex; gap: 8px; /* Ridotto */ margin-top: 15px; flex-wrap: wrap; align-items: center;}
+.tab-content .form-actions { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; align-items: center;}
 .form-control small.muted { font-size: 0.8em; color: #6c757d; display: block; margin-top: 4px; }
 .form-control label.checkbox-label { display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer; }
 .form-control input[type="checkbox"] { width: auto; flex-shrink: 0;}
 .form-control.quantity-control { flex-basis: 100px !important; flex-grow: 0; }
-
-/* --- Bottoni --- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s ease; text-decoration: none; white-space: nowrap; text-align: center; line-height: 1.4; }
 .btn-sm { padding: 6px 12px; font-size: 0.85rem; } .btn i { font-size: 1em; margin-right: 3px; } .btn:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; box-shadow: none; }
 .btn-primary { background-color: #007991; color: white; } .btn-primary:hover:not(:disabled) { background-color: #005f73; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); }
@@ -194,10 +195,7 @@ footer {
 .btn-icon.delete { color: #dc3545; } .btn-icon.delete:hover { color: #a0212e; background-color: rgba(220, 53, 69, 0.1); }
 .btn-map-link { color: #17a2b8; font-size: 0.95rem; padding: 2px 4px; margin-left: 5px; background: none; border: none; cursor: pointer; }
 .btn-map-link:hover { color: #117a8b; background-color: rgba(23, 162, 184, 0.1);}
-
-/* --- Liste Generali --- */
-.item-list-container { margin-top: 25px; /* Spazio sopra il contenitore */ }
-/* Separatore tra form e lista */
+.item-list-container { margin-top: 25px; }
 .tab-content .item-list-container { padding-top: 20px; border-top: 1px solid #dee2e6; }
 .item-list-container h4 { margin-bottom: 10px; color: #005f73; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 .list-header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; } .list-header-actions h4 { margin-bottom: 0; } .list-header-actions div { display: flex; gap: 10px; }
@@ -218,9 +216,6 @@ footer {
 .item-details a.external-link { color: #007bff; text-decoration: none; margin-left: 5px; }
 .item-details a.external-link:hover { text-decoration: underline; }
 .item-details a.external-link i { font-size: 0.8em; vertical-align: middle; }
-
-/* --- Stili Specifici Liste --- */
-/* Packing List */
 .packing-list li { align-items: center; }
 .packing-list .item-details { display: flex; flex-direction: column; margin-left: 10px; flex-grow: 1; }
 .packing-list .form-check { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
@@ -235,15 +230,11 @@ footer {
 .predefined-checklists { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; }
 .predefined-checklists h4 { margin-top: 0; margin-bottom: 10px; font-size: 1rem; color: #495057; border: none; padding: 0; }
 .predefined-checklists button { margin-right: 8px; margin-bottom: 8px; }
-
-/* Budget */
 .budget-summary { background-color: #e7f5ff; border: 1px solid #bde0fe; border-radius: 5px; padding: 15px; margin: 20px 0; }
 .budget-summary h4 { margin-bottom: 10px; color: #0361a1; border: none; padding: 0; }
 .budget-summary p { margin-bottom: 5px; font-size: 1rem; } .budget-summary strong { font-weight: 600; }
 #budget-difference.positive { color: #198754; } #budget-difference.negative { color: #dc3545; }
 .budget-list .meta .split-info { font-style: italic; color: #777; font-size: 0.85em; }
-
-/* Promemoria */
 .reminder-list .item-details strong { display: flex; align-items: center; gap: 8px; font-size: 1em; }
 .reminder-list .item-details .status-indicator { font-size: 0.8em; padding: 2px 6px; border-radius: 10px; color: white; font-weight: bold; text-transform: uppercase; }
 .reminder-list .item-details .status-indicator.todo { background-color: #ffc107; color: #333; }
@@ -251,8 +242,6 @@ footer {
 .reminder-list .item-details .due-date { font-weight: normal; font-size: 0.9em; color: #dc3545; }
 .reminder-list li.done { background-color: #f0fdf4; opacity: 0.8; }
 .reminder-list li.done .item-details strong { text-decoration: line-through; color: #6c757d; }
-
-/* Stili Tab Bilancio Spese */
 .balance-list { list-style: none; padding-left: 0; margin-top: 15px; }
 .balance-list li { padding: 8px 12px; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; }
 .balance-list li.positive-balance { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
@@ -263,7 +252,6 @@ footer {
 /* --- Welcome Message --- */
 .welcome-message { text-align: center; padding: 50px 30px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #f8f9fa; }
 .welcome-message h2 { color: #007991; margin-bottom: 15px;} .welcome-message p { color: #6c757d; }
-
 
 /* --- Modals --- */
 .modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); animation: modalFadeIn 0.3s ease-out; } @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -284,7 +272,7 @@ footer {
 .muted { color: #888; font-size: 0.9rem; margin-top: 10px; }
 
 /* --- Responsiveness --- */
-/* ===== MODIFICA: Ripristina scroll normale su mobile/tablet ===== */
+/* Ripristina scroll normale su mobile/tablet */
 @media (max-width: 992px) {
     html, body {
         height: auto; /* Permette al body di crescere */
@@ -293,15 +281,17 @@ footer {
     .app-container {
         height: auto; /* Altezza definita dal contenuto */
         min-height: 100vh; /* Occupa almeno l'altezza schermo */
+        flex: none; /* Non è più flex item del body */
     }
     .main-content {
         flex-direction: column;
         height: auto;
         min-height: auto; /* Non serve più 0 */
+        flex: none; /* Non si espande più nel container */
     }
     .sidebar {
         width: 100%;
-        max-height: none; /* Rimosso limite altezza */
+        max-height: none;
         height: auto;
         min-height: auto;
         overflow-y: visible; /* Non scrolla più internamente */
@@ -312,6 +302,7 @@ footer {
         overflow-y: visible; /* Non scrolla più internamente */
         min-height: auto;
         padding: 15px;
+        flex: none; /* Non si espande più */
     }
     .trip-header { align-items: flex-start; }
     .trip-header h2 { width: 100%; margin-bottom: 10px; }
@@ -319,28 +310,26 @@ footer {
     .form-row .form-control { flex-basis: 100%; }
     .form-control.quantity-control { flex-basis: 100px !important; }
 }
-/* ===== FINE MODIFICA Responsive ===== */
 
 @media (max-width: 576px) {
-     body { padding: 0; font-size: 14px; } /* Padding 0 già impostato */
-     .app-container { border-radius: 0; /* Altezza auto ereditata */ }
-     .main-content { height: auto; /* Altezza auto ereditata */ }
-     header { padding: 10px 15px; flex-wrap: wrap; gap: 5px; }
-     header h1 { font-size: 1.3rem; width: 100%; text-align: center; order: 1;}
-     #user-status { width: 100%; justify-content: center; order: 2; margin-top: 5px; gap: 10px;}
-     .sidebar { padding: 15px; /* Altezza auto ereditata */ }
-     .trip-details-area { padding: 10px; }
-     .trip-header h2 { font-size: 1.3rem; }
-     .tab-link { padding: 10px 10px; font-size: 0.8rem; gap: 4px; }
-     .btn { padding: 8px 12px; font-size: 0.85rem; }
-     .item-list li { flex-wrap: wrap; }
-     .item-list .item-actions { margin-top: 8px; width: 100%; justify-content: flex-end; }
-     .packing-list .item-details { margin-left: 0; margin-top: 5px; width: 100%;}
-     footer { padding: 10px; font-size: 0.8rem; }
-     .modal-content { width: 95%; padding: 20px; margin: 5vh auto; }
-     #toast-container { bottom: 10px; right: 10px; left: 10px; align-items: center; }
-     .list-controls { flex-direction: column; gap: 10px; padding: 8px;}
-     .list-controls .sort-control { width: 100%; }
-     .auth-container { padding: 20px; margin: 20px auto; max-width: 95%; }
-     .auth-container .form-actions .btn { padding: 12px 16px; }
+    body { font-size: 14px; } /* Padding 0 ereditato */
+    .app-container { border-radius: 0; }
+    header { padding: 10px 15px; flex-wrap: wrap; gap: 5px; }
+    header h1 { font-size: 1.3rem; width: 100%; text-align: center; order: 1;}
+    #user-status { width: 100%; justify-content: center; order: 2; margin-top: 5px; gap: 10px;}
+    .sidebar { padding: 15px; }
+    .trip-details-area { padding: 10px; }
+    .trip-header h2 { font-size: 1.3rem; }
+    .tab-link { padding: 10px 10px; font-size: 0.8rem; gap: 4px; }
+    .btn { padding: 8px 12px; font-size: 0.85rem; }
+    .item-list li { flex-wrap: wrap; }
+    .item-list .item-actions { margin-top: 8px; width: 100%; justify-content: flex-end; }
+    .packing-list .item-details { margin-left: 0; margin-top: 5px; width: 100%;}
+    footer { padding: 10px; font-size: 0.8rem; }
+    .modal-content { width: 95%; padding: 20px; margin: 5vh auto; }
+    #toast-container { bottom: 10px; right: 10px; left: 10px; align-items: center; }
+    .list-controls { flex-direction: column; gap: 10px; padding: 8px;}
+    .list-controls .sort-control { width: 100%; }
+    .auth-container { padding: 20px; margin-top: 5vh; max-width: 95%; } /* Auth responsive */
+    .auth-container .form-actions .btn { padding: 12px 16px; }
 }
