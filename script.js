@@ -658,6 +658,8 @@ const handleTogglePacked = async (itemId, isPacked) => {
 
 function setupSubcollectionListener(tripId, subcollectionName, renderFunction, ...queryConstraints) {
     if (!currentUserId || !tripId) return;
+    const fullPath = `trips/${tripId}/${subcollectionName}`;
+    console.log(`*** Setting up listener for EXACT PATH: [${fullPath}] ***`);
     const collectionRef = collection(db, 'trips', tripId, subcollectionName);
     console.log(`SETUP LISTENER per: trips/${tripId}/${subcollectionName}`);
     const q = query(collectionRef, ...queryConstraints);
