@@ -673,7 +673,14 @@ function setupSubcollectionListener(tripId, subcollectionName, renderFunction, .
     unsubscribeSubcollectionListeners.push(unsubscribe);
 }
 
-function clearSubcollectionListeners() { console.log(`Scollego ${unsubscribeSubcollectionListeners.length} listeners.`); unsubscribeSubcollectionListeners.forEach(unsub => unsub()); unsubscribeSubcollectionListeners = []; }
+function clearSubcollectionListeners() {
+    console.warn(`>>> CLEARING ${unsubscribeSubcollectionListeners.length} LISTENERS <<<`);
+  console.log(
+    `Scollego ${unsubscribeSubcollectionListeners.length} listeners.`
+  );
+  unsubscribeSubcollectionListeners.forEach((unsub) => unsub());
+  unsubscribeSubcollectionListeners = [];
+}
 
 // ==========================================================================
 // == FUNZIONI RENDER LISTE (Aggiornate per dati Firestore/Cache) ==
