@@ -659,6 +659,7 @@ const handleTogglePacked = async (itemId, isPacked) => {
 function setupSubcollectionListener(tripId, subcollectionName, renderFunction, ...queryConstraints) {
     if (!currentUserId || !tripId) return;
     const collectionRef = collection(db, 'trips', tripId, subcollectionName);
+    console.log(`SETUP LISTENER per: trips/${tripId}/${subcollectionName}`);
     const q = query(collectionRef, ...queryConstraints);
     console.log(`Imposto listener per: trips/${tripId}/${subcollectionName}`);
     const unsubscribe = onSnapshot(q, (snapshot) => {
