@@ -699,7 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
 
     // --- Condivisione via Link Firebase / Web Share API ---
-    const handleShareViaLink = async () => {
+    /*const handleShareViaLink = async () => {
         if (!db) { showToast("Funzionalità di condivisione non disponibile (Errore Init Firebase).", "error"); return; }
         if (!currentTripId) { showToast("Seleziona un viaggio da condividere.", "warning"); return; }
         const originalTrip = findTripById(currentTripId);
@@ -790,9 +790,127 @@ document.addEventListener('DOMContentLoaded', () => {
                 shareButton.innerHTML = '<i class="fas fa-share-alt"></i> Condividi';
             }
         }
+    };*/
+
+    const handleShareViaLink = async () => {
+        console.log("DEBUG: handleShareViaLink - Inizio esecuzione."); // 1. Funzione chiamata?
+
+        if (!db) {
+            showToast("Funzionalità di condivisione non disponibile (DB non inizializzato).", "error");
+            console.error("DEBUG: handleShareViaLink - Fallito: db non disponibile.");
+            return;
+        }
+        if (!currentTripId) {
+            showToast("Seleziona un viaggio da condividere.", "warning");
+            console.warn("DEBUG: handleShareViaLink - Fallito: currentTripId nullo.");
+            return;
+        }
+        const originalTrip = findTripById(currentTripId);
+        if (!originalTrip) {
+            showToast("Errore: viaggio non trovato.", "error");
+            console.error("DEBUG: handleShareViaLink - Fallito: Viaggio non trovato per ID:", currentTripId);
+            return;
+        }
+        if (originalTrip.isTemplate) {
+            showToast("Non puoi condividere un template.", "warning");
+             console.warn("DEBUG: handleShareViaLink - Fallito: Tentativo di condividere un template.");
+            return;
+        }
+
+        const shareButton = shareTripBtn; // Assicurati che shareTripBtn sia accessibile qui
+        if (shareButton) {
+            shareButton.disabled = true;
+            shareButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparando...';
+            console.log("DEBUG: handleShareViaLink - Bottone disabilitato.");
+        }
+
+        let dataToSend = null;
+        let docRef = null;
+        let shareLink = null;
+
+        // --- FASE 1: Preparazione Dati ---
+        try {
+            console.log("DEBUG: handleShareViaLink - Inizio preparazione dati.");
+            const cleanTripBase = JSON.parse(JSON.stringify(originalTrip));
+            dataToSend = {
+                name: cleanTripBase.name || 'Senza Nome',
+                originCity: cleanTripBase.originCity || null,
+                destination: cleanTripBase.destination || null,
+                notes: cleanTripBase.notes || null,
+                extraInfo: cleanTripBase.extraInfo || null,
+                startDate: toTimestampOrNull(cleanTripBase.startDate),
+                endDate: toTimestampOrNull(cleanTripBase.endDate),
+                participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
+                reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
+                transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
+                accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
+                itinerary: (cleanTripBase.itinerary || []).map(i => ({ day: i.day || null, time: i.time || null, activity: i.activity || '?', location: i.location || null, bookingRef: i.bookingRef || null, cost: safeToNumberOrNull(i.cost), notes: i.notes || null, link: i.link || null })),
+                budget: { items: (cleanTripBase.budget?.items || []).map(b => ({ category: b.category || 'Altro', description: b.description || '?', estimated: safeToNumberOrNull(b.estimated), actual: safeToNumberOrNull(b.actual), paidBy: b.paidBy || null, splitBetween: b.splitBetween || null })) },
+                packingList: (cleanTripBase.packingList || []).map(p => ({ name: p.name || '?', category: p.category || 'Altro', quantity: safeToPositiveIntegerOrDefault(p.quantity), packed: p.packed || false })),
+                sharedAt: Timestamp.now()
+            };
+            console.log("DEBUG: handleShareViaLink - Preparazione dati completata:", dataToSend); // Logga l'oggetto completo
+        } catch (prepError) {
+             console.error("ERRORE CRITICO durante la preparazione dei dati:", prepError);
+             showToast("Errore interno nella preparazione dei dati.", "error");
+             if (shareButton) { shareButton.disabled = false; shareButton.innerHTML = '<i class="fas fa-share-alt"></i> Condividi'; }
+             return; // Interrompi se la preparazione fallisce
+        }
+
+        // --- FASE 2: Salvataggio su Firestore ---
+        try {
+            if (shareButton) shareButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            console.log("DEBUG: handleShareViaLink - Tento addDoc su Firestore...");
+            docRef = await addDoc(collection(db, "sharedTrips"), dataToSend);
+            shareLink = `${window.location.origin}${window.location.pathname}?shareId=${docRef.id}`;
+            console.log("DEBUG: handleShareViaLink - Firestore addDoc RIUSCITO. ID:", docRef.id, "Link:", shareLink);
+        } catch (firestoreError) {
+            console.error('ERRORE CRITICO durante salvataggio su Firestore:', firestoreError);
+            console.error("Dati che hanno causato l'errore Firestore:", dataToSend);
+            showToast("Errore durante il salvataggio per la condivisione. Controlla console.", "error");
+            if (shareButton) { shareButton.disabled = false; shareButton.innerHTML = '<i class="fas fa-share-alt"></i> Condividi'; }
+            return; // Interrompi se il salvataggio fallisce
+        }
+
+        // --- FASE 3: Condivisione Link (Web Share API o Prompt) ---
+        try {
+             if (navigator.share) {
+                console.log("DEBUG: handleShareViaLink - Tento navigator.share...");
+                const shareData = {
+                    title: `Viaggio: ${originalTrip.name || 'S.N.'}`,
+                    text: `Ecco i dettagli del mio viaggio "${originalTrip.name || 'S.N.'}":\nDestinazione: ${originalTrip.destination || 'N/D'}\nDate: ${formatDate(originalTrip.startDate)} - ${formatDate(originalTrip.endDate)}\n(Apri il link per importare nell'app!)`,
+                    url: shareLink,
+                };
+                 if (shareButton) shareButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Apro condivisione...';
+                await navigator.share(shareData);
+                console.log('DEBUG: handleShareViaLink - navigator.share completato (o annullato).');
+                showToast("Pannello di condivisione aperto o azione annullata.", "info"); // Info perché potrebbe essere annullato
+            } else {
+                console.log("DEBUG: handleShareViaLink - navigator.share non supportato, uso prompt.");
+                prompt("Web Share non supportato. Copia questo link:", shareLink);
+                showToast("Link di condivisione generato!", "success");
+            }
+        } catch (shareError) {
+             if (shareError.name === 'AbortError') {
+                console.log('DEBUG: handleShareViaLink - Condivisione annullata dall\'utente.');
+                showToast("Condivisione annullata.", "info");
+            } else {
+                console.error('ERRORE durante navigator.share o prompt:', shareError);
+                showToast("Errore nell'aprire il pannello di condivisione.", "error");
+                // Fallback finale: mostra il link nel prompt se non era già stato fatto
+                if (shareLink && !navigator.share) { /* Già fatto */ }
+                else if (shareLink) { prompt("Impossibile usare la condivisione nativa. Copia manualmente:", shareLink); }
+            }
+        } finally {
+            // Riabilita sempre il bottone alla fine, indipendentemente dall'esito della condivisione
+            if (shareButton) {
+                shareButton.disabled = false;
+                shareButton.innerHTML = '<i class="fas fa-share-alt"></i> Condividi';
+                 console.log("DEBUG: handleShareViaLink - Bottone riabilitato.");
+            }
+             console.log("DEBUG: handleShareViaLink - Esecuzione terminata.");
+        }
     };
-
-
     // --- Importazione da Link ---
     const cloneAndRegenerateTripIds = (tripDataFromFirebase) => {
         // Converti eventuali Timestamp letti da Firestore in stringhe ISO prima di clonare
