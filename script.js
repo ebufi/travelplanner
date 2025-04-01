@@ -317,7 +317,7 @@ async function loadSelectedTripDetails(tripId) {
             populateTripInfoForm(tripId, currentTripDataCache);
             // Imposta listener per sottocollezioni
             setupSubcollectionListener(tripId, 'participant', renderParticipants, orderBy('name', 'asc'));
-            setupSubcollectionListener(tripId, 'reminder', renderReminders, orderBy('dueDate', 'asc'));//, orderBy('createdAt', 'desc')); // aggiunto createdAt per tie-break
+            setupSubcollectionListener(tripId, 'reminder', renderReminders, orderBy('dueDate', 'asc')); // aggiunto createdAt per tie-break
             setupSubcollectionListener(tripId, 'transport', renderTransportations, orderBy('departureDateTime', 'asc'));
             setupSubcollectionListener(tripId, 'accommodation', renderAccommodations, orderBy('checkinDateTime', 'asc'));
             setupSubcollectionListener(tripId, 'itinerary', renderItinerary, orderBy('day', 'asc'), orderBy('time', 'asc'));
@@ -787,8 +787,146 @@ const checkForSharedTrip = async () => { /* ... (Invariato, ma chiama handleImpo
 // ==========================================================================
 // == FUNZIONI CALCOLO BILANCIO SPESE (Usa Cache) ==
 // ==========================================================================
-const calculateExpenseBalance = () => { /* ... (Usa currentTripDataCache) ... */ if (!currentUserId || !currentTripId || !currentTripDataCache) return { error: "Nessun viaggio caricato." }; const trip = currentTripDataCache; if (!Array.isArray(trip.participants) || trip.participants.length === 0) return { error: "Aggiungi partecipanti." }; const budgetItems = trip.budget?.items || []; if (budgetItems.length === 0) return { balances: {}, totalSharedExpense: 0, errors: [] }; const participantNames = trip.participants.map(p => p.name?.trim()).filter(Boolean); if (participantNames.length === 0) return { error: "Nomi partecipanti non validi." }; const balances = {}; participantNames.forEach(name => balances[name] = 0); let totalSharedExpense = 0; const calculationErrors = []; budgetItems.forEach((item, index) => { const actualCost = safeToNumberOrNull(item.actual); const paidByRaw = item.paidBy?.trim(); const splitBetweenRaw = item.splitBetween?.trim(); if (actualCost === null || actualCost <= 0 || !paidByRaw || !splitBetweenRaw) return; if (!participantNames.includes(paidByRaw)) { calculationErrors.push(`Riga ${index+1}: Pagante "${paidByRaw}" non valido.`); return; } let sharers = []; if (splitBetweenRaw.toLowerCase() === 'tutti') { sharers = [...participantNames]; } else { const potentialSharers = splitBetweenRaw.split(',').map(name => name.trim()).filter(Boolean); const invalidSharers = potentialSharers.filter(name => !participantNames.includes(name)); if (invalidSharers.length > 0) calculationErrors.push(`Riga ${index+1}: Diviso tra non validi: ${invalidSharers.join(', ')}.`); sharers = potentialSharers.filter(name => participantNames.includes(name)); } if (sharers.length === 0) { if (!calculationErrors.some(err => err.includes(`Riga ${index+1}`))) calculationErrors.push(`Riga ${index+1}: Nessun partecipante valido per divisione.`); return; } const costPerSharer = actualCost / sharers.length; totalSharedExpense += actualCost; balances[paidByRaw] += actualCost; sharers.forEach(sharerName => { balances[sharerName] -= costPerSharer; }); }); for (const name in balances) { balances[name] = Math.round(balances[name] * 100) / 100; } return { balances, totalSharedExpense, errors: calculationErrors }; };
-const renderBalanceResults = (result) => { /* ... (invariato) ... */ if (!balanceResultsContainer || !balanceResultsUl || !balanceSummaryDiv || !balanceErrorMessageP) return; balanceResultsUl.innerHTML = ''; balanceSummaryDiv.innerHTML = ''; balanceErrorMessageP.textContent = ''; balanceErrorMessageP.style.display = 'none'; balanceResultsContainer.style.display = 'block'; if (result.error) { balanceErrorMessageP.textContent = `Errore: ${result.error}`; balanceErrorMessageP.style.display = 'block'; balanceResultsContainer.style.display = 'none'; return; } const { balances, totalSharedExpense, errors } = result; let hasBalancesToShow = false; Object.entries(balances).forEach(([name, balance]) => { if(Math.abs(balance) > 0.005) { hasBalancesToShow = true; const li = document.createElement('li'); const nameSpan = document.createElement('span'); const balanceSpan = document.createElement('span'); nameSpan.textContent = name; balanceSpan.textContent = formatCurrency(Math.abs(balance)); if (balance > 0) { li.classList.add('positive-balance'); nameSpan.textContent += " (Riceve)"; } else { li.classList.add('negative-balance'); nameSpan.textContent += " (Deve Dare)"; } li.appendChild(nameSpan); li.appendChild(balanceSpan); balanceResultsUl.appendChild(li); } }); if (!hasBalancesToShow && errors.length === 0) { const li = document.createElement('li'); li.textContent = "Saldi a zero o nessuna spesa divisa."; balanceResultsUl.appendChild(li); } else if (!hasBalancesToShow && errors.length > 0) { const li = document.createElement('li'); li.textContent = "Nessun saldo (errori nel calcolo)."; balanceResultsUl.appendChild(li); } balanceSummaryDiv.textContent = `Spesa Totale Divisa: ${formatCurrency(totalSharedExpense)}`; if (errors.length > 0) { balanceErrorMessageP.innerHTML = `<strong>Attenzione, errori nel calcolo:</strong><br>` + errors.join('<br>'); balanceErrorMessageP.style.display = 'block'; } };
+const calculateExpenseBalance = () => {
+    console.log('>>> calculateExpenseBalance called. Current Cache State:', JSON.stringify(currentTripDataCache, null, 2)) ;
+  /* ... (Usa currentTripDataCache) ... */ if (
+    !currentUserId ||
+    !currentTripId ||
+    !currentTripDataCache
+  )
+    return { error: "Nessun viaggio caricato." };
+  const trip = currentTripDataCache;
+  if (!Array.isArray(trip.participants) || trip.participants.length === 0)
+    return { error: "Aggiungi partecipanti." };
+  const budgetItems = trip.budget?.items || [];
+  if (budgetItems.length === 0)
+    return { balances: {}, totalSharedExpense: 0, errors: [] };
+  const participantNames = trip.participants
+    .map((p) => p.name?.trim())
+    .filter(Boolean);
+  if (participantNames.length === 0)
+    return { error: "Nomi partecipanti non validi." };
+  const balances = {};
+  participantNames.forEach((name) => (balances[name] = 0));
+  let totalSharedExpense = 0;
+  const calculationErrors = [];
+  budgetItems.forEach((item, index) => {
+    const actualCost = safeToNumberOrNull(item.actual);
+    const paidByRaw = item.paidBy?.trim();
+    const splitBetweenRaw = item.splitBetween?.trim();
+    if (
+      actualCost === null ||
+      actualCost <= 0 ||
+      !paidByRaw ||
+      !splitBetweenRaw
+    )
+      return;
+    if (!participantNames.includes(paidByRaw)) {
+      calculationErrors.push(
+        `Riga ${index + 1}: Pagante "${paidByRaw}" non valido.`
+      );
+      return;
+    }
+    let sharers = [];
+    if (splitBetweenRaw.toLowerCase() === "tutti") {
+      sharers = [...participantNames];
+    } else {
+      const potentialSharers = splitBetweenRaw
+        .split(",")
+        .map((name) => name.trim())
+        .filter(Boolean);
+      const invalidSharers = potentialSharers.filter(
+        (name) => !participantNames.includes(name)
+      );
+      if (invalidSharers.length > 0)
+        calculationErrors.push(
+          `Riga ${index + 1}: Diviso tra non validi: ${invalidSharers.join(
+            ", "
+          )}.`
+        );
+      sharers = potentialSharers.filter((name) =>
+        participantNames.includes(name)
+      );
+    }
+    if (sharers.length === 0) {
+      if (!calculationErrors.some((err) => err.includes(`Riga ${index + 1}`)))
+        calculationErrors.push(
+          `Riga ${index + 1}: Nessun partecipante valido per divisione.`
+        );
+      return;
+    }
+    const costPerSharer = actualCost / sharers.length;
+    totalSharedExpense += actualCost;
+    balances[paidByRaw] += actualCost;
+    sharers.forEach((sharerName) => {
+      balances[sharerName] -= costPerSharer;
+    });
+  });
+  for (const name in balances) {
+    balances[name] = Math.round(balances[name] * 100) / 100;
+  }
+  return { balances, totalSharedExpense, errors: calculationErrors };
+};
+const renderBalanceResults = (result) => {
+  /* ... (invariato) ... */ if (
+    !balanceResultsContainer ||
+    !balanceResultsUl ||
+    !balanceSummaryDiv ||
+    !balanceErrorMessageP
+  )
+    return;
+  balanceResultsUl.innerHTML = "";
+  balanceSummaryDiv.innerHTML = "";
+  balanceErrorMessageP.textContent = "";
+  balanceErrorMessageP.style.display = "none";
+  balanceResultsContainer.style.display = "block";
+  if (result.error) {
+    balanceErrorMessageP.textContent = `Errore: ${result.error}`;
+    balanceErrorMessageP.style.display = "block";
+    balanceResultsContainer.style.display = "none";
+    return;
+  }
+  const { balances, totalSharedExpense, errors } = result;
+  let hasBalancesToShow = false;
+  Object.entries(balances).forEach(([name, balance]) => {
+    if (Math.abs(balance) > 0.005) {
+      hasBalancesToShow = true;
+      const li = document.createElement("li");
+      const nameSpan = document.createElement("span");
+      const balanceSpan = document.createElement("span");
+      nameSpan.textContent = name;
+      balanceSpan.textContent = formatCurrency(Math.abs(balance));
+      if (balance > 0) {
+        li.classList.add("positive-balance");
+        nameSpan.textContent += " (Riceve)";
+      } else {
+        li.classList.add("negative-balance");
+        nameSpan.textContent += " (Deve Dare)";
+      }
+      li.appendChild(nameSpan);
+      li.appendChild(balanceSpan);
+      balanceResultsUl.appendChild(li);
+    }
+  });
+  if (!hasBalancesToShow && errors.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "Saldi a zero o nessuna spesa divisa.";
+    balanceResultsUl.appendChild(li);
+  } else if (!hasBalancesToShow && errors.length > 0) {
+    const li = document.createElement("li");
+    li.textContent = "Nessun saldo (errori nel calcolo).";
+    balanceResultsUl.appendChild(li);
+  }
+  balanceSummaryDiv.textContent = `Spesa Totale Divisa: ${formatCurrency(
+    totalSharedExpense
+  )}`;
+  if (errors.length > 0) {
+    balanceErrorMessageP.innerHTML =
+      `<strong>Attenzione, errori nel calcolo:</strong><br>` +
+      errors.join("<br>");
+    balanceErrorMessageP.style.display = "block";
+  }
+};
 
 // ==========================================================================
 // == LOGICA AUTENTICAZIONE ==
