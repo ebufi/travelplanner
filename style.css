@@ -1,9 +1,198 @@
 /* --- Reset Base & Font --- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; display: flex; justify-content: center; min-height: 100vh; padding: 15px; font-size: 15px; }
-.app-container { background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); overflow: hidden; width: 100%; max-width: 1450px; /* Ancora più largo per i tab */ display: flex; flex-direction: column; height: calc(100vh - 30px); }
-header { background: linear-gradient(to right, #007991, #68dabb); color: white; padding: 12px 25px; text-align: center; flex-shrink: 0; }
-header h1 { font-weight: 600; font-size: 1.7rem; } header h1 i { margin-right: 10px; }
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    /* Allow vertical scrolling if needed, especially for auth */
+    /* min-height: 100vh; NO - let content define height */
+    align-items: flex-start; /* Align auth box top */
+    padding: 15px;
+    font-size: 15px;
+}
+
+/* ================================================== */
+/* == NUOVO: Stili Autenticazione == */
+/* ================================================== */
+.auth-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 30px 40px;
+    width: 100%;
+    max-width: 480px;
+    margin: 50px auto; /* Center vertically and horizontally if body had min-height */
+    text-align: center; /* Center icon and title */
+    /* display: none; /* Initially hidden, managed by JS */
+}
+
+.auth-container h2 {
+    margin-bottom: 25px;
+    color: #007991; /* Use your primary color */
+    font-weight: 600;
+    font-size: 1.6rem; /* Match app header */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.auth-container h2 i {
+    margin-right: 0; /* Gap handles spacing */
+}
+
+.auth-container form {
+    text-align: left; /* Align labels and inputs left */
+    margin-top: 25px;
+}
+
+.auth-container h3 {
+    font-size: 1.3rem;
+    color: #005f73; /* Darker shade */
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* Use existing form-control styles where possible */
+.auth-container .form-control label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.auth-container .form-control input[type="email"],
+.auth-container .form-control input[type="password"] {
+    width: 100%;
+    padding: 10px 12px; /* Match app inputs */
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.95rem; /* Match app inputs */
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background-color: #fff;
+    margin-bottom: 15px; /* Add margin below input */
+}
+.auth-container .form-control input:focus { /* Match app focus */
+    outline: none;
+    border-color: #007991;
+    box-shadow: 0 0 0 3px rgba(0, 121, 145, 0.15);
+}
+
+.auth-container .form-actions {
+    text-align: center; /* Center button */
+    margin-top: 25px; /* More space before button */
+    margin-bottom: 15px;
+}
+/* Ensure auth button uses app styles */
+.auth-container .form-actions .btn {
+     width: 100%; /* Make button full width */
+     padding: 10px 16px; /* Slightly larger */
+}
+
+/* Use existing error message style */
+.auth-container .error-message {
+    color: #dc3545;
+    font-size: 0.85em;
+    margin-top: -10px; /* Pull up slightly */
+    margin-bottom: 10px;
+    text-align: left;
+    display: block; /* Ensure it takes space */
+}
+
+.auth-toggle {
+    margin-top: 20px;
+    font-size: 0.95em;
+    color: #6c757d;
+    text-align: center;
+}
+
+.auth-toggle a {
+    color: #007991; /* Use your primary color */
+    text-decoration: none;
+    font-weight: 600;
+}
+.auth-toggle a:hover {
+    text-decoration: underline;
+}
+/* ================================================== */
+/* == FINE NUOVO: Stili Autenticazione == */
+/* ================================================== */
+
+
+/* App Container Styles */
+.app-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 1450px; /* Ancora più largo per i tab */
+    display: none; /* MODIFIED: Initially hidden */
+    flex-direction: column;
+    height: calc(100vh - 30px); /* Adjust if auth container pushes it down */
+    /* Maybe add margin-top if auth is visible? Or handle layout via JS */
+}
+header {
+    background: linear-gradient(to right, #007991, #68dabb);
+    color: white;
+    padding: 12px 25px;
+    /* MODIFIED: Use Flexbox to align title and user status */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Title left, User status right */
+    flex-shrink: 0;
+}
+header h1 {
+    font-weight: 600;
+    font-size: 1.7rem;
+    margin: 0; /* Remove default margin */
+}
+header h1 i { margin-right: 10px; }
+
+/* ================================================== */
+/* == NUOVO: Stili User Status (nell'header) == */
+/* ================================================== */
+#user-status {
+    display: flex; /* Aligns email and button */
+    align-items: center;
+    gap: 15px; /* Space between email and button */
+    /* margin-left: auto; /* Pushes to the right (handled by justify-content on header) */
+    font-size: 0.9em;
+    /* color: #f8f9fa; /* Light color for contrast - Inherits header color */
+}
+
+#user-email-display {
+    font-weight: 600;
+    /* Optional: Add some styling */
+     background-color: rgba(255, 255, 255, 0.1);
+     padding: 4px 8px;
+     border-radius: 4px;
+}
+
+#logout-btn {
+    /* Uses .btn and .btn-sm styles */
+    /* Specific overrides if needed */
+    background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent */
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+#logout-btn:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+#logout-btn i {
+    margin-right: 5px;
+}
+/* ================================================== */
+/* == FINE NUOVO: Stili User Status == */
+/* ================================================== */
+
 .main-content { display: flex; flex: 1; overflow: hidden; }
 
 /* --- Sidebar --- */
@@ -11,6 +200,12 @@ header h1 { font-weight: 600; font-size: 1.7rem; } header h1 i { margin-right: 1
 .sidebar h2 { font-size: 1.3rem; color: #005f73; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .search-bar { position: relative; margin-bottom: 15px; }
 .search-bar input { width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9rem; }
+/* Style for disabled search */
+.search-bar input[placeholder*="disabilitato"] {
+    background-color: #e9ecef;
+    font-style: italic;
+    cursor: not-allowed;
+}
 .search-bar i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6c757d; font-size: 0.9rem; }
 .trip-list-controls { margin-bottom: 15px; display: flex; gap: 10px; } .trip-list-controls button { flex: 1; }
 .trip-list { list-style: none; margin: 0 -20px; padding: 0 20px; }
@@ -127,44 +322,13 @@ header h1 { font-weight: 600; font-size: 1.7rem; } header h1 i { margin-right: 1
 .reminder-list li.done { background-color: #f0fdf4; opacity: 0.8; }
 .reminder-list li.done .item-details strong { text-decoration: line-through; color: #6c757d; }
 
-/* NUOVO: Stili Tab Bilancio Spese */
-.balance-list {
-    list-style: none;
-    padding-left: 0;
-    margin-top: 15px;
-}
-.balance-list li {
-    padding: 8px 12px;
-    margin-bottom: 5px;
-    border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 1rem;
-}
-.balance-list li.positive-balance {
-    background-color: #d1e7dd; /* Verde chiaro */
-    color: #0f5132;
-    border: 1px solid #badbcc;
-}
-.balance-list li.negative-balance {
-    background-color: #f8d7da; /* Rosso chiaro */
-    color: #842029;
-    border: 1px solid #f5c2c7;
-}
-.balance-list li span:first-child {
-    font-weight: 600;
-}
-.balance-list li span:last-child {
-    font-weight: bold;
-}
-#balance-summary {
-    border-top: 1px solid #ccc;
-    padding-top: 10px;
-    margin-top: 15px; /* Spazio sopra il sommario */
-    color: #555;
-    font-weight: bold;
-}
+/* Stili Tab Bilancio Spese */
+.balance-list { list-style: none; padding-left: 0; margin-top: 15px; }
+.balance-list li { padding: 8px 12px; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; }
+.balance-list li.positive-balance { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+.balance-list li.negative-balance { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+.balance-list li span:first-child { font-weight: 600; } .balance-list li span:last-child { font-weight: bold; }
+#balance-summary { border-top: 1px solid #ccc; padding-top: 10px; margin-top: 15px; color: #555; font-weight: bold; }
 
 /* --- Welcome Message --- */
 .welcome-message { text-align: center; padding: 50px 30px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #f8f9fa; } .welcome-message h2 { color: #007991; margin-bottom: 15px;} .welcome-message p { color: #6c757d; }
@@ -178,12 +342,19 @@ footer { text-align: center; padding: 15px; background-color: #e9ecef; color: #6
 @keyframes modalSlideIn { from {top: -50px; opacity: 0;} to {top: 0; opacity: 1;} }
 .close-button { color: #aaa; position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; cursor: pointer; line-height: 1; }
 .close-button:hover, .close-button:focus { color: #333; } .modal-content h2 { margin-top: 0; margin-bottom: 20px; color: #005f73; font-size: 1.4rem; }
-.modal-footer { margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; } .modal-content input[type="text"], .modal-content select, .modal-content textarea { width: 100%; } .error-message { color: #dc3545; font-size: 0.85em; margin-top: 5px; }
+.modal-footer { margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; } .modal-content input[type="text"], .modal-content select, .modal-content textarea { width: 100%; }
+/* Use existing error message style */
+.modal-content .error-message {
+    color: #dc3545;
+    font-size: 0.85em;
+    margin-top: 5px;
+}
+
 
 /* --- Toast --- */
 #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1100; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
 .toast { background-color: rgba(50, 50, 50, 0.9); color: white; padding: 12px 20px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); opacity: 0; transform: translateX(100%); transition: opacity 0.4s ease, transform 0.4s ease; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; pointer-events: auto; width: fit-content; max-width: 350px; }
-.toast.show { opacity: 1; transform: translateX(0); } .toast.success { background-color: rgba(25, 135, 84, 0.9); } .toast.error { background-color: rgba(220, 53, 69, 0.9); } .toast.info { background-color: rgba(13, 110, 253, 0.9); } .toast i { font-size: 1.1em; }
+.toast.show { opacity: 1; transform: translateX(0); } .toast.success { background-color: rgba(25, 135, 84, 0.9); } .toast.error { background-color: rgba(220, 53, 69, 0.9); } .toast.info { background-color: rgba(13, 110, 253, 0.9); } .toast.warning { background-color: rgba(255, 193, 7, 0.9); color: #333;} .toast i { font-size: 1.1em; }
 
 /* --- Utility Classes --- */
 .center-text { text-align: center; }
@@ -207,8 +378,10 @@ footer { text-align: center; padding: 15px; background-color: #e9ecef; color: #6
 @media (max-width: 576px) {
     body { padding: 0; font-size: 14px; }
     .app-container { border-radius: 0; height: 100vh; }
-    .main-content { height: calc(100% - 53px - 47px); }
-    header h1 { font-size: 1.4rem; }
+    .main-content { height: calc(100% - 53px - 47px); } /* Recheck these values if header/footer height changed */
+    header { padding: 10px 15px; flex-wrap: wrap; gap: 5px; } /* Allow wrapping */
+    header h1 { font-size: 1.3rem; width: 100%; text-align: center; order: 1;} /* Title first */
+     #user-status { width: 100%; justify-content: center; order: 2; margin-top: 5px; gap: 10px;} /* User status below */
     .sidebar { padding: 15px; max-height: 40vh; }
     .trip-details-area { padding: 10px; }
     .trip-header h2 { font-size: 1.3rem; }
@@ -222,37 +395,6 @@ footer { text-align: center; padding: 15px; background-color: #e9ecef; color: #6
     #toast-container { bottom: 10px; right: 10px; left: 10px; align-items: center; }
     .list-controls { flex-direction: column; gap: 10px; padding: 8px;}
     .list-controls .sort-control { width: 100%; }
+    .auth-container { padding: 20px; margin: 20px auto; max-width: 95%; } /* Auth container responsive */
+     .auth-container .form-actions .btn { padding: 12px 16px; }
 }
-
-/* NUOVO: Stili per il campo Share Link nel Tab Info */
-.share-link-container {
-    margin-top: 20px; /* Spazio sopra */
-    border-top: 1px dashed #ccc;
-    padding-top: 15px;
-}
-
-.input-group {
-    display: flex;
-    align-items: center; /* Allinea input e bottone verticalmente */
-}
-
-.input-group input[readonly] {
-    flex-grow: 1; /* L'input prende lo spazio rimanente */
-    background-color: #e9ecef; /* Sfondo grigio per indicare readonly */
-    cursor: text; /* Cursore testo normale */
-    border-top-right-radius: 0; /* Arrotonda solo angoli esterni */
-    border-bottom-right-radius: 0;
-}
-
-.input-group button {
-    flex-shrink: 0; /* Non far restringere il bottone */
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border-left: none; /* Rimuovi bordo tra input e bottone */
-}
-
-/* Aggiustamento responsivo se necessario */
-@media (max-width: 576px) {
-    .share-link-container .input-group input[readonly] {
-        font-size: 0.85rem; /* Riduci font su mobile per link lunghi */
-    }
