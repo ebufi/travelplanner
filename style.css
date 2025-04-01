@@ -223,3 +223,36 @@ footer { text-align: center; padding: 15px; background-color: #e9ecef; color: #6
     .list-controls { flex-direction: column; gap: 10px; padding: 8px;}
     .list-controls .sort-control { width: 100%; }
 }
+
+/* NUOVO: Stili per il campo Share Link nel Tab Info */
+.share-link-container {
+    margin-top: 20px; /* Spazio sopra */
+    border-top: 1px dashed #ccc;
+    padding-top: 15px;
+}
+
+.input-group {
+    display: flex;
+    align-items: center; /* Allinea input e bottone verticalmente */
+}
+
+.input-group input[readonly] {
+    flex-grow: 1; /* L'input prende lo spazio rimanente */
+    background-color: #e9ecef; /* Sfondo grigio per indicare readonly */
+    cursor: text; /* Cursore testo normale */
+    border-top-right-radius: 0; /* Arrotonda solo angoli esterni */
+    border-bottom-right-radius: 0;
+}
+
+.input-group button {
+    flex-shrink: 0; /* Non far restringere il bottone */
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none; /* Rimuovi bordo tra input e bottone */
+}
+
+/* Aggiustamento responsivo se necessario */
+@media (max-width: 576px) {
+    .share-link-container .input-group input[readonly] {
+        font-size: 0.85rem; /* Riduci font su mobile per link lunghi */
+    }
