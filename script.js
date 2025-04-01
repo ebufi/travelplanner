@@ -448,25 +448,61 @@ const handleDeleteTrip = async (id, name, isTemplate) => {
     });
 };
 
-// Helper per eliminare sottocollezioni
+// Helper per eliminare sottocollezioni Firestore (CORRETTO)
 async function deleteSubcollection(firestoreDb, collectionPath) {
     console.log(`Avvio eliminazione subcollection: ${collectionPath}`);
-    const parts = collectionPath.split('/');
-    if (parts.length % 2 !== 0) { throw new Error("Path per subcollection non valido: " + collectionPath); } // Deve essere pari
-    const collectionRef = collection(firestoreDb, collectionPath);
-    const q = query(collectionRef, limit(50)); // Limite batch
-    return new Promise((resolve, reject) => { deleteQueryBatch(firestoreDb, q, resolve, reject); });
+    // Controllo errato rimosso!
+    try {
+        const collectionRef = collection(firestoreDb, collectionPath);
+        // Aggiungi un controllo per vedere se il path è valido per una collezione (dispari segmenti)
+        // Questo è più un sanity check opzionale, collection() fallirebbe comunque.
+        if (collectionPath.split('/').length % 2 === 0) {
+             console.warn(`Il path fornito "${collectionPath}" sembra puntare a un documento, non a una collezione. Procedo comunque con cautela.`);
+             // Potresti decidere di lanciare un errore qui se vuoi essere più stringente
+             // throw new Error(`Path non valido per una collezione: ${collectionPath}`);
+        }
+
+        const q = query(collectionRef, limit(500)); // Aumenta limite batch se necessario/possibile (max 500 per commit)
+
+        return new Promise((resolve, reject) => {
+            deleteQueryBatch(firestoreDb, q, collectionPath, resolve, reject); // Passa collectionPath per logging migliore
+        });
+    } catch (error) {
+         // Cattura errori nella creazione della collectionRef (es. path totalmente sballato)
+         console.error(`Errore nella preparazione dell'eliminazione per ${collectionPath}:`, error);
+         // Rifiuta la promise principale se c'è un errore qui
+         return Promise.reject(error);
+    }
 }
-async function deleteQueryBatch(firestoreDb, queryInstance, resolve, reject) {
+// Helper ricorsivo per eliminare batch (con logging migliorato)
+async function deleteQueryBatch(firestoreDb, queryInstance, originalPath, resolve, reject) {
     try {
         const snapshot = await getDocs(queryInstance);
-        if (snapshot.size === 0) { resolve(); return; }
+
+        if (snapshot.size === 0) {
+            // Nessun documento rimasto, abbiamo finito per questo path
+             console.log(`Subcollection ${originalPath} vuota o eliminata completamente.`);
+            resolve();
+            return;
+        }
+
+        // Elimina documenti in un batch
         const batch = writeBatch(firestoreDb);
-        snapshot.docs.forEach(docSnap => { batch.delete(docSnap.ref); });
+        snapshot.docs.forEach(docSnap => {
+            batch.delete(docSnap.ref);
+        });
         await batch.commit();
-        console.log(`Eliminato batch di ${snapshot.size} documenti.`);
-        setTimeout(() => { deleteQueryBatch(firestoreDb, queryInstance, resolve, reject); }, 0);
-    } catch (error) { console.error(`Errore eliminazione batch:`, error); reject(error); }
+        console.log(`Eliminato batch di ${snapshot.size} documenti da ${originalPath}.`);
+
+        // Richiama ricorsivamente per il batch successivo, senza bloccare event loop
+        setTimeout(() => {
+            deleteQueryBatch(firestoreDb, queryInstance, originalPath, resolve, reject);
+        }, 0);
+
+    } catch (error) {
+        console.error(`Errore durante eliminazione batch per ${originalPath}:`, error);
+        reject(error); // Rifiuta la promise se il batch fallisce
+    }
 }
 
 // Gestisce creazione da template
