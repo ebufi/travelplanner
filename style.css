@@ -211,3 +211,90 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
 @media (max-width: 992px) { .app-container { height: auto; min-height: 100vh; margin: 0; border-radius: 0; } .main-content { flex-direction: column; height: auto; overflow: auto; -webkit-overflow-scrolling: touch; } .sidebar { width: 100%; border-bottom: 1px solid #dee2e6; border-right: none; flex-shrink: 0; /* overflow-y: auto; Mantenuto per scroll sidebar indipendente */ max-height: 45vh; /* Limita altezza sidebar per vedere più dettagli */ } .trip-details-area { padding: 15px; flex: 1 0 auto; min-height: 0; overflow-y: auto; /* Scroll dettagli indipendente */ } .trip-header { align-items: flex-start; } .trip-header h2 { width: 100%; margin-bottom: 10px; } .trip-actions { width: 100%; justify-content: flex-start; } .form-row .form-control { flex-basis: 100%; } .form-control.quantity-control { flex-basis: 100px !important; } }
 @media (max-width: 576px) { body { font-size: 14px; } .app-container { height: 100svh; margin: 0; border-radius: 0; } .main-content { overflow: auto; -webkit-overflow-scrolling: touch; /* Non serve più rimuovere overflow da sidebar/details */ } header { flex-wrap: wrap; padding: 10px 15px; } header h1 { font-size: 1.4rem; width: 100%; text-align: center; margin-bottom: 8px; gap: 6px;} .user-info { width: 100%; justify-content: center; font-size: 0.85rem; gap: 10px;} #user-email-display { max-width: 150px; } .sidebar { padding: 15px; max-height: 40vh; /* Limita altezza */ } .trip-details-area { padding: 10px; } .trip-header h2 { font-size: 1.3rem; } .tab-link { padding: 10px 10px; font-size: 0.8rem; gap: 4px; } .btn { padding: 8px 12px; font-size: 0.85rem; } .item-list li { flex-wrap: wrap; } .item-list .item-actions { margin-top: 8px; width: 100%; justify-content: flex-end; } .packing-list .item-details { margin-left: 0; margin-top: 5px; width: 100%;} footer.app-footer { padding: 10px; font-size: 0.8rem; flex-shrink: 0; } .modal-content { width: 95%; padding: 20px; margin: 5vh auto; } #toast-container { bottom: 10px; right: 10px; left: 10px; align-items: center; } .list-controls { flex-direction: column; gap: 10px; padding: 8px;} .list-controls .sort-control, .list-controls .list-search-input { width: 100%; } .auth-box { padding: 25px 20px; } .auth-box h1 { font-size: 1.5rem; } }
 @media (hover: none) and (pointer: coarse) { .btn { padding: 11px 18px; min-height: 44px; } .btn-sm { padding: 8px 14px; min-height: 40px; } .btn-icon { padding: 10px; min-width: 44px; min-height: 44px; } .btn:hover:not(:disabled), .trip-list li:not(.is-template):hover, .btn-icon:hover { background-color: inherit; box-shadow: none; } .trip-list li.active:not(.is-template):hover { background-color: #005f73; } }
+
+/* --- Dropdown Azioni nel Trip Header --- */
+.action-dropdown {
+    position: relative; /* Necessario per posizionare il menu */
+    display: inline-block; /* O display: block se lo vuoi a larghezza piena */
+}
+
+.dropdown-toggle::after { /* Aggiunge una piccola freccia (opzionale) */
+    display: inline-block;
+    margin-left: 0.35em;
+    vertical-align: 0.15em;
+    content: "";
+    border-top: 0.3em solid;
+    border-right: 0.3em solid transparent;
+    border-bottom: 0;
+    border-left: 0.3em solid transparent;
+}
+
+.dropdown-menu {
+    display: none; /* Nascosto di default */
+    position: absolute;
+    z-index: 1000; /* Sopra altri elementi */
+    background-color: #ffffff;
+    min-width: 200px; /* Larghezza minima del menu */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.3rem;
+    padding: 0.5rem 0; /* Padding verticale interno */
+    margin-top: 0.25rem; /* Piccolo spazio dal bottone trigger */
+    right: 0; /* Allinea a destra del contenitore .action-dropdown */
+    left: auto; /* Assicura che non si allinei a sinistra */
+}
+
+.dropdown-menu.show {
+    display: block; /* Mostra il menu quando ha la classe 'show' */
+}
+
+.dropdown-item {
+    display: block; /* Occupa tutta la larghezza */
+    width: 100%;
+    padding: 0.5rem 1rem; /* Padding interno */
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: left; /* Allinea testo a sinistra */
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    font-size: 0.9rem; /* Dimensione font item */
+    display: flex; /* Allinea icona e testo */
+    align-items: center;
+    gap: 0.75rem; /* Spazio tra icona e testo */
+}
+
+.dropdown-item:hover:not(:disabled) {
+    color: #1e2125;
+    background-color: #e9ecef; /* Sfondo su hover */
+}
+
+.dropdown-item:disabled {
+    color: #adb5bd;
+    pointer-events: none; /* Non cliccabile */
+    background-color: transparent;
+    opacity: 0.7;
+}
+
+.dropdown-item i {
+    width: 1.1em; /* Larghezza fissa per allineamento icone */
+    text-align: center;
+    margin-right: 0; /* Rimuovi margine extra se presente */
+}
+
+.dropdown-divider {
+    height: 0;
+    margin: 0.5rem 0;
+    overflow: hidden;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Assicura che il contenitore trip-actions gestisca bene flex */
+.trip-actions {
+    display: flex;
+    gap: 8px; /* Mantiene lo spazio tra dropdown ed elimina */
+    align-items: center; /* Allinea verticalmente */
+}
