@@ -74,8 +74,32 @@ header h1 i { margin-right: 0; }
 
 /* Area Dettagli (Desktop) */
 .trip-details-area { flex: 1; padding: 25px; overflow-y: auto; background-color: #f8f9fa; }
-.trip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
-.trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; margin-bottom: 0; }
+.trip-header { /* Rimossa classe .card qui - stile applicato sotto */
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;
+    flex-wrap: wrap; gap: 10px;
+}
+/* Stili per il contenitore dell'header (titolo e azioni) */
+.trip-header.card {
+    background-color: #ffffff; border-radius: 6px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
+    padding: 20px; margin-bottom: 20px;
+    /* --- Fix Dropdown Stacking Context --- */
+    position: relative; /* Necessario per z-index e posizionamento dropdown */
+    z-index: 10; /* z-index base per desktop */
+}
+/* Stili specifici per il titolo h2 dentro l'header */
+.trip-header h2#trip-title {
+    color: #007991; /* Colore originale */
+    font-size: 1.6rem;
+    margin-right: auto;
+    margin-bottom: 0;
+    overflow: hidden; /* Nasconde overflow orizzontale */
+    text-overflow: ellipsis; /* Mostra ... se troppo lungo */
+    white-space: nowrap; /* Non andare a capo (desktop) */
+    max-width: calc(100% - 200px); /* Lascia spazio per i bottoni a destra (desktop) */
+    font-weight: 600; /* Rendi il testo un po' più marcato */
+    opacity: 1; /* Assicura opacità completa */
+}
 .trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .card { background-color: #ffffff; border-radius: 6px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07); padding: 20px; margin-bottom: 20px; }
 .card h3 { display: flex; align-items: center; gap: 10px; color: #005f73; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; font-size: 1.3rem; }
@@ -208,14 +232,103 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
 
 /* Responsiveness */
 @media (max-width: 1200px) { .app-container { max-width: calc(100% - 30px); } }
-@media (max-width: 992px) { .app-container { height: auto; min-height: 100vh; margin: 0; border-radius: 0; } .main-content { flex-direction: column; height: auto; overflow: auto; -webkit-overflow-scrolling: touch; } .sidebar { width: 100%; border-bottom: 1px solid #dee2e6; border-right: none; flex-shrink: 0; /* overflow-y: auto; Mantenuto per scroll sidebar indipendente */ max-height: 45vh; /* Limita altezza sidebar per vedere più dettagli */ } .trip-details-area { padding: 15px; flex: 1 0 auto; min-height: 0; overflow-y: auto; /* Scroll dettagli indipendente */ } .trip-header { align-items: flex-start; } .trip-header h2 { width: 100%; margin-bottom: 10px; } .trip-actions { width: 100%; justify-content: flex-start; } .form-row .form-control { flex-basis: 100%; } .form-control.quantity-control { flex-basis: 100px !important; } }
-@media (max-width: 576px) { body { font-size: 14px; } .app-container { height: 100svh; margin: 0; border-radius: 0; } .main-content { overflow: auto; -webkit-overflow-scrolling: touch; /* Non serve più rimuovere overflow da sidebar/details */ } header { flex-wrap: wrap; padding: 10px 15px; } header h1 { font-size: 1.4rem; width: 100%; text-align: center; margin-bottom: 8px; gap: 6px;} .user-info { width: 100%; justify-content: center; font-size: 0.85rem; gap: 10px;} #user-email-display { max-width: 150px; } .sidebar { padding: 15px; max-height: 40vh; /* Limita altezza */ } .trip-details-area { padding: 10px; } .trip-header h2 { font-size: 1.3rem; } .tab-link { padding: 10px 10px; font-size: 0.8rem; gap: 4px; } .btn { padding: 8px 12px; font-size: 0.85rem; } .item-list li { flex-wrap: wrap; } .item-list .item-actions { margin-top: 8px; width: 100%; justify-content: flex-end; } .packing-list .item-details { margin-left: 0; margin-top: 5px; width: 100%;} footer.app-footer { padding: 10px; font-size: 0.8rem; flex-shrink: 0; } .modal-content { width: 95%; padding: 20px; margin: 5vh auto; } #toast-container { bottom: 10px; right: 10px; left: 10px; align-items: center; } .list-controls { flex-direction: column; gap: 10px; padding: 8px;} .list-controls .sort-control, .list-controls .list-search-input { width: 100%; } .auth-box { padding: 25px 20px; } .auth-box h1 { font-size: 1.5rem; } }
-@media (hover: none) and (pointer: coarse) { .btn { padding: 11px 18px; min-height: 44px; } .btn-sm { padding: 8px 14px; min-height: 40px; } .btn-icon { padding: 10px; min-width: 44px; min-height: 44px; } .btn:hover:not(:disabled), .trip-list li:not(.is-template):hover, .btn-icon:hover { background-color: inherit; box-shadow: none; } .trip-list li.active:not(.is-template):hover { background-color: #005f73; } }
+@media (max-width: 992px) {
+    .app-container { height: auto; min-height: 100vh; margin: 0; border-radius: 0; }
+    .main-content {
+        flex-direction: column;
+        height: auto;
+        /* RIMOSSO overflow da .main-content, lascia che i figli gestiscano lo scroll */
+        overflow: visible;
+        -webkit-overflow-scrolling: touch;
+    }
+    .sidebar {
+        width: 100%;
+        border-bottom: 1px solid #dee2e6;
+        border-right: none;
+        flex-shrink: 0;
+        max-height: 45vh; /* Limita altezza sidebar */
+        overflow-y: auto; /* Sidebar scrolla internamente se necessario */
+    }
+    .trip-details-area {
+        padding: 15px;
+        flex: 1 1 auto; /* Permette di crescere/restringersi */
+        min-height: 0; /* Necessario per flex children scrollabili */
+        overflow-y: auto; /* Area dettagli scrolla internamente */
+    }
+    .trip-header {
+        align-items: flex-start; /* Allinea items all'inizio (titolo sopra azioni) */
+    }
+     .trip-header.card {
+        /* Aumenta z-index su schermi medi */
+        z-index: 20;
+     }
+    .trip-header h2#trip-title {
+         width: 100%; /* Occupa tutta la larghezza */
+         max-width: 100%; /* Resetta max-width desktop */
+         margin-bottom: 10px; /* Spazio sotto il titolo */
+         white-space: normal; /* Permetti al testo di andare a capo */
+         overflow: visible; /* Rimuovi overflow/ellipsis */
+         text-overflow: clip; /* Standard se overflow è visible */
+         font-size: 1.4rem; /* Riduci font */
+     }
+     .trip-actions {
+        width: 100%; /* Occupa tutta la larghezza */
+        justify-content: flex-start; /* Allinea azioni a sinistra */
+     }
+     .form-row .form-control {
+        flex-basis: 100%; /* Form controls a piena larghezza */
+     }
+     .form-control.quantity-control {
+        flex-basis: 100px !important; /* Tranne quantity control */
+     }
+}
+
+@media (max-width: 576px) {
+    body { font-size: 14px; }
+    .app-container { height: 100svh; margin: 0; border-radius: 0; }
+    /* .main-content eredita overflow: visible dalla regola a 992px */
+    header { flex-wrap: wrap; padding: 10px 15px; }
+    header h1 { font-size: 1.4rem; width: 100%; text-align: center; margin-bottom: 8px; gap: 6px;}
+    .user-info { width: 100%; justify-content: center; font-size: 0.85rem; gap: 10px;}
+    #user-email-display { max-width: 150px; }
+    .sidebar { padding: 15px; max-height: 40vh; /* Limita ulteriormente altezza */ }
+    .trip-details-area { padding: 10px; /* eredita overflow-y: auto */ }
+    .trip-header.card {
+        /* Aumenta ancora lo z-index su schermi piccoli */
+        z-index: 30;
+    }
+    .trip-header h2#trip-title {
+         font-size: 1.3rem; /* Riduci ulteriormente font */
+         /* Eredita le altre proprietà mobile da 992px */
+    }
+    .tab-link { padding: 10px 10px; font-size: 0.8rem; gap: 4px; }
+    .btn { padding: 8px 12px; font-size: 0.85rem; }
+    .item-list li { flex-wrap: wrap; }
+    .item-list .item-actions { margin-top: 8px; width: 100%; justify-content: flex-end; }
+    .packing-list .item-details { margin-left: 0; margin-top: 5px; width: 100%;}
+    footer.app-footer { padding: 10px; font-size: 0.8rem; flex-shrink: 0; }
+    .modal-content { width: 95%; padding: 20px; margin: 5vh auto; }
+    #toast-container { bottom: 10px; right: 10px; left: 10px; align-items: center; }
+    .list-controls { flex-direction: column; gap: 10px; padding: 8px;}
+    .list-controls .sort-control, .list-controls .list-search-input { width: 100%; }
+    .auth-box { padding: 25px 20px; }
+    .auth-box h1 { font-size: 1.5rem; }
+}
+@media (hover: none) and (pointer: coarse) {
+    /* Stili per migliorare interazione su touch senza hover */
+    .btn { padding: 11px 18px; min-height: 44px; }
+    .btn-sm { padding: 8px 14px; min-height: 40px; }
+    .btn-icon { padding: 10px; min-width: 44px; min-height: 44px; }
+    /* Disabilita effetti hover che non funzionano bene su touch */
+    .btn:hover:not(:disabled), .trip-list li:not(.is-template):hover, .btn-icon:hover { background-color: inherit; box-shadow: none; }
+    /* Mantiene l'hover sull'elemento attivo della lista */
+    .trip-list li.active:not(.is-template):hover { background-color: #005f73; }
+}
 
 /* --- Dropdown Azioni nel Trip Header --- */
 .action-dropdown {
     position: relative; /* Necessario per posizionare il menu */
-    display: inline-block; /* O display: block se lo vuoi a larghezza piena */
+    display: inline-block;
 }
 
 .dropdown-toggle::after { /* Aggiunge una piccola freccia (opzionale) */
@@ -232,7 +345,7 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
 .dropdown-menu {
     display: none; /* Nascosto di default */
     position: absolute;
-    /* z-index: 1000; <- Già presente sotto, va bene */
+    z-index: 1000; /* Sopra altri elementi */
     background-color: #ffffff;
     min-width: 200px; /* Larghezza minima del menu */
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
@@ -291,44 +404,3 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
     overflow: hidden;
     border-top: 1px solid #dee2e6;
 }
-
-/* Assicura che il contenitore trip-actions gestisca bene flex */
-.trip-actions {
-    display: flex;
-    gap: 8px; /* Mantiene lo spazio tra dropdown ed elimina */
-    align-items: center; /* Allinea verticalmente */
-}
-
-/* --- Fix Dropdown Stacking Context (AGGIUNTO/MODIFICATO) --- */
-.trip-header.card {
-    /* Assicura che l'header crei uno stacking context */
-    position: relative; /* Aggiunto */
-    /* Dagli uno z-index per metterlo sopra il contenuto successivo */
-    z-index: 10; /* Aggiunto - Un valore > 0 dovrebbe bastare, 10 è sicuro */
-    /* Assicurati che il background sia opaco, anche se è un gradiente */
-    background: linear-gradient(to right, #007991, #68dabb); /* Già presente, ma confermato */
-}
-
-/* Assicurati che il menu stesso abbia uno z-index alto
-   (normalmente già impostato, ma lo confermiamo) */
-.dropdown-menu {
-    /* ... altri stili esistenti ... */
-    z-index: 1000; /* Deve essere alto per stare sopra altri elementi *dentro* l'header */
-}
-
-/* Potrebbe essere utile anche assicurare che il contenitore diretto
-   del dropdown sia posizionato correttamente (normalmente già fatto) */
-.action-dropdown {
-    position: relative; /* Conferma che sia relativo */
-    /* z-index: 1; Opzionale: assicura che sia sopra altri elementi in .trip-actions,
-                   ma .trip-header { z-index: 10; } è la modifica chiave */
-}
-
-/* Assicura che l'area dei dettagli permetta overflow visibile per il dropdown,
-   anche se questo non dovrebbe essere necessario con lo z-index sull'header.
-   Da usare solo se il problema persiste e sembra che il contenitore tagli il menu. */
-/*
-.trip-details-area {
-    overflow: visible; /* Potrebbe causare problemi con lo scroll interno */
-/* }
-*/
