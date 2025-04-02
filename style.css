@@ -46,18 +46,15 @@ body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #33
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    overflow: hidden; /* Impedisce overflow container principale */
+    overflow: hidden;
     width: 100%;
     max-width: 1450px;
-    display: flex; /* Messo qui, non gestito da JS */
+    display: flex;
     flex-direction: column;
-    height: calc(100vh - 30px); /* Default per Desktop */
+    height: calc(100vh - 30px);
     margin: 15px;
 }
-/* Nascondi l'app inizialmente */
-.app-container:not([style*="display: flex"]) {
-     display: none;
-}
+.app-container:not([style*="display: flex"]) { display: none; }
 
 header {
     background: linear-gradient(to right, #007991, #68dabb);
@@ -68,8 +65,8 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: relative; /* Per z-index potenziale */
-    z-index: 10; /* Assicura sia sopra contenuto scrollabile */
+    position: relative;
+    z-index: 10;
 }
 header h1 { font-weight: 600; font-size: 1.7rem; margin: 0; display: flex; align-items: center; gap: 10px; }
 header h1 i { margin-right: 0; }
@@ -78,15 +75,10 @@ header h1 i { margin-right: 0; }
 #logout-btn { background-color: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.5); color: white; padding: 6px 10px; }
 #logout-btn:hover { background-color: rgba(255, 255, 255, 0.3); border-color: white; }
 
-.main-content {
-    display: flex;
-    flex: 1; /* Occupa spazio verticale rimanente */
-    overflow: hidden; /* Nasconde overflow main-content stesso */
-    /* overflow-y: auto; <-- VERRÀ AGGIUNTO SOLO PER MOBILE */
-}
+.main-content { display: flex; flex: 1; overflow: hidden; }
 
 /* --- Sidebar (Stili Desktop) --- */
-.sidebar { width: 320px; background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; /* Scroll sidebar su desktop */ }
+.sidebar { width: 320px; background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
 .sidebar h2 { font-size: 1.3rem; color: #005f73; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .search-bar { position: relative; margin-bottom: 15px; }
 .search-bar input { width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9rem; }
@@ -106,7 +98,7 @@ header h1 i { margin-right: 0; }
 #loading-trips { color: #6c757d; } #loading-trips i { margin-right: 8px; color: #007991; }
 
 /* --- Area Dettagli (Stili Desktop) --- */
-.trip-details-area { flex: 1; padding: 25px; overflow-y: auto; /* Scroll dettagli su desktop */ background-color: #f8f9fa; }
+.trip-details-area { flex: 1; padding: 25px; overflow-y: auto; background-color: #f8f9fa; }
 .trip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
 .trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; margin-bottom: 0; }
 .trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -180,8 +172,8 @@ header h1 i { margin-right: 0; }
 .packing-list .item-details { display: flex; flex-direction: column; margin-left: 10px; flex-grow: 1; }
 .packing-list .form-check { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .packing-list input[type="checkbox"] { width: auto; cursor: pointer; flex-shrink: 0;}
-.packing-list label.form-check-label { margin: 0; font-weight: normal; cursor: pointer; } /* Target specifico label */
-.packing-list li.packed label.form-check-label { text-decoration: line-through; color: #888; } /* Applica stile alla label specifica */
+.packing-list label.form-check-label { margin: 0; font-weight: normal; cursor: pointer; }
+.packing-list li.packed label.form-check-label { text-decoration: line-through; color: #888; }
 .packing-list .packing-category { font-size: 0.8rem; color: #888; background-color: #f0f0f0; padding: 2px 6px; border-radius: 3px; display: inline-block; margin-top: 4px; }
 .packing-list .packing-quantity { font-size: 0.85rem; color: #555; margin-left: 5px; font-weight: 600; }
 .packing-list-category-group { margin-bottom: 15px; }
@@ -239,6 +231,24 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
 .center-text { text-align: center; }
 .muted { color: #888; font-size: 0.9rem; margin-top: 10px; }
 
+/* --- Stili per Link Registrazione --- */
+.signup-prompt {
+    text-align: center;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+#show-signup-link {
+    color: #007991;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+#show-signup-link:hover { text-decoration: underline; }
+#signup-form[style*="block"] { margin-top: 20px; } /* Spazio sopra form quando visibile */
+#signup-form h3 { text-align: center; margin-bottom: 20px; } /* Stile titolo dentro form */
+
 /* --- Responsiveness --- */
 @media (max-width: 1200px) {
     .app-container { max-width: calc(100% - 30px); }
@@ -246,31 +256,26 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
 
 /* Tablet e inferiori */
 @media (max-width: 992px) {
-    .app-container {
-        height: auto; /* Altezza automatica */
-        min-height: 100vh; /* Occupa almeno tutta l'altezza */
-        margin: 0;
-        border-radius: 0;
-    }
+    .app-container { height: auto; min-height: 100vh; margin: 0; border-radius: 0; }
     .main-content {
-        flex-direction: column; /* Sidebar sopra, Dettagli sotto */
+        flex-direction: column;
         height: auto;
         overflow: auto; /* <<<< MODIFICA: Main content diventa scrollabile */
-        -webkit-overflow-scrolling: touch; /* Scroll fluido su iOS */
+        -webkit-overflow-scrolling: touch;
     }
     .sidebar {
         width: 100%;
-        /* max-height: 45vh; */ /* <<<< RIMOSSO: Non limitare altezza sidebar */
-        /* overflow-y: auto; */ /* <<<< RIMOSSO: Scroll gestito da main-content */
+        /* max-height: 45vh; */ /* <<<< RIMOSSO */
+        /* overflow-y: auto; */ /* <<<< RIMOSSO */
         border-bottom: 1px solid #dee2e6;
         border-right: none;
-        flex-shrink: 0; /* Impedisce che si restringa */
+        flex-shrink: 0;
     }
     .trip-details-area {
-        /* overflow-y: auto; */ /* <<<< RIMOSSO: Scroll gestito da main-content */
+        /* overflow-y: auto; */ /* <<<< RIMOSSO */
         padding: 15px;
-        flex: 1 0 auto; /* Permette crescita ma non restringimento eccessivo */
-        min-height: 0; /* Fix per flexbox in alcuni browser */
+        flex: 1 0 auto;
+        min-height: 0;
     }
     .trip-header { align-items: flex-start; }
     .trip-header h2 { width: 100%; margin-bottom: 10px; }
@@ -288,20 +293,14 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
          border-radius: 0;
      }
      .main-content {
-         /* Nessuna modifica necessaria qui rispetto a 992px, è già colonna e scrollabile */
+         /* Già colonna e scrollabile dalla regola 992px */
      }
      header { flex-wrap: wrap; padding: 10px 15px; }
      header h1 { font-size: 1.4rem; width: 100%; text-align: center; margin-bottom: 8px; gap: 6px;}
      .user-info { width: 100%; justify-content: center; font-size: 0.85rem; gap: 10px;}
      #user-email-display { max-width: 150px; }
-     .sidebar {
-         padding: 15px;
-         /* max-height: 40vh; */ /* <<<< Già rimosso sopra, corretto */
-     }
-     .trip-details-area {
-         padding: 10px;
-         /* flex: 1; Rimosso, l'altezza è determinata dal contenuto */
-     }
+     .sidebar { padding: 15px; /* max-height: 40vh; Rimosso */ }
+     .trip-details-area { padding: 10px; }
      .trip-header h2 { font-size: 1.3rem; }
      .tab-link { padding: 10px 10px; font-size: 0.8rem; gap: 4px; }
      .btn { padding: 8px 12px; font-size: 0.85rem; }
@@ -319,11 +318,9 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
 
 /* Opzionale: Stili specifici per dispositivi touch per migliorare usabilità */
 @media (hover: none) and (pointer: coarse) {
-  /* Aumenta leggermente la dimensione dei bottoni principali */
   .btn { padding: 11px 18px; min-height: 44px; }
   .btn-sm { padding: 8px 14px; min-height: 40px; }
   .btn-icon { padding: 10px; min-width: 44px; min-height: 44px; }
-  /* Rimuovi effetti hover che possono rimanere 'appiccicati' */
   .btn:hover:not(:disabled),
   .trip-list li:not(.is-template):hover,
   .btn-icon:hover { background-color: inherit; box-shadow: none; }
