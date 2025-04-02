@@ -1,222 +1,222 @@
-/* ================================================== */
-/* == Reset & Global Layout == */
-/* ================================================== */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    height: 100vh; /* Usa vh per altezza viewport */
-    overflow-y: hidden !important; /* Forza no scroll verticale sulla pagina (desktop) */
-    overflow-x: hidden; /* Forza no scroll orizzontale */
-    font-size: 15px;
-}
-
-body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #f4f7f6;
-    color: #333;
-    line-height: 1.6;
-    padding: 0;
-    height: 100vh; /* Occupa altezza html/viewport */
-    margin: 0;
-    overflow: hidden !important; /* Doppio check: Forza no scroll BODY (desktop) */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-}
+/* --- Reset Base & Font --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; display: flex; justify-content: center; align-items: flex-start; /* Allinea all'inizio per Auth */ min-height: 100vh; padding: 0; /* Rimuovi padding body */ font-size: 15px; }
 
 /* --- Stili Autenticazione --- */
 .auth-container {
+    display: flex; /* Mostra di default */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%; /* Prende tutta larghezza */
+    padding: 20px;
+    background-color: #f4f7f6;
+}
+.auth-container footer { /* Footer specifico per Auth */
+    margin-top: 30px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 450px;
+    padding: 30px 40px;
+    text-align: center;
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    padding: 30px 40px;
-    width: 100%;
-    max-width: 480px;
-    margin-top: 5vh; /* Spazio dall'alto relativo */
-    margin-bottom: 5vh;
-    text-align: center;
-    display: none; /* Gestito da JS */
-    flex-shrink: 0; /* Non si restringe se body è flex */
+    margin-bottom: auto; /* Spinge il footer in basso se c'è spazio */
 }
-.auth-container h2 { margin-bottom: 25px; color: #007991; font-weight: 600; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.auth-container form { text-align: left; margin-top: 25px; }
-.auth-container h3 { font-size: 1.3rem; color: #005f73; margin-bottom: 20px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-.auth-container .form-control label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #495057; }
-.auth-container .form-control input[type="email"],
-.auth-container .form-control input[type="password"] { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s ease, box-shadow 0.2s ease; background-color: #fff; margin-bottom: 15px; }
-.auth-container .form-control input:focus { outline: none; border-color: #007991; box-shadow: 0 0 0 3px rgba(0, 121, 145, 0.15); }
-.auth-container .form-actions { text-align: center; margin-top: 25px; margin-bottom: 15px; }
-.auth-container .form-actions .btn { width: 100%; padding: 10px 16px; }
-.auth-container .error-message { color: #dc3545; font-size: 0.85em; margin-top: -10px; margin-bottom: 10px; text-align: left; display: block; }
-.auth-toggle { margin-top: 20px; font-size: 0.95em; color: #6c757d; text-align: center; }
-.auth-toggle a { color: #007991; text-decoration: none; font-weight: 600; }
-.auth-toggle a:hover { text-decoration: underline; }
+
+.auth-box h1 {
+    color: #007991;
+    margin-bottom: 10px;
+    font-size: 1.8rem;
+}
+.auth-box h1 i {
+    margin-right: 8px;
+}
+
+.auth-box p {
+    color: #6c757d;
+    margin-bottom: 25px;
+}
+
+.auth-box h3 {
+    font-size: 1.3rem;
+    color: #343a40;
+    margin-bottom: 20px;
+    text-align: left; /* Allinea a sinistra le label */
+}
+
+.auth-box .form-control label {
+    display: block; /* Assicura che vada a capo */
+    text-align: left;
+    font-weight: 500;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    color: #495057;
+}
+.auth-box .form-control input {
+     width: 100%;
+     padding: 10px 12px;
+     border: 1px solid #ced4da;
+     border-radius: 4px;
+     font-size: 0.95rem;
+     font-family: inherit;
+     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+     background-color: #fff;
+}
+.auth-box .form-control {
+    margin-bottom: 18px;
+}
+
+.btn-block {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+}
+
+.auth-divider {
+    margin: 30px 0;
+    border: 0;
+    border-top: 1px solid #dee2e6;
+}
+
+#auth-error { /* Stile specifico per messaggio errore Auth */
+    text-align: center;
+    margin-bottom: 15px;
+    background-color: #f8d7da;
+    color: #842029;
+    padding: 10px;
+    border: 1px solid #f5c2c7;
+    border-radius: 4px;
+}
 
 
-/* --- App Container --- */
+/* --- Stili App Principale --- */
 .app-container {
     background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
     width: 100%;
-    flex: 1; /* Occupa lo spazio rimanente nel body */
-    min-height: 0; /* Sicurezza per flex child */
-    display: none; /* Gestito da JS, DEVE diventare flex */
+    max-width: 1450px; /* Larghezza massima app */
+    display: flex; /* Nascosto/Mostrato da JS */
     flex-direction: column;
-    overflow: hidden; /* Contiene tutto */
+    height: calc(100vh - 30px); /* Altezza quasi piena con padding */
+    margin: 15px; /* Aggiunge spazio intorno all'app */
 }
 
-/* --- Header e Footer --- */
 header {
-    background: linear-gradient(to right, #007991, #68dabb); color: white; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; /* Fondamentale */ position: relative; z-index: 10;
+    background: linear-gradient(to right, #007991, #68dabb);
+    color: white;
+    padding: 12px 25px;
+    text-align: center;
+    flex-shrink: 0;
+    display: flex; /* Per allineare titolo e user info */
+    justify-content: space-between;
+    align-items: center;
 }
-header h1 { font-weight: 600; font-size: 1.7rem; margin: 0; }
-header h1 i { margin-right: 10px; }
-#user-status { display: flex; align-items: center; gap: 15px; font-size: 0.9em; }
-#user-email-display { font-weight: 600; background-color: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 4px; }
-#logout-btn { background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.4); }
-#logout-btn:hover:not(:disabled) { background-color: rgba(255, 255, 255, 0.3); border-color: rgba(255, 255, 255, 0.6); }
-#logout-btn i { margin-right: 5px; }
+header h1 {
+    font-weight: 600;
+    font-size: 1.7rem;
+    margin: 0; /* Rimuovi margini default */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+header h1 i { /* Icona dentro H1 */
+    margin-right: 0; /* Rimuovi margine se gap è usato */
+}
 
-footer {
-    text-align: center; padding: 15px; background-color: #e9ecef; color: #6c757d; font-size: 0.9rem; border-top: 1px solid #dee2e6; flex-shrink: 0; /* Fondamentale */ position: relative; z-index: 10;
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: white;
+    font-size: 0.9rem;
+}
+#user-email-display {
+    font-weight: 500;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 3px;
+}
+#logout-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    padding: 6px 10px; /* Leggermente più piccolo */
+}
+#logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: white;
 }
 
-/* --- Area Principale --- */
-.main-content {
-    display: flex; /* Affianca sidebar e dettagli */
-    flex: 1; /* Occupa spazio verticale rimanente */
-    min-height: 0; /* CRUCIALE per overflow figli flex */
-    overflow: hidden; /* Impedisce overflow accidentale */
-}
+.main-content { display: flex; flex: 1; overflow: hidden; }
 
 /* --- Sidebar --- */
-.sidebar {
-    width: 320px; background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; flex-shrink: 0;
-    overflow-y: auto; /* SCROLL INTERNO SIDEBAR */
-    min-height: 0;
-}
-/* ... (stili interni sidebar: h2, search, list, etc., come prima) ... */
+.sidebar { width: 320px; background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
 .sidebar h2 { font-size: 1.3rem; color: #005f73; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .search-bar { position: relative; margin-bottom: 15px; }
 .search-bar input { width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9rem; }
-.search-bar input[placeholder*="disabilitato"] { background-color: #e9ecef; font-style: italic; cursor: not-allowed; }
 .search-bar i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6c757d; font-size: 0.9rem; }
 .trip-list-controls { margin-bottom: 15px; display: flex; gap: 10px; } .trip-list-controls button { flex: 1; }
-.trip-list { list-style: none; padding: 0; margin-top: 10px; }
+.trip-list { list-style: none; margin: 0 -20px; padding: 0 20px; flex-grow: 1; /* Occupa spazio disponibile */}
 .trip-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; margin-bottom: 5px; border-radius: 5px; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; border: 1px solid transparent; overflow: hidden; font-size: 0.95rem; }
-.trip-list li.is-template { opacity: 0.7; font-style: italic; background-color: #f8f9fa; border-color: #e9ecef; }
-.trip-list li.is-template:hover { opacity: 1; }
+.trip-list li.is-template { opacity: 0.7; font-style: italic; background-color: #f8f9fa; border-color: #e9ecef; cursor: not-allowed;} /* Template non selezionabili */
 .trip-list li.hidden { display: none; }
-.trip-list li:hover:not(.is-template) { background-color: #dee2e6; }
+.trip-list li:not(.is-template):hover { background-color: #dee2e6; }
 .trip-list li.active:not(.is-template) { background-color: #007991; color: white; font-weight: 600; border-color: #005f73; }
 .trip-list li.active:not(.is-template) .btn-delete-trip { color: white; }
 .trip-list li span { flex-grow: 1; margin-right: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .btn-delete-trip { background: none; border: none; color: #6c757d; cursor: pointer; padding: 5px; font-size: 0.9rem; opacity: 0.7; transition: opacity 0.2s ease, color 0.2s ease; flex-shrink: 0; }
 .trip-list li:hover .btn-delete-trip, .trip-list li .btn-delete-trip:hover { opacity: 1; color: #dc3545; }
 .trip-list li.active:not(.is-template) .btn-delete-trip:hover { color: #f8d7da; }
+#loading-trips { color: #6c757d; } #loading-trips i { margin-right: 8px; color: #007991; }
 
 /* --- Area Dettagli --- */
-.trip-details-area {
-    flex: 1;
-    background-color: #f8f9fa; /* Sfondo area esterna */
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* Impedisce a quest'area di scrollare */
-    min-height: 0;
-}
-.trip-details-area > .trip-header {
-    flex-shrink: 0; padding-left: 25px; padding-right: 25px; padding-top: 25px;
-    display: flex; justify-content: space-between; align-items: center;
-    /* Stili rimossi dal .card originale */
-     margin-bottom: 0; border-bottom: none; background-color: transparent; box-shadow: none; border-radius: 0; padding-bottom: 0;
-}
-.trip-details-area > .trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; }
-.trip-details-area > .trip-header .trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.trip-details-area > .tabs {
-    flex-shrink: 0; margin-bottom: 0; /* Rimuovi margine inferiore */ border-bottom: 2px solid #dee2e6; display: flex; flex-wrap: nowrap; overflow-x: auto; background: #f8f9fa; padding-bottom: 0; -webkit-overflow-scrolling: touch;
-    /* Aggiungi padding laterale se non è presente nell'header */
-    padding-left: 25px; padding-right: 25px;
-}
+.trip-details-area { flex: 1; padding: 25px; overflow-y: auto; background-color: #f8f9fa; }
+.trip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
+.trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; /* Spinge azioni a destra */ margin-bottom: 0; /* Rimuovi margine se su unica riga */ }
+.trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; } /* Ridotto gap bottoni */
+.card { background-color: #ffffff; border-radius: 6px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07); padding: 20px; margin-bottom: 20px; }
+.card h3 { display: flex; align-items: center; gap: 10px; color: #005f73; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; font-size: 1.3rem; }
+.card h4 { font-size: 1.1rem; color: #343a40; margin-bottom: 10px; }
+
+/* --- Tabs --- */
+.tabs { margin-bottom: 20px; border-bottom: 2px solid #dee2e6; display: flex; flex-wrap: nowrap; overflow-x: auto; background: #f8f9fa; padding-bottom: 0; -webkit-overflow-scrolling: touch; }
 .tab-link { background-color: transparent; border: none; padding: 12px 14px; cursor: pointer; font-size: 0.85rem; color: #6c757d; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s ease; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; }
 .tab-link i { margin-right: 3px; } .tab-link:hover { color: #005f73; } .tab-link.active { color: #007991; font-weight: 600; border-bottom-color: #007991; }
-
-/* --- Contenuto Tab (Wrapper che espande) --- */
-.tab-content { display: none; /* Nascosto di default */ }
-.tab-content.active {
-    display: flex; /* Usa Flexbox */
-    flex-direction: column; /* Impila il card interno */
-    flex-grow: 1; /* Occupa spazio rimanente in .trip-details-area */
-    min-height: 0; /* Sicurezza flex */
-    overflow: hidden; /* Impedisce a questo wrapper di scrollare */
-    animation: fadeIn 0.4s;
-}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-/* --- Card INTERNO al Tab Content (Elemento che SCROLLA) --- */
-.tab-content.active > .card {
-    flex-grow: 1; /* Fa espandere il card per riempire .tab-content.active */
-    min-height: 0; /* Necessario per overflow */
-    overflow-y: auto; /* Abilita scroll verticale INTERNO al card */
-    margin-bottom: 0; /* Occupa tutto lo spazio, no margine sotto */
-    display: flex; /* Rendi card un flex container */
-    flex-direction: column; /* Impila h3, form, liste dentro il card */
-    padding: 20px; /* Padding interno al card */
-    background-color: #ffffff; border-radius: 6px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
-     /* border: 2px solid lime; /* DEBUG: Per vedere l'area scrollabile */
-}
-/* Elementi dentro il card */
-.tab-content.active > .card > h3 { flex-shrink: 0; display: flex; align-items: center; gap: 10px; color: #005f73; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; font-size: 1.3rem; }
-.tab-content.active > .card > h4 { flex-shrink: 0; font-size: 1.1rem; color: #343a40; margin-bottom: 10px; }
-.tab-content.active > .card > .add-item-form { flex-shrink: 0; background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; position: relative; }
-.tab-content.active > .card > .budget-summary { flex-shrink: 0; background-color: #e7f5ff; border: 1px solid #bde0fe; border-radius: 5px; padding: 15px; margin: 20px 0; }
-.tab-content.active > .card > .predefined-checklists { flex-shrink: 0; background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; }
-.tab-content.active > .card > .item-list-container { flex-shrink: 0; /* La lista non si espande di default */ margin-top: 25px; padding-top: 20px; border-top: 1px solid #dee2e6; }
-/* Se vuoi che una specifica lista si espanda, dovrai dargli flex-grow: 1 */
-/* Es: .tab-content.active > .card > #specific-list-container { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; } */
-/* Es: .tab-content.active > .card > #specific-list-container > ul { flex-grow: 1; } */
-
+.tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.4s; } @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
 /* --- Form Generali --- */
+.form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; } .form-row .form-control { flex: 1 1 45%; min-width: 200px; margin-bottom: 0; } .form-control { margin-bottom: 15px; }
 .form-control label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #495057; }
 .form-control input, .form-control select, .form-control textarea { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s ease, box-shadow 0.2s ease; background-color: #fff; }
 .form-control ::placeholder { color: #a9b1b9; opacity: 1; } .form-control :-ms-input-placeholder { color: #a9b1b9; } .form-control ::-ms-input-placeholder { color: #a9b1b9; }
 .form-control input:focus, .form-control select:focus, .form-control textarea:focus { outline: none; border-color: #007991; box-shadow: 0 0 0 3px rgba(0, 121, 145, 0.15); }
 .form-control textarea { resize: vertical; min-height: 60px; }
+.add-item-form { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; position: relative; }
+.form-actions { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; align-items: center;}
 .form-control small.muted { font-size: 0.8em; color: #6c757d; display: block; margin-top: 4px; }
 .form-control label.checkbox-label { display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer; }
 .form-control input[type="checkbox"] { width: auto; flex-shrink: 0;}
+.form-control input[type="checkbox"]:disabled + span, .form-control label[for="trip-is-template"][title] { cursor: not-allowed; opacity: 0.6; }
 .form-control.quantity-control { flex-basis: 100px !important; flex-grow: 0; }
-/* Spaziature ridotte dentro i tab */
-.tab-content .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-.tab-content .form-row .form-control { flex: 1 1 45%; min-width: 200px; margin-bottom: 0; }
-.tab-content .form-control { margin-bottom: 12px; }
-.tab-content .form-actions { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; align-items: center; flex-shrink: 0; }
-
-/* --- Layout Flessibile per Form Info Generali --- */
-#info-tab.tab-content.active > .card > form#trip-info-form {
-    display: flex; flex-direction: column; flex-grow: 1; min-height: 0;
-}
-#info-tab form#trip-info-form .form-row { flex-shrink: 0; }
-/* Usa :has() o classe alternativa per far crescere textarea */
-#info-tab form#trip-info-form .form-control:has(#trip-notes),
-#info-tab form#trip-info-form .form-control:has(#trip-extra-info) {
-    flex-grow: 1; display: flex; flex-direction: column; min-height: 80px;
-}
-#info-tab form#trip-info-form .form-control:has(#trip-notes) textarea,
-#info-tab form#trip-info-form .form-control:has(#trip-extra-info) textarea {
-    flex-grow: 1; height: auto; min-height: 60px;
-}
-#info-tab form#trip-info-form .form-actions { margin-top: auto; padding-top: 20px; flex-shrink: 0; }
-
 
 /* --- Bottoni --- */
-/* (Stili bottoni invariati) */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s ease; text-decoration: none; white-space: nowrap; text-align: center; line-height: 1.4; }
-.btn-sm { padding: 6px 12px; font-size: 0.85rem; } .btn i { font-size: 1em; margin-right: 3px; } .btn:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; box-shadow: none; }
+.btn-sm { padding: 6px 12px; font-size: 0.85rem; } .btn i { font-size: 1em; margin-right: 3px; } .btn:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; box-shadow: none; border-color: transparent; color: #fff;} /* Stile disabled migliorato */
 .btn-primary { background-color: #007991; color: white; } .btn-primary:hover:not(:disabled) { background-color: #005f73; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); }
 .btn-secondary { background-color: #6c757d; color: white; } .btn-secondary:hover:not(:disabled) { background-color: #5a6268; }
 .btn-danger { background-color: #dc3545; color: white; } .btn-danger:hover:not(:disabled) { background-color: #c82333; }
@@ -233,8 +233,7 @@ footer {
 .btn-map-link:hover { color: #117a8b; background-color: rgba(23, 162, 184, 0.1);}
 
 /* --- Liste Generali --- */
-/* (Stili liste invariati) */
-.item-list-container h4 { margin-bottom: 10px; color: #005f73; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+.item-list-container { margin-top: 25px; } .item-list-container h4 { margin-bottom: 10px; color: #005f73; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 .list-header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; } .list-header-actions h4 { margin-bottom: 0; } .list-header-actions div { display: flex; gap: 10px; }
 .list-controls { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; background-color: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #e9ecef;}
 .list-search-input { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9rem; flex-grow: 1; min-width: 150px; }
@@ -253,23 +252,32 @@ footer {
 .item-details a.external-link { color: #007bff; text-decoration: none; margin-left: 5px; }
 .item-details a.external-link:hover { text-decoration: underline; }
 .item-details a.external-link i { font-size: 0.8em; vertical-align: middle; }
+
+/* --- Stili Specifici Liste --- */
+/* Packing List */
 .packing-list li { align-items: center; }
 .packing-list .item-details { display: flex; flex-direction: column; margin-left: 10px; flex-grow: 1; }
 .packing-list .form-check { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .packing-list input[type="checkbox"] { width: auto; cursor: pointer; flex-shrink: 0;}
-.packing-list label { margin: 0; font-weight: normal; cursor: pointer; }
-.packing-list .packed label { text-decoration: line-through; color: #888; }
+.packing-list label.form-check-label { margin: 0; font-weight: normal; cursor: pointer; } /* Target specifico label */
+.packing-list li.packed label.form-check-label { text-decoration: line-through; color: #888; } /* Applica stile alla label specifica */
 .packing-list .packing-category { font-size: 0.8rem; color: #888; background-color: #f0f0f0; padding: 2px 6px; border-radius: 3px; display: inline-block; margin-top: 4px; }
 .packing-list .packing-quantity { font-size: 0.85rem; color: #555; margin-left: 5px; font-weight: 600; }
 .packing-list-category-group { margin-bottom: 15px; }
 .packing-list-category-group h5 { margin: 10px 0 5px; padding-bottom: 3px; border-bottom: 1px dashed #ccc; color: #333; font-size: 1rem; font-weight: 600; }
 .packing-list ul.nested { margin-top: 5px; padding-left: 15px; }
+.predefined-checklists { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #e9ecef; }
 .predefined-checklists h4 { margin-top: 0; margin-bottom: 10px; font-size: 1rem; color: #495057; border: none; padding: 0; }
 .predefined-checklists button { margin-right: 8px; margin-bottom: 8px; }
+
+/* Budget */
+.budget-summary { background-color: #e7f5ff; border: 1px solid #bde0fe; border-radius: 5px; padding: 15px; margin: 20px 0; }
 .budget-summary h4 { margin-bottom: 10px; color: #0361a1; border: none; padding: 0; }
 .budget-summary p { margin-bottom: 5px; font-size: 1rem; } .budget-summary strong { font-weight: 600; }
 #budget-difference.positive { color: #198754; } #budget-difference.negative { color: #dc3545; }
 .budget-list .meta .split-info { font-style: italic; color: #777; font-size: 0.85em; }
+
+/* Promemoria */
 .reminder-list .item-details strong { display: flex; align-items: center; gap: 8px; font-size: 1em; }
 .reminder-list .item-details .status-indicator { font-size: 0.8em; padding: 2px 6px; border-radius: 10px; color: white; font-weight: bold; text-transform: uppercase; }
 .reminder-list .item-details .status-indicator.todo { background-color: #ffc107; color: #333; }
@@ -277,17 +285,21 @@ footer {
 .reminder-list .item-details .due-date { font-weight: normal; font-size: 0.9em; color: #dc3545; }
 .reminder-list li.done { background-color: #f0fdf4; opacity: 0.8; }
 .reminder-list li.done .item-details strong { text-decoration: line-through; color: #6c757d; }
+
+/* Stili Tab Bilancio Spese */
 .balance-list { list-style: none; padding-left: 0; margin-top: 15px; }
 .balance-list li { padding: 8px 12px; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; }
 .balance-list li.positive-balance { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
 .balance-list li.negative-balance { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
 .balance-list li span:first-child { font-weight: 600; } .balance-list li span:last-child { font-weight: bold; }
 #balance-summary { border-top: 1px solid #ccc; padding-top: 10px; margin-top: 15px; color: #555; font-weight: bold; }
-#balance-results-container { flex-shrink: 0; }
 
 /* --- Welcome Message --- */
-.welcome-message { text-align: center; padding: 50px 30px; flex: 1; display: none; /* Nascosto se .app-container è visibile */ flex-direction: column; justify-content: center; align-items: center; background-color: #f8f9fa; }
+.welcome-message { text-align: center; padding: 50px 30px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #f8f9fa; }
 .welcome-message h2 { color: #007991; margin-bottom: 15px;} .welcome-message p { color: #6c757d; }
+
+/* --- Footer App --- */
+footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef; color: #6c757d; font-size: 0.9rem; border-top: 1px solid #dee2e6; flex-shrink: 0; }
 
 /* --- Modals --- */
 .modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); animation: modalFadeIn 0.3s ease-out; } @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -295,67 +307,53 @@ footer {
 @keyframes modalSlideIn { from {top: -50px; opacity: 0;} to {top: 0; opacity: 1;} }
 .close-button { color: #aaa; position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; cursor: pointer; line-height: 1; }
 .close-button:hover, .close-button:focus { color: #333; } .modal-content h2 { margin-top: 0; margin-bottom: 20px; color: #005f73; font-size: 1.4rem; }
-.modal-footer { margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; } .modal-content input[type="text"], .modal-content select, .modal-content textarea { width: 100%; }
-.modal-content .error-message { color: #dc3545; font-size: 0.85em; margin-top: 5px; }
+.modal-footer { margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; } .modal-content input[type="text"], .modal-content select, .modal-content textarea { width: 100%; } .error-message { color: #dc3545; font-size: 0.85em; margin-top: 5px; }
 
 /* --- Toast --- */
 #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1100; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
 .toast { background-color: rgba(50, 50, 50, 0.9); color: white; padding: 12px 20px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); opacity: 0; transform: translateX(100%); transition: opacity 0.4s ease, transform 0.4s ease; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; pointer-events: auto; width: fit-content; max-width: 350px; }
-.toast.show { opacity: 1; transform: translateX(0); } .toast.success { background-color: rgba(25, 135, 84, 0.9); } .toast.error { background-color: rgba(220, 53, 69, 0.9); } .toast.info { background-color: rgba(13, 110, 253, 0.9); } .toast.warning { background-color: rgba(255, 193, 7, 0.9); color: #333;} .toast i { font-size: 1.1em; }
+.toast.show { opacity: 1; transform: translateX(0); } .toast.success { background-color: rgba(25, 135, 84, 0.9); } .toast.error { background-color: rgba(220, 53, 69, 0.9); } .toast.info { background-color: rgba(13, 110, 253, 0.9); } .toast i { font-size: 1.1em; }
 
 /* --- Utility Classes --- */
 .center-text { text-align: center; }
 .muted { color: #888; font-size: 0.9rem; margin-top: 10px; }
 
 /* --- Responsiveness --- */
-/* Ripristina scroll normale su mobile/tablet (< 992px) */
-@media (max-width: 991.98px) {
-    html, body { height: auto; overflow: visible !important; }
-    .app-container { height: auto; min-height: 100vh; flex: none; }
-    .main-content { flex-direction: column; height: auto; min-height: auto; flex: none; overflow: visible; }
-    .sidebar { width: 100%; max-height: none; height: auto; min-height: auto; overflow-y: visible; border-bottom: 1px solid #dee2e6; border-right: none; }
-    .trip-details-area { overflow: visible; min-height: auto; padding: 15px; flex: none; display: block; }
-    /* Resetta stili flex per tab content e card */
-    .tab-content.active { display: block; flex-grow: 0; height: auto; overflow: visible; }
-    .tab-content.active > .card { flex-grow: 0; height: auto; overflow: visible; display: block; margin-bottom: 20px; }
-    /* Resetta layout flex per form info */
-    #info-tab.tab-content.active > .card > form#trip-info-form { display: block; flex-grow: 0; }
-    #info-tab form#trip-info-form .form-control:has(#trip-notes),
-    #info-tab form#trip-info-form .form-control:has(#trip-extra-info) { flex-grow: 0; display: block; min-height: auto;} /* Rimuovi min-height */
-    #info-tab form#trip-info-form .form-control:has(#trip-notes) textarea,
-    #info-tab form#trip-info-form .form-control:has(#trip-extra-info) textarea { flex-grow: 0; height: auto; min-height: 100px; /* Dai un min-height ragionevole */}
-    #info-tab #trip-info-form .form-actions { margin-top: 15px; padding-top: 0; }
-    /* Fine reset layout flex */
-    .trip-header { align-items: flex-start; padding-left: 15px; padding-right: 15px; } /* Adatta padding */
-    .trip-details-area > .tabs { padding-left: 15px; padding-right: 15px; }
+@media (max-width: 1200px) {
+    .app-container { max-width: calc(100% - 30px); /* Meno margine su schermi larghi ma non enormi */ }
+}
+@media (max-width: 992px) {
+    .app-container { height: auto; min-height: 100vh; margin: 0; border-radius: 0; } /* Full screen su tablet */
+    .main-content { flex-direction: column; height: auto; overflow: visible; }
+    .sidebar { width: 100%; max-height: 45vh; overflow-y: auto; border-bottom: 1px solid #dee2e6; border-right: none; }
+    .trip-details-area { overflow-y: visible; padding: 15px; }
+    .trip-header { align-items: flex-start; }
     .trip-header h2 { width: 100%; margin-bottom: 10px; }
     .trip-actions { width: 100%; justify-content: flex-start; }
     .form-row .form-control { flex-basis: 100%; }
     .form-control.quantity-control { flex-basis: 100px !important; }
 }
-
-/* Stili specifici per schermi ancora più piccoli (< 576px) */
-@media (max-width: 575.98px) {
-    body { font-size: 14px; }
-    .app-container { border-radius: 0; }
-    header { padding: 10px 15px; flex-wrap: wrap; gap: 5px; }
-    header h1 { font-size: 1.3rem; width: 100%; text-align: center; order: 1;}
-    #user-status { width: 100%; justify-content: center; order: 2; margin-top: 5px; gap: 10px;}
-    .sidebar { padding: 15px; }
-    .trip-details-area { padding: 10px; }
-    .trip-details-area > .trip-header,
-    .trip-details-area > .tabs { padding-left: 10px; padding-right: 10px; }
-    .trip-header h2 { font-size: 1.3rem; }
-    .tab-link { padding: 10px 10px; font-size: 0.8rem; gap: 4px; }
-    .btn { padding: 8px 12px; font-size: 0.85rem; }
-    .item-list li { flex-wrap: wrap; }
-    .item-list .item-actions { margin-top: 8px; width: 100%; justify-content: flex-end; }
-    .packing-list .item-details { margin-left: 0; margin-top: 5px; width: 100%;}
-    footer { padding: 10px; font-size: 0.8rem; }
-    .modal-content { width: 95%; padding: 20px; margin: 5vh auto; }
-    #toast-container { bottom: 10px; right: 10px; left: 10px; align-items: center; }
-    .list-controls { flex-direction: column; gap: 10px; padding: 8px;}
-    .list-controls .sort-control { width: 100%; }
-    .auth-container { padding: 20px; margin-top: 5vh; max-width: 95%; }
-    .auth-container .form-actions .btn { padding: 12px 16px; }
+@media (max-width: 576px) {
+     body { font-size: 14px; }
+     .app-container { height: 100vh; margin: 0; } /* Forza altezza piena su mobile */
+     .main-content { height: calc(100% - 53px - 47px); /* Altezza header e footer app */ } /* Header h1 potrebbe wrappare */
+     header { flex-wrap: wrap; padding: 10px 15px; }
+     header h1 { font-size: 1.4rem; width: 100%; text-align: center; margin-bottom: 8px; gap: 6px;}
+     .user-info { width: 100%; justify-content: center; font-size: 0.85rem; gap: 10px;}
+     #user-email-display { max-width: 150px; }
+     .sidebar { padding: 15px; max-height: 40vh; }
+     .trip-details-area { padding: 10px; }
+     .trip-header h2 { font-size: 1.3rem; }
+     .tab-link { padding: 10px 10px; font-size: 0.8rem; gap: 4px; }
+     .btn { padding: 8px 12px; font-size: 0.85rem; }
+     .item-list li { flex-wrap: wrap; }
+     .item-list .item-actions { margin-top: 8px; width: 100%; justify-content: flex-end; }
+     .packing-list .item-details { margin-left: 0; margin-top: 5px; width: 100%;}
+     footer.app-footer { padding: 10px; font-size: 0.8rem; }
+     .modal-content { width: 95%; padding: 20px; margin: 5vh auto; }
+     #toast-container { bottom: 10px; right: 10px; left: 10px; align-items: center; }
+     .list-controls { flex-direction: column; gap: 10px; padding: 8px;}
+     .list-controls .sort-control, .list-controls .list-search-input { width: 100%; }
+     .auth-box { padding: 25px 20px; }
+     .auth-box h1 { font-size: 1.5rem; }
 }
