@@ -106,9 +106,9 @@ body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #33
     overflow: hidden;
     width: 100%;
     max-width: 1450px; /* Larghezza massima app */
-    display: flex; /* Nascosto/Mostrato da JS */
+    /* display: flex; Gestito da JS */
     flex-direction: column;
-    height: calc(100vh - 30px); /* Altezza quasi piena con padding */
+    height: calc(100vh - 30px); /* Altezza quasi piena per Desktop */
     margin: 15px; /* Aggiunge spazio intorno all'app */
 }
 
@@ -162,10 +162,14 @@ header h1 i { /* Icona dentro H1 */
     border-color: white;
 }
 
-.main-content { display: flex; flex: 1; overflow: hidden; }
+.main-content {
+    display: flex;
+    flex: 1; /* Occupa lo spazio rimanente */
+    overflow: hidden; /* Nasconde overflow del main-content stesso */
+}
 
 /* --- Sidebar --- */
-.sidebar { width: 320px; background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+.sidebar { width: 320px; background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; /* Scroll per la sidebar */ }
 .sidebar h2 { font-size: 1.3rem; color: #005f73; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .search-bar { position: relative; margin-bottom: 15px; }
 .search-bar input { width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9rem; }
@@ -185,7 +189,7 @@ header h1 i { /* Icona dentro H1 */
 #loading-trips { color: #6c757d; } #loading-trips i { margin-right: 8px; color: #007991; }
 
 /* --- Area Dettagli --- */
-.trip-details-area { flex: 1; padding: 25px; overflow-y: auto; background-color: #f8f9fa; }
+.trip-details-area { flex: 1; /* Occupa spazio rimanente */ padding: 25px; overflow-y: auto; /* Scroll per i dettagli */ background-color: #f8f9fa; }
 .trip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
 .trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; /* Spinge azioni a destra */ margin-bottom: 0; /* Rimuovi margine se su unica riga */ }
 .trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; } /* Ridotto gap bottoni */
@@ -323,10 +327,29 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
     .app-container { max-width: calc(100% - 30px); /* Meno margine su schermi larghi ma non enormi */ }
 }
 @media (max-width: 992px) {
-    .app-container { height: auto; min-height: 100vh; margin: 0; border-radius: 0; } /* Full screen su tablet */
-    .main-content { flex-direction: column; height: auto; overflow: visible; }
-    .sidebar { width: 100%; max-height: 45vh; overflow-y: auto; border-bottom: 1px solid #dee2e6; border-right: none; }
-    .trip-details-area { overflow-y: visible; padding: 15px; }
+    .app-container {
+        height: auto; /* Altezza automatica su tablet */
+        min-height: 100vh;
+        margin: 0;
+        border-radius: 0;
+    }
+    .main-content {
+        flex-direction: column;
+        height: auto; /* Altezza automatica */
+        overflow: visible;
+    }
+    .sidebar {
+        width: 100%;
+        max-height: 45vh; /* Limita altezza sidebar */
+        overflow-y: auto;
+        border-bottom: 1px solid #dee2e6;
+        border-right: none;
+    }
+    .trip-details-area {
+        overflow-y: auto; /* Permetti scroll per i dettagli */
+        padding: 15px;
+        flex: 1; /* Occupa spazio rimanente se sidebar ha max-height */
+    }
     .trip-header { align-items: flex-start; }
     .trip-header h2 { width: 100%; margin-bottom: 10px; }
     .trip-actions { width: 100%; justify-content: flex-start; }
@@ -335,25 +358,78 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
 }
 @media (max-width: 576px) {
      body { font-size: 14px; }
-     .app-container { height: 100vh; margin: 0; } /* Forza altezza piena su mobile */
-     .main-content { height: calc(100% - 53px - 47px); /* Altezza header e footer app */ } /* Header h1 potrebbe wrappare */
+     .app-container {
+         height: 100svh;     /* <-- MODIFICA CHIAVE: Usa Small Viewport Height */
+         margin: 0;
+         border-radius: 0;
+     }
+     .main-content {
+         /* height: calc(100% - 53px - 47px); */ /* <-- RIMOSSO CALC */
+         flex: 1; /* Assicura che prenda lo spazio rimanente */
+         display: flex; /* Mantiene flex per le sotto-aree */
+         flex-direction: column; /* Assicura stacking verticale su mobile */
+         overflow: hidden; /* Nasconde overflow del contenitore main */
+     }
      header { flex-wrap: wrap; padding: 10px 15px; }
      header h1 { font-size: 1.4rem; width: 100%; text-align: center; margin-bottom: 8px; gap: 6px;}
      .user-info { width: 100%; justify-content: center; font-size: 0.85rem; gap: 10px;}
      #user-email-display { max-width: 150px; }
-     .sidebar { padding: 15px; max-height: 40vh; }
-     .trip-details-area { padding: 10px; }
+     .sidebar {
+         padding: 15px;
+         max-height: 40vh; /* O un'altezza fissa se preferito */
+         overflow-y: auto; /* Scroll per sidebar */
+         flex-shrink: 0; /* Non farla ridurre troppo */
+         width: 100%;
+         border-bottom: 1px solid #dee2e6;
+         border-right: none;
+     }
+     .trip-details-area {
+         padding: 10px;
+         overflow-y: auto; /* Scroll per dettagli */
+         flex: 1; /* Occupa lo spazio rimanente sotto la sidebar */
+     }
      .trip-header h2 { font-size: 1.3rem; }
      .tab-link { padding: 10px 10px; font-size: 0.8rem; gap: 4px; }
      .btn { padding: 8px 12px; font-size: 0.85rem; }
      .item-list li { flex-wrap: wrap; }
      .item-list .item-actions { margin-top: 8px; width: 100%; justify-content: flex-end; }
      .packing-list .item-details { margin-left: 0; margin-top: 5px; width: 100%;}
-     footer.app-footer { padding: 10px; font-size: 0.8rem; }
+     footer.app-footer { padding: 10px; font-size: 0.8rem; flex-shrink: 0; }
      .modal-content { width: 95%; padding: 20px; margin: 5vh auto; }
      #toast-container { bottom: 10px; right: 10px; left: 10px; align-items: center; }
      .list-controls { flex-direction: column; gap: 10px; padding: 8px;}
      .list-controls .sort-control, .list-controls .list-search-input { width: 100%; }
      .auth-box { padding: 25px 20px; }
      .auth-box h1 { font-size: 1.5rem; }
+}
+
+/* Opzionale: Stili specifici per dispositivi touch per migliorare usabilità */
+@media (hover: none) and (pointer: coarse) {
+  /* Aumenta leggermente la dimensione dei bottoni principali */
+  .btn {
+    padding: 11px 18px;
+    min-height: 44px; /* Target tattile minimo */
+  }
+  .btn-sm {
+    padding: 8px 14px;
+    min-height: 40px;
+  }
+  /* Aumenta area cliccabile icone */
+  .btn-icon {
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  /* Rimuovi effetti hover che possono rimanere 'appiccicati' */
+  .btn:hover:not(:disabled),
+  .trip-list li:not(.is-template):hover,
+  .btn-icon:hover {
+    /* Reset o usa un effetto diverso da background-color/box-shadow */
+    background-color: inherit; /* Esempio: rimuovi cambio sfondo */
+    box-shadow: none;
+  }
+  /* Mantieni hover per bottoni attivi per feedback */
+   .trip-list li.active:not(.is-template):hover {
+        background-color: #005f73; /* Mantieni hover su attivo */
+   }
 }
