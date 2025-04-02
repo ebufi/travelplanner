@@ -328,30 +328,576 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
     // == FUNZIONI RICERCA ESTERNA ==
     // ==========================================================================
-    const handleSearchFlights = () => { /* ... (Invariato) ... */ };
-    const handleSearchTrains = () => { /* ... (Invariato) ... */ };
+
+    const handleSearchFlights = () => { const origin = transportDepartureLocInput.value.trim(); const dest = transportArrivalLocInput.value.trim(); const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : ''; const endRaw = transportArrivalDatetimeInput.value ? transportArrivalDatetimeInput.value.split('T')[0] : ''; const startSky = formatSkyscannerDate(startRaw); const endSky = formatSkyscannerDate(endRaw); if (!origin || !dest) { showToast("Inserisci Origine e Destinazione nel form.", "warning"); return; } if (!startSky || !endSky) { showToast("Inserisci date valide nel form.", "warning"); return; } if (startRaw > endRaw) { showToast("Data arrivo non valida.", "warning"); return; } const base = "https://www.skyscanner.it/trasporti/voli/"; const origCode = origin.toLowerCase().replace(/\s+/g, '-') || 'anywhere'; const destCode = dest.toLowerCase().replace(/\s+/g, '-') || 'anywhere'; const url = `${base}${origCode}/${destCode}/${startSky}/${endSky}/?rtn=1&adults=1&children=0&infants=0&cabinclass=economy&preferdirects=false`; console.log("URL Skyscanner:", url); window.open(url, '_blank', 'noopener,noreferrer'); };
+    const handleSearchTrains = () => { const origin = transportDepartureLocInput.value.trim(); const dest = transportArrivalLocInput.value.trim(); const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : ''; const endRaw = transportArrivalDatetimeInput.value ? transportArrivalDatetimeInput.value.split('T')[0] : ''; if (!origin || !dest) { showToast("Inserisci Origine e Destinazione.", "warning"); return; } if (!startRaw.match(/^\d{4}-\d{2}-\d{2}$/) || !endRaw.match(/^\d{4}-\d{2}-\d{2}$/)) { showToast("Inserisci Date valide.", "warning"); return; } if (startRaw > endRaw) { showToast("Data arrivo non valida.", "warning"); return; } const base = "https://www.thetrainline.com/it/orari-treni/"; const origFmt = origin.toUpperCase().replace(/\s+/g, '-'); const destFmt = dest.toUpperCase().replace(/\s+/g, '-'); const url = `${base}${origFmt}-a-${destFmt}?departureDate=${startRaw}&returnDate=${endRaw}&adults=1`; console.log("URL Trainline:", url); window.open(url, '_blank', 'noopener,noreferrer'); };
+
 
     // ==========================================================================
-    // == FUNZIONI DOWNLOAD / EMAIL / COPIA ==
+    // == FUNZIONI DOWNLOAD / EMAIL / COPIA (CON DEBUG AGGIUNTO) ==
     // ==========================================================================
-    const handleEmailSummary = () => { /* ... (Invariato) ... */ };
-    const handleCopySummary = () => { /* ... (Invariato) ... */ };
-    const handleDownloadText = () => { /* ... (Invariato) ... */ };
-    const handleDownloadExcel = () => { /* ... (Invariato) ... */ };
+    const handleEmailSummary = () => {
+        console.log("DEBUG: handleEmailSummary chiamata."); // Log iniziale
+        try {
+            if (!currentTripId) { showToast("Seleziona un viaggio.", "warning"); return; }
+            const trip = findTripById(currentTripId);
+            if (!trip) { showToast("Viaggio non trovato.", "error"); return; }
+            console.log("DEBUG: Dati viaggio per email:", trip);
+
+            let emailBody = `Riepilogo Viaggio: ${trip.name || 'S.N.'}\n========================\n\n`;
+            emailBody += `Destinazione: ${trip.destination || 'N/D'}\n`;
+            emailBody += `Date: ${formatDate(trip.startDate)} - ${formatDate(trip.endDate)}\n`;
+            emailBody += `Partecipanti: ${(trip.participants || []).map(p => p.name).join(', ') || 'Nessuno'}\n\n`;
+            emailBody += `Note: ${trip.notes || '-'}\n\n`;
+            emailBody += `(Per i dettagli completi, chiedi il link di condivisione dell'app)\n`;
+
+            const emailSubject = `Riepilogo Viaggio: ${trip.name || 'S.N.'}`;
+            const mailtoLink = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+            console.log("DEBUG: Mailto link generato:", mailtoLink);
+
+             try {
+                 console.log("DEBUG: Tento apertura mailto...");
+                 const mailWindow = window.open(mailtoLink, '_blank');
+                 if (!mailWindow || mailWindow.closed || typeof mailWindow.closed=='undefined') { // Verifica più robusta del blocco popup
+                      console.warn("DEBUG: Apertura finestra email bloccata o fallita, tento con reindirizzamento...");
+                      window.location.href = mailtoLink;
+                 }
+                 console.log("DEBUG: Apertura mailto tentata.");
+             } catch (e) {
+                 console.error("Errore apertura link mailto specifico:", e);
+                 showToast("Impossibile aprire il client email.", "error");
+             }
+        } catch (error) {
+            console.error("Errore generale in handleEmailSummary:", error);
+            showToast("Errore nella preparazione dell'email.", "error");
+        }
+    };
+
+    const handleCopySummary = () => {
+        console.log("DEBUG: handleCopySummary chiamata.");
+        try {
+            if (!currentTripId) { showToast("Seleziona un viaggio.", "warning"); return; }
+            const trip = findTripById(currentTripId);
+            if (!trip) { showToast("Viaggio non trovato.", "error"); return; }
+            console.log("DEBUG: Dati viaggio per copia:", trip);
+
+            let textToCopy = `✈️ *Riepilogo Viaggio: ${trip.name || 'S.N.'}*\n`;
+            textToCopy += `📍 Destinazione: ${trip.destination || 'N/D'}\n`;
+            textToCopy += `📅 Date: ${formatDate(trip.startDate)} - ${formatDate(trip.endDate)}\n`;
+            textToCopy += `👥 Partecipanti: ${(trip.participants || []).map(p => p.name).join(', ') || 'Nessuno'}\n`;
+            textToCopy += `📝 Note: ${trip.notes || '-'}\n`;
+            textToCopy += `(Per i dettagli completi, chiedi il link di condivisione dell'app)`;
+
+            console.log("DEBUG: Testo da copiare:", textToCopy);
+
+             if (navigator.clipboard && navigator.clipboard.writeText) {
+                 console.log("DEBUG: Uso navigator.clipboard.writeText");
+                 navigator.clipboard.writeText(textToCopy)
+                     .then(() => {
+                         console.log("DEBUG: Copia riuscita (navigator).");
+                         showToast("Riepilogo copiato negli appunti!", "success");
+                     })
+                     .catch(err => {
+                         console.error('Errore copia (navigator):', err);
+                         showToast("Errore durante la copia.", "error");
+                         fallbackCopyTextToClipboard(textToCopy); // Tenta fallback
+                     });
+             } else {
+                 console.log("DEBUG: Uso fallbackCopyTextToClipboard");
+                 fallbackCopyTextToClipboard(textToCopy);
+             }
+        } catch (error) {
+             console.error("Errore generale in handleCopySummary:", error);
+             showToast("Errore nella preparazione del testo da copiare.", "error");
+        }
+    };
+
+    const handleDownloadText = () => {
+        console.log("DEBUG: handleDownloadText chiamata.");
+        try {
+            if (!currentTripId) { showToast("Seleziona un viaggio.", "error"); return; }
+            const trip = findTripById(currentTripId);
+            if (!trip) { showToast("Viaggio non trovato.", "error"); return; }
+             console.log("DEBUG: Dati viaggio per TXT:", trip);
+
+            let content = '';
+            try {
+                content = `Riepilogo Viaggio: ${trip.name || 'S.N.'} ${trip.isTemplate ? '(TEMPLATE)' : ''}\n========================\n\n`;
+                content += `**INFO**\nOrigine: ${trip.originCity || 'N/D'}\nDest.: ${trip.destination || 'N/D'}\nDate: ${formatDate(trip.startDate)} - ${formatDate(trip.endDate)}\nNote: ${trip.notes || '-'}\nExtra Info: ${trip.extraInfo || '-'}\n\n`;
+                content += `**PARTECIPANTI** (${(trip.participants || []).length})\n`; (trip.participants || []).slice().sort((a,b)=>(a?.name||'').localeCompare(b?.name||'')).forEach(p => { content += `- ${p.name}${p.notes ? ' ('+p.notes+')':''}${p.extraInfo ? ' [Extra: '+p.extraInfo+']':''}\n`}); if((trip.participants || []).length === 0) content += "Nessuno\n"; content += "\n";
+                content += `**PROMEMORIA** (${(trip.reminders || []).length})\n`; (trip.reminders || []).slice().sort((a,b)=>(a?.dueDate || '9999').localeCompare(b?.dueDate || '9999')).forEach(r => { content += `- [${r.status==='done'?'X':' '}] ${r.description}${r.dueDate ? ' (Scad: '+formatDate(r.dueDate)+')':''}\n`}); if((trip.reminders || []).length === 0) content += "Nessuno\n"; content += "\n";
+                content += `**TRASPORTI** (${(trip.transportations || []).length})\n`; (trip.transportations || []).slice().sort((a,b)=>(a?.departureDateTime||'').localeCompare(b?.departureDateTime||'')).forEach(i => { content += `- ${i.type} (${i.description}): Da ${i.departureLoc||'?'} (${formatDateTime(i.departureDateTime)}) a ${i.arrivalLoc||'?'} (${formatDateTime(i.arrivalDateTime)})${i.cost!==null ? ' Costo: '+formatCurrency(i.cost):''}${i.bookingRef ? ' Rif: '+i.bookingRef:''}${i.notes ? ' Note: '+i.notes:''}${i.link ? ' Link: '+i.link:''}\n` }); if((trip.transportations || []).length === 0) content += "Nessuno\n"; content += "\n";
+                content += `**ALLOGGI** (${(trip.accommodations || []).length})\n`; (trip.accommodations || []).slice().sort((a,b)=>(a?.checkinDateTime||'').localeCompare(b?.checkinDateTime||'')).forEach(i => { content += `- ${i.name} (${i.type}): ${i.address||'?'}. CheckIn: ${formatDateTime(i.checkinDateTime)}, CheckOut: ${formatDateTime(i.checkoutDateTime)}${i.cost!==null ? ' Costo: '+formatCurrency(i.cost):''}${i.bookingRef ? ' Rif: '+i.bookingRef:''}${i.notes ? ' Note: '+i.notes:''}${i.link ? ' Link: '+i.link:''}\n` }); if((trip.accommodations || []).length === 0) content += "Nessuno\n"; content += "\n";
+                content += `**ITINERARIO** (${(trip.itinerary || []).length})\n`; (trip.itinerary || []).slice().sort((a,b)=>{const d=(a?.day||'').localeCompare(b?.day||''); return d!==0?d:(a?.time||'').localeCompare(b?.time||'');}).forEach(i => { content += `- ${formatDate(i.day)}${i.time?' ('+i.time+')':''} ${i.activity}${i.location?' @'+i.location:''}${i.bookingRef?' [Rif:'+i.bookingRef+']':''}${i.cost!==null?' Costo:'+formatCurrency(i.cost):''}${i.notes?' ('+i.notes+')':''}${i.link?' Link:'+i.link:''}\n` }); if((trip.itinerary || []).length === 0) content += "Nessuno\n"; content += "\n";
+                content += `**BUDGET** (${(trip.budget?.items || []).length} voci)\n`; (trip.budget?.items || []).slice().sort((a,b)=>(a?.category||'').localeCompare(b?.category||'')).forEach(i => { content += `- ${i.category}: ${i.description} (Est: ${formatCurrency(i.estimated)}, Act: ${i.actual===null?'N/A':formatCurrency(i.actual)})${i.paidBy ? ' Pagato da: '+i.paidBy:''}${i.splitBetween ? ' Diviso: '+i.splitBetween:''}\n` }); if((trip.budget?.items || []).length > 0) content += `> Tot Est: ${formatCurrency(trip.budget?.estimatedTotal||0)}, Tot Act: ${formatCurrency(trip.budget?.actualTotal||0)}, Diff: ${formatCurrency((trip.budget?.actualTotal||0) - (trip.budget?.estimatedTotal||0))}\n`; else content += "Nessuna spesa\n"; content += "\n";
+                content += `**PACKING LIST** (${(trip.packingList || []).length})\n`; (trip.packingList || []).slice().sort((a,b)=>(a?.category||'zzz').localeCompare(b?.category||'zzz') || (a?.name||'').localeCompare(b?.name||'')).forEach(i => { content += `- [${i.packed?'X':' '}] ${i.name}${i.quantity>1?' (x'+i.quantity+')':''} [${i.category||'Altro'}]\n` }); if((trip.packingList || []).length === 0) content += "Lista vuota\n";
+
+                console.log("DEBUG: Contenuto TXT generato, lunghezza:", content.length);
+                if (content.length === 0) throw new Error("Contenuto TXT vuoto.");
+            } catch (genError) {
+                console.error("Errore durante la generazione del contenuto TXT:", genError);
+                showToast("Errore nella preparazione del file di testo.", "error");
+                return;
+            }
+
+            try {
+                const blob = new Blob([content],{type:'text/plain;charset=utf-8'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Viaggio-${(trip.name||'SN').replace(/[^a-z0-9]/gi,'_')}.txt`;
+                document.body.appendChild(a);
+                console.log("DEBUG: Eseguo click simulato per download TXT...");
+                a.click();
+                console.log("DEBUG: Click simulato TXT eseguito.");
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                console.log("DEBUG: Download TXT completato (o iniziato).");
+            } catch (downloadError) {
+                 console.error("Errore durante il download effettivo del TXT:", downloadError);
+                 showToast("Errore durante il download del file.", "error");
+            }
+
+        } catch (error) {
+            console.error("Errore generale in handleDownloadText:", error);
+            showToast("Errore imprevisto nella generazione del file di testo.", "error");
+        }
+    };
+
+    const handleDownloadExcel = () => {
+        console.log("DEBUG: handleDownloadExcel chiamata.");
+        try {
+            if (!currentTripId) { showToast("Seleziona un viaggio.", "error"); return; }
+            const trip = findTripById(currentTripId);
+            if (!trip) { showToast("Viaggio non trovato.", "error"); return; }
+            console.log("DEBUG: Dati viaggio per Excel:", trip);
+
+             if (typeof XLSX === 'undefined') {
+                 console.error("Libreria XLSX (SheetJS) non trovata!");
+                 showToast("Errore: libreria per Excel non caricata.", "error");
+                 return;
+             }
+             console.log("DEBUG: Libreria XLSX trovata.");
+
+            let wb;
+            try {
+                wb = XLSX.utils.book_new();
+                const cf = '#,##0.00 €';
+                const nf = '#,##0';
+
+                 // Riepilogo
+                const summary = [ ["Voce","Dettaglio"], ["Viaggio", trip.name||'S.N.'], ["Template", trip.isTemplate ? 'Sì' : 'No'], ["Origine", trip.originCity||'N/D'], ["Dest.", trip.destination||'N/D'], ["Periodo", `${formatDate(trip.startDate)} - ${formatDate(trip.endDate)}`], ["Note", trip.notes||'-'], ["Extra Info", trip.extraInfo||'-'], [], ["Budget Est.",{t:'n',v:trip.budget?.estimatedTotal||0,z:cf}], ["Budget Act.",{t:'n',v:trip.budget?.actualTotal||0,z:cf}], ["Diff.",{t:'n',v:(trip.budget?.actualTotal||0)-(trip.budget?.estimatedTotal||0),z:cf}], [], ["# Partecipanti", (trip.participants||[]).length], ["# Promemoria", (trip.reminders||[]).length], ["# Trasporti", (trip.transportations||[]).length], ["# Alloggi", (trip.accommodations||[]).length], ["# Itin.", (trip.itinerary||[]).length], ["# Budget", (trip.budget?.items||[]).length], ["# Packing", (trip.packingList||[]).length]];
+                const wsSum = XLSX.utils.aoa_to_sheet(summary);
+                wsSum['!cols']=[{wch:15},{wch:50}];
+                XLSX.utils.book_append_sheet(wb, wsSum, "Riepilogo");
+                // Partecipanti
+                const partH = ["Nome", "Note", "Extra Info"]; const partD = (trip.participants||[]).slice().sort((a,b)=>(a?.name||'').localeCompare(b?.name||'')).map(p=>[p.name, p.notes, p.extraInfo]); const wsPart = XLSX.utils.aoa_to_sheet([partH, ...partD]); wsPart['!cols']=[{wch:30},{wch:40},{wch:40}]; XLSX.utils.book_append_sheet(wb, wsPart, "Partecipanti");
+                // Promemoria
+                const remH = ["Stato", "Descrizione", "Scadenza"]; const remD = (trip.reminders||[]).slice().sort((a,b)=>(a?.dueDate || '9999').localeCompare(b?.dueDate || '9999')).map(r => [r.status === 'done' ? 'Fatto' : 'Da Fare', r.description, formatDate(r.dueDate)]); const wsRem = XLSX.utils.aoa_to_sheet([remH, ...remD]); wsRem['!cols'] = [{wch:10}, {wch:50}, {wch:12}]; XLSX.utils.book_append_sheet(wb, wsRem, "Promemoria");
+                // Trasporti
+                const th = ["Tipo","Desc.","Da Luogo","Da Data/Ora","A Luogo","A Data/Ora","Rif.","Costo","Note","Link/File"]; const td = (trip.transportations||[]).slice().sort((a,b)=>(a?.departureDateTime||'').localeCompare(b?.departureDateTime||'')).map(i=>[i.type, i.description, i.departureLoc, formatDateTime(i.departureDateTime), i.arrivalLoc, formatDateTime(i.arrivalDateTime), i.bookingRef, i.cost===null?null:{t:'n',v:i.cost,z:cf}, i.notes, i.link]); const wsT = XLSX.utils.aoa_to_sheet([th, ...td]); wsT['!cols']=[{wch:12},{wch:25},{wch:18},{wch:16},{wch:18},{wch:16},{wch:15},{wch:12},{wch:25},{wch:30}]; XLSX.utils.book_append_sheet(wb, wsT, "Trasporti");
+                // Alloggi
+                const ah = ["Nome","Tipo","Indirizzo","CheckIn","CheckOut","Rif.","Costo","Note","Link/File"]; const ad = (trip.accommodations||[]).slice().sort((a,b)=>(a?.checkinDateTime||'').localeCompare(b?.checkinDateTime||'')).map(i=>[i.name,i.type,i.address,formatDateTime(i.checkinDateTime),formatDateTime(i.checkoutDateTime),i.bookingRef,i.cost===null?null:{t:'n',v:i.cost,z:cf},i.notes, i.link]); const wsA = XLSX.utils.aoa_to_sheet([ah,...ad]); wsA['!cols']=[{wch:25},{wch:10},{wch:35},{wch:16},{wch:16},{wch:20},{wch:12},{wch:30},{wch:30}]; XLSX.utils.book_append_sheet(wb, wsA, "Alloggi");
+                // Itinerario
+                const ih = ["Giorno","Ora","Attività","Luogo","Rif. Pren.","Costo","Note","Link/File"]; const idata = (trip.itinerary||[]).slice().sort((a,b)=>{const d=(a?.day||'').localeCompare(b?.day||''); return d!==0?d:(a?.time||'').localeCompare(b?.time||'');}).map(i=>[formatDate(i.day),i.time,i.activity,i.location,i.bookingRef,i.cost===null?null:{t:'n',v:i.cost,z:cf},i.notes, i.link]); const wsI = XLSX.utils.aoa_to_sheet([ih, ...idata]); wsI['!cols']=[{wch:10},{wch:8},{wch:30},{wch:25},{wch:20},{wch:12},{wch:30},{wch:30}]; XLSX.utils.book_append_sheet(wb, wsI, "Itinerario");
+                // Budget
+                const bh = ["Cat.","Desc.","Est. (€)","Act. (€)", "Pagato Da", "Diviso Tra"]; const bd = (trip.budget?.items||[]).slice().sort((a,b)=>(a?.category||'').localeCompare(b?.category||'')).map(i=>[i.category,i.description,{t:'n',v:i.estimated||0,z:cf},i.actual===null?null:{t:'n',v:i.actual,z:cf}, i.paidBy, i.splitBetween]); bd.push([],["TOTALI","", {t:'n',v:trip.budget?.estimatedTotal||0,z:cf}, {t:'n',v:trip.budget?.actualTotal||0,z:cf}, "", ""]); const wsB = XLSX.utils.aoa_to_sheet([bh, ...bd]); wsB['!cols']=[{wch:15},{wch:35},{wch:15},{wch:15},{wch:20},{wch:20}]; XLSX.utils.book_append_sheet(wb, wsB, "Budget");
+                // Packing List
+                const ph = ["Categoria", "Oggetto", "Qtà", "Fatto?"]; const pd = (trip.packingList||[]).slice().sort((a,b)=>(a?.category||'zzz').localeCompare(b?.category||'zzz') || (a?.name||'').localeCompare(b?.name||'')).map(i=>[i.category, i.name, {t:'n', v:i.quantity, z:nf}, i.packed?'Sì':'No']); const wsP = XLSX.utils.aoa_to_sheet([ph, ...pd]); wsP['!cols']=[{wch:20}, {wch:40},{wch:5},{wch:8}]; XLSX.utils.book_append_sheet(wb, wsP, "Packing List");
+
+                console.log("DEBUG: Workbook Excel creato con tutti i fogli.");
+                 if (!wb || !wb.SheetNames || wb.SheetNames.length === 0) {
+                    throw new Error("Workbook vuoto o non creato correttamente.");
+                 }
+            } catch (buildError) {
+                 console.error("Errore durante la costruzione del Workbook Excel:", buildError);
+                 showToast("Errore nella preparazione del file Excel.", "error");
+                 return;
+            }
+
+            try {
+                const fn = `Viaggio-${(trip.name||'SN').replace(/[^a-z0-9]/gi,'_')}.xlsx`;
+                console.log("DEBUG: Tento scrittura file Excel:", fn);
+                XLSX.writeFile(wb, fn);
+                console.log("DEBUG: Download Excel completato (o iniziato).");
+            } catch (writeError) {
+                 console.error("Errore durante la scrittura/download del file Excel:", writeError);
+                 showToast("Errore durante il download del file Excel.", "error");
+            }
+
+        } catch (error) {
+            console.error("Errore generale in handleDownloadExcel:", error);
+            showToast("Errore imprevisto nella generazione del file Excel.", "error");
+        }
+    };
+
 
     // ==========================================================================
     // == FUNZIONI CONDIVISIONE VIA FIREBASE ==
     // ==========================================================================
-    const handleShareViaLink = async () => { /* ... (Invariato, usa findTripById) ... */ };
-    const cloneAndRegenerateTripIds = (tripDataFromFirebaseShared) => { /* ... (Invariato) ... */ };
-    const handleImportSharedTrip = async (sharedTripData) => { /* ... (Invariato, chiama saveTripToFirestore) ... */ };
-    const checkForSharedTrip = async () => { /* ... (Invariato, chiama handleImportSharedTrip) ... */ };
+
+    // --- Condivisione via Link Firebase / Web Share API ---
+    const handleShareViaLink = async () => {
+        if (!db) { showToast("Funzionalità di condivisione non disponibile (Errore Init Firebase).", "error"); return; }
+        if (!currentTripId) { showToast("Seleziona un viaggio da condividere.", "warning"); return; }
+        const originalTrip = findTripById(currentTripId);
+        if (!originalTrip) { showToast("Errore: viaggio non trovato.", "error"); return; }
+        if (originalTrip.isTemplate) { showToast("Non puoi condividere un template.", "warning"); return; }
+
+        const shareButton = shareTripBtn; // Assumendo che shareTripBtn sia definito globalmente nello scope
+        if (shareButton) {
+            shareButton.disabled = true;
+            shareButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparando...';
+        }
+
+        let dataToSend = null;
+        let shareLink = null; // Per fallback
+
+        try {
+            // Crea una copia pulita per non modificare l'originale e rimuovere undefined
+            const cleanTripBase = JSON.parse(JSON.stringify(originalTrip));
+
+            // Prepara i dati per Firestore, convertendo tipi e usando safe helpers
+            dataToSend = {
+                name: cleanTripBase.name || 'Senza Nome',
+                originCity: cleanTripBase.originCity || null,
+                destination: cleanTripBase.destination || null,
+                notes: cleanTripBase.notes || null,
+                extraInfo: cleanTripBase.extraInfo || null,
+                startDate: toTimestampOrNull(cleanTripBase.startDate),
+                endDate: toTimestampOrNull(cleanTripBase.endDate),
+                participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })),
+                reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })),
+                transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })),
+                accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })),
+                itinerary: (cleanTripBase.itinerary || []).map(i => ({ day: i.day || null, time: i.time || null, activity: i.activity || '?', location: i.location || null, bookingRef: i.bookingRef || null, cost: safeToNumberOrNull(i.cost), notes: i.notes || null, link: i.link || null })),
+                budget: { items: (cleanTripBase.budget?.items || []).map(b => ({ category: b.category || 'Altro', description: b.description || '?', estimated: safeToNumberOrNull(b.estimated), actual: safeToNumberOrNull(b.actual), paidBy: b.paidBy || null, splitBetween: b.splitBetween || null })) },
+                packingList: (cleanTripBase.packingList || []).map(p => ({ name: p.name || '?', category: p.category || 'Altro', quantity: safeToPositiveIntegerOrDefault(p.quantity), packed: p.packed || false })),
+                sharedAt: Timestamp.now() // Timestamp condivisione
+            };
+
+            console.log("Invio a Firestore:", JSON.stringify(dataToSend, null, 2));
+            if (shareButton) shareButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+            // *** LA CHIAMATA A FIRESTORE ***
+            const docRef = await addDoc(collection(db, "sharedTrips"), dataToSend);
+            shareLink = `${window.location.origin}${window.location.pathname}?shareId=${docRef.id}`;
+            console.log("Viaggio condiviso con ID: ", docRef.id);
+
+            // Tentativo con Web Share API
+            if (navigator.share) {
+                const shareData = {
+                    title: `Viaggio: ${originalTrip.name || 'S.N.'}`,
+                    text: `Ecco i dettagli del mio viaggio "${originalTrip.name || 'S.N.'}":\nDestinazione: ${originalTrip.destination || 'N/D'}\nDate: ${formatDate(originalTrip.startDate)} - ${formatDate(originalTrip.endDate)}\n(Apri il link per importare nell'app!)`,
+                    url: shareLink,
+                };
+                 if (shareButton) shareButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Apro condivisione...';
+                await navigator.share(shareData);
+                showToast("Pannello di condivisione aperto.", "success");
+            } else {
+                // Fallback con prompt
+                prompt("Web Share non supportato. Copia questo link:", shareLink);
+                showToast("Link di condivisione generato!", "success");
+            }
+
+        } catch (error) {
+            if (error.name === 'AbortError') { // Utente ha annullato Web Share
+                console.log('Condivisione annullata dall\'utente.');
+                showToast("Condivisione annullata.", "info");
+            } else { // Altri errori (Firestore o Web Share)
+                console.error('Errore durante la condivisione:', error);
+                console.error("Dati inviati (potrebbero essere parziali o problematici):", dataToSend);
+                showToast("Errore durante la condivisione. Controlla console.", "error");
+                // Fallback estremo: mostra il link nel prompt se è stato generato prima dell'errore share
+                if (shareLink && !navigator.share) { // Mostra solo se il fallback prompt non è stato già usato
+                     prompt("Errore nell'aprire la condivisione. Copia manualmente il link:", shareLink);
+                } else if (shareLink && navigator.share) {
+                    // Se web share fallisce ma il link c'è, l'utente potrebbe volerlo copiare
+                    showConfirmationModal("Errore Condivisione", "Impossibile aprire il pannello di condivisione, ma il link è stato generato. Vuoi copiarlo manualmente?", ()=>{
+                        if(navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(shareLink).then(() => showToast("Link copiato!", "success")).catch(()=> prompt("Copia manualmente:", shareLink));
+                        } else {
+                            prompt("Copia manualmente:", shareLink);
+                        }
+                    })
+                }
+            }
+        } finally {
+            if (shareButton) {
+                shareButton.disabled = false;
+                shareButton.innerHTML = '<i class="fas fa-share-alt"></i> Condividi';
+            }
+        }
+    };
+
+
+    // --- Importazione da Link ---
+    const cloneAndRegenerateTripIds = (tripDataFromFirebase) => {
+        // Converti eventuali Timestamp letti da Firestore in stringhe ISO prima di clonare
+        const convertTimestampsToStrings = (data) => {
+            if (data === null || typeof data !== 'object') return data;
+            if (data instanceof Timestamp) { // Controllo esplicito del tipo Timestamp Firebase v9+
+                try { return data.toDate().toISOString(); }
+                catch (e) { console.warn("Errore conversione Timestamp in stringa:", e); return null; }
+            }
+            if (Array.isArray(data)) {
+                return data.map(item => convertTimestampsToStrings(item));
+            }
+            const newData = {};
+            for (const key in data) {
+                if (Object.prototype.hasOwnProperty.call(data, key)) {
+                    newData[key] = convertTimestampsToStrings(data[key]);
+                }
+            }
+            return newData;
+        };
+
+        const tripDataWithStrings = convertTimestampsToStrings(tripDataFromFirebase);
+        const newTrip = JSON.parse(JSON.stringify(tripDataWithStrings)); // Clonazione profonda
+        newTrip.id = generateId('trip');
+        newTrip.isTemplate = false; // Un viaggio importato non è un template
+
+        const regenerateSubItemsIds = (items) => {
+            if (!Array.isArray(items)) return [];
+            // Assicurati che 'id' esista o assegna un prefisso default
+            return items.map(item => ({
+                ...item,
+                id: generateId(item?.id?.split('_')[0] || 'item')
+            }));
+        };
+
+        newTrip.participants = regenerateSubItemsIds(newTrip.participants);
+        newTrip.reminders = regenerateSubItemsIds(newTrip.reminders);
+        newTrip.transportations = regenerateSubItemsIds(newTrip.transportations);
+        newTrip.accommodations = regenerateSubItemsIds(newTrip.accommodations);
+        newTrip.itinerary = regenerateSubItemsIds(newTrip.itinerary);
+        if (!newTrip.budget) newTrip.budget = { items: [], estimatedTotal: 0, actualTotal: 0 }; // Inizializza se non esiste
+        newTrip.budget.items = regenerateSubItemsIds(newTrip.budget.items);
+        newTrip.packingList = regenerateSubItemsIds(newTrip.packingList);
+
+        // Ricalcola totali budget
+        let calcEst = 0;
+        let calcAct = 0;
+        (newTrip.budget.items || []).forEach(item => {
+            const est = safeToNumberOrNull(item.estimated); // Usa safe helper
+            const act = safeToNumberOrNull(item.actual);     // Usa safe helper
+            if (est !== null) calcEst += est;
+            if (act !== null) calcAct += act;
+        });
+        newTrip.budget.estimatedTotal = calcEst;
+        newTrip.budget.actualTotal = calcAct;
+
+        return newTrip;
+    }
+
+    const handleImportSharedTrip = (sharedTripData) => {
+        if (!sharedTripData) return;
+        try {
+            const newTrip = cloneAndRegenerateTripIds(sharedTripData);
+            trips.push(newTrip);
+            saveTrips();
+            // Deseleziona prima di selezionare per forzare il re-render completo
+            currentTripId = null;
+            renderTripList();
+            // Seleziona il nuovo viaggio
+            selectTrip(newTrip.id);
+            showToast(`Viaggio "${newTrip.name || 'Senza Nome'}" importato con successo!`, "success");
+             // URL dovrebbe essere già pulito da checkForSharedTrip
+        } catch (error) {
+            console.error("Errore durante l'importazione del viaggio condiviso:", error);
+            showToast("Errore durante l'importazione del viaggio.", "error");
+        }
+    };
+
+    const checkForSharedTrip = async () => {
+         if (!db) { console.warn("Firestore non inizializzato, impossibile controllare viaggi condivisi."); return; }
+        const urlParams = new URLSearchParams(window.location.search);
+        const shareId = urlParams.get('shareId');
+
+        if (shareId) {
+            console.log("Trovato shareId:", shareId);
+            // Pulisci subito l'URL per evitare re-importazioni accidentali al refresh o errore
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.delete('shareId');
+            history.replaceState(null, '', currentUrl.toString());
+
+            showToast("Recupero viaggio condiviso...", "info");
+            try {
+                const docRef = doc(db, "sharedTrips", shareId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const sharedTripData = docSnap.data();
+                    console.log("Dati viaggio recuperati:", sharedTripData);
+                    showConfirmationModal(
+                        'Importa Viaggio Condiviso',
+                        `È stato condiviso con te il viaggio "${sharedTripData.name || 'Senza Nome'}". Vuoi importarlo?`,
+                        () => handleImportSharedTrip(sharedTripData) // Passa i dati grezzi letti
+                    );
+                } else {
+                    console.warn("Nessun viaggio trovato con questo shareId:", shareId);
+                    showToast("Viaggio condiviso non trovato o scaduto.", "error");
+                }
+            } catch (error) {
+                console.error("Errore nel recuperare il viaggio condiviso:", error);
+                showToast("Errore nel recuperare il viaggio condiviso.", "error");
+            }
+        }
+    };
 
     // ==========================================================================
     // == FUNZIONI CALCOLO BILANCIO SPESE ==
     // ==========================================================================
-    const calculateExpenseBalance = () => { /* ... (Invariato, usa findTripById) ... */ };
-    const renderBalanceResults = (result) => { /* ... (Invariato) ... */ };
+
+    const calculateExpenseBalance = () => {
+        if (!currentTripId) return { error: "Nessun viaggio selezionato." };
+        const trip = findTripById(currentTripId);
+        if (!trip) return { error: "Viaggio non trovato." };
+        if (!Array.isArray(trip.participants) || trip.participants.length === 0) {
+            return { error: "Aggiungi almeno un partecipante per calcolare il bilancio." };
+        }
+        if (!trip.budget || !Array.isArray(trip.budget.items) || trip.budget.items.length === 0) {
+             return { balances: {}, totalSharedExpense: 0, errors: [] }; // Nessuna spesa, restituisce stato valido
+        }
+
+        const participantNames = trip.participants.map(p => p.name.trim());
+        const balances = {};
+        participantNames.forEach(name => balances[name] = 0); // Inizializza saldi a 0
+
+        let totalSharedExpense = 0;
+        const calculationErrors = []; // Traccia errori specifici sulle righe
+
+        trip.budget.items.forEach((item, index) => {
+            const actualCost = safeToNumberOrNull(item.actual); // Usa safe helper
+
+            // Considera solo spese con costo effettivo > 0 e con info di divisione valida
+            if (actualCost === null || actualCost <= 0 || !item.splitBetween || !item.paidBy) {
+                return; // Salta questa spesa se manca costo effettivo, pagante o divisione
+            }
+
+            const payerName = item.paidBy.trim();
+            const splitRule = item.splitBetween.trim();
+
+            // Validazione Payer: deve essere uno dei partecipanti
+            if (!participantNames.includes(payerName)) {
+                calculationErrors.push(`Riga budget ${index + 1} ("${item.description || 'N/D'}"): Pagante "${payerName}" non è un partecipante valido.`);
+                return; // Salta questa spesa se il pagante non è valido
+            }
+
+            let sharers = [];
+            if (splitRule.toLowerCase() === 'tutti') {
+                sharers = [...participantNames]; // Copia l'array dei partecipanti
+            } else {
+                // Nomi separati da virgola
+                const potentialSharers = splitRule.split(',')
+                                            .map(name => name.trim())
+                                            .filter(name => name); // Rimuovi stringhe vuote
+
+                // Verifica che ogni nome specificato sia un partecipante valido
+                const invalidSharers = potentialSharers.filter(name => !participantNames.includes(name));
+                if (invalidSharers.length > 0) {
+                     calculationErrors.push(`Riga budget ${index + 1} ("${item.description || 'N/D'}"): Partecipanti alla divisione non validi: ${invalidSharers.join(', ')}.`);
+                     // Filtra via i nomi non validi per continuare il calcolo con quelli validi
+                     sharers = potentialSharers.filter(name => participantNames.includes(name));
+                } else {
+                     sharers = potentialSharers; // Tutti validi
+                }
+            }
+
+            // Se dopo la validazione non ci sono partecipanti per la divisione, salta la spesa
+            if (sharers.length === 0) {
+                 if (!calculationErrors.some(err => err.startsWith(`Riga budget ${index + 1}`))) { // Evita messaggi duplicati
+                    calculationErrors.push(`Riga budget ${index + 1} ("${item.description || 'N/D'}"): Nessun partecipante valido trovato per la divisione (splitBetween: "${splitRule}").`);
+                 }
+                return;
+            }
+
+            // Calcola la quota e aggiorna i saldi
+            const costPerSharer = actualCost / sharers.length;
+            totalSharedExpense += actualCost;
+
+            balances[payerName] += actualCost;
+            sharers.forEach(sharerName => {
+                 // Non serve più controllare if (balances[sharerName] !== undefined) perché li abbiamo inizializzati tutti
+                 balances[sharerName] -= costPerSharer;
+            });
+        });
+
+        // Arrotonda i saldi finali
+        for (const name in balances) {
+            balances[name] = Math.round(balances[name] * 100) / 100;
+        }
+
+        return { balances, totalSharedExpense, errors: calculationErrors };
+    };
+
+     const renderBalanceResults = (result) => {
+        if (!balanceResultsContainer || !balanceResultsUl || !balanceSummaryDiv || !balanceErrorMessageP) return;
+
+        // Resetta l'area risultati
+        balanceResultsUl.innerHTML = '';
+        balanceSummaryDiv.innerHTML = '';
+        balanceErrorMessageP.textContent = '';
+        balanceErrorMessageP.style.display = 'none';
+        balanceResultsContainer.style.display = 'block';
+
+        // Gestisci caso di errore iniziale (es. no partecipanti)
+        if (result.error) {
+            balanceErrorMessageP.textContent = `Errore: ${result.error}`;
+            balanceErrorMessageP.style.display = 'block';
+            balanceResultsContainer.style.display = 'none'; // Nascondi il resto se c'è un errore bloccante
+            return;
+        }
+
+        const { balances, totalSharedExpense, errors } = result;
+
+        let hasBalancesToShow = false; // Flag per sapere se ci sono saldi non nulli
+        Object.entries(balances).forEach(([name, balance]) => {
+             // Mostra solo saldi significativamente diversi da zero (tolleranza per errori floating point)
+            if(Math.abs(balance) > 0.005) {
+                hasBalancesToShow = true;
+                const li = document.createElement('li');
+                const nameSpan = document.createElement('span');
+                const balanceSpan = document.createElement('span');
+
+                nameSpan.textContent = name;
+                // Mostra sempre l'importo assoluto (positivo) da dare o ricevere
+                balanceSpan.textContent = formatCurrency(Math.abs(balance));
+
+                if (balance > 0) {
+                    li.classList.add('positive-balance');
+                    nameSpan.textContent += " (Deve Ricevere)";
+                } else {
+                    li.classList.add('negative-balance');
+                    nameSpan.textContent += " (Deve Dare)";
+                }
+                li.appendChild(nameSpan);
+                li.appendChild(balanceSpan);
+                balanceResultsUl.appendChild(li);
+            }
+        });
+
+        // Messaggio se tutti i saldi sono (quasi) zero o non c'erano spese
+        if (!hasBalancesToShow && errors.length === 0) {
+             const li = document.createElement('li');
+             li.textContent = "Tutti i saldi sono a zero o non ci sono spese divise da calcolare.";
+             balanceResultsUl.appendChild(li);
+        } else if (!hasBalancesToShow && errors.length > 0) {
+             const li = document.createElement('li');
+             li.textContent = "Nessun saldo da regolare (ma ci sono stati errori nel calcolo).";
+             balanceResultsUl.appendChild(li);
+        }
+
+
+        // Mostra il totale delle spese effettivamente divise
+        balanceSummaryDiv.textContent = `Spesa Totale Divisa: ${formatCurrency(totalSharedExpense)}`;
+
+        // Mostra errori di calcolo specifici se presenti
+        if (errors.length > 0) {
+            balanceErrorMessageP.innerHTML = `<strong>Attenzione, si sono verificati errori durante il calcolo:</strong><br>` + errors.join('<br>');
+            balanceErrorMessageP.style.display = 'block';
+        }
+    };
 
      // ==========================================================================
      // == FUNZIONI DI AUTENTICAZIONE ==
