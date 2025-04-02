@@ -39,9 +39,14 @@
 
             <hr class="auth-divider">
 
-            <!-- Signup Form -->
-            <form id="signup-form">
-                <h3>Non hai un account? Registrati</h3>
+            <!-- Testo e Link per mostrare il form di Registrazione -->
+            <p class="signup-prompt">
+                Non hai un account? <a href="#" id="show-signup-link">Registrati</a>
+            </p>
+
+            <!-- Form di Registrazione (Nascosto di default) -->
+            <form id="signup-form" style="display: none;">
+                <h3>Registrati</h3> <!-- Titolo per il form rivelato -->
                 <div class="form-control">
                     <label for="signup-email">Email:</label>
                     <input type="email" id="signup-email" required>
@@ -56,6 +61,7 @@
                 </div>
                 <button type="submit" class="btn btn-secondary btn-block">Registrati</button>
             </form>
+            <!-- Fine Form Registrazione -->
         </div>
          <footer> <p>© 2024 Travel Planner Pro</p> </footer>
     </div>
