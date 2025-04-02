@@ -1,26 +1,25 @@
 /* --- Reset Base & Font --- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; display: flex; justify-content: center; align-items: flex-start; /* Allinea all'inizio per Auth */ min-height: 100vh; padding: 0; /* Rimuovi padding body */ font-size: 15px; }
+body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 0; font-size: 15px; }
 
 /* --- Stili Autenticazione --- */
 .auth-container {
-    display: flex; /* Mostra di default */
+    display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    width: 100%; /* Prende tutta larghezza */
+    width: 100%;
     padding: 20px;
     background-color: #f4f7f6;
 }
-.auth-container footer { /* Footer specifico per Auth */
+.auth-container footer {
     margin-top: 30px;
     text-align: center;
     color: #6c757d;
     font-size: 0.9rem;
     width: 100%;
 }
-
 .auth-box {
     width: 100%;
     max-width: 450px;
@@ -29,87 +28,35 @@ body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #33
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    margin-bottom: auto; /* Spinge il footer in basso se c'è spazio */
+    margin-bottom: auto;
 }
-
-.auth-box h1 {
-    color: #007991;
-    margin-bottom: 10px;
-    font-size: 1.8rem;
-}
-.auth-box h1 i {
-    margin-right: 8px;
-}
-
-.auth-box p {
-    color: #6c757d;
-    margin-bottom: 25px;
-}
-
-.auth-box h3 {
-    font-size: 1.3rem;
-    color: #343a40;
-    margin-bottom: 20px;
-    text-align: left; /* Allinea a sinistra le label */
-}
-
-.auth-box .form-control label {
-    display: block; /* Assicura che vada a capo */
-    text-align: left;
-    font-weight: 500;
-    margin-bottom: 6px;
-    font-size: 0.9rem;
-    color: #495057;
-}
-.auth-box .form-control input {
-     width: 100%;
-     padding: 10px 12px;
-     border: 1px solid #ced4da;
-     border-radius: 4px;
-     font-size: 0.95rem;
-     font-family: inherit;
-     transition: border-color 0.2s ease, box-shadow 0.2s ease;
-     background-color: #fff;
-}
-.auth-box .form-control {
-    margin-bottom: 18px;
-}
-
-.btn-block {
-    width: 100%;
-    padding: 12px;
-    font-size: 1rem;
-}
-
-.auth-divider {
-    margin: 30px 0;
-    border: 0;
-    border-top: 1px solid #dee2e6;
-}
-
-#auth-error { /* Stile specifico per messaggio errore Auth */
-    text-align: center;
-    margin-bottom: 15px;
-    background-color: #f8d7da;
-    color: #842029;
-    padding: 10px;
-    border: 1px solid #f5c2c7;
-    border-radius: 4px;
-}
-
+.auth-box h1 { color: #007991; margin-bottom: 10px; font-size: 1.8rem; }
+.auth-box h1 i { margin-right: 8px; }
+.auth-box p { color: #6c757d; margin-bottom: 25px; }
+.auth-box h3 { font-size: 1.3rem; color: #343a40; margin-bottom: 20px; text-align: left; }
+.auth-box .form-control label { display: block; text-align: left; font-weight: 500; margin-bottom: 6px; font-size: 0.9rem; color: #495057; }
+.auth-box .form-control input { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s ease, box-shadow 0.2s ease; background-color: #fff; }
+.auth-box .form-control { margin-bottom: 18px; }
+.btn-block { width: 100%; padding: 12px; font-size: 1rem; }
+.auth-divider { margin: 30px 0; border: 0; border-top: 1px solid #dee2e6; }
+#auth-error { text-align: center; margin-bottom: 15px; background-color: #f8d7da; color: #842029; padding: 10px; border: 1px solid #f5c2c7; border-radius: 4px; }
 
 /* --- Stili App Principale --- */
 .app-container {
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    overflow: hidden; /* Impedisce overflow container principale */
     width: 100%;
-    max-width: 1450px; /* Larghezza massima app */
-    /* display: flex; Gestito da JS */
+    max-width: 1450px;
+    display: flex; /* Messo qui, non gestito da JS */
     flex-direction: column;
-    height: calc(100vh - 30px); /* Altezza quasi piena per Desktop */
-    margin: 15px; /* Aggiunge spazio intorno all'app */
+    height: calc(100vh - 30px); /* Default per Desktop */
+    margin: 15px;
+}
+/* Nascondi l'app inizialmente */
+.app-container:not([style*="display: flex"]) {
+     display: none;
 }
 
 header {
@@ -118,66 +65,36 @@ header {
     padding: 12px 25px;
     text-align: center;
     flex-shrink: 0;
-    display: flex; /* Per allineare titolo e user info */
+    display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative; /* Per z-index potenziale */
+    z-index: 10; /* Assicura sia sopra contenuto scrollabile */
 }
-header h1 {
-    font-weight: 600;
-    font-size: 1.7rem;
-    margin: 0; /* Rimuovi margini default */
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-header h1 i { /* Icona dentro H1 */
-    margin-right: 0; /* Rimuovi margine se gap è usato */
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    color: white;
-    font-size: 0.9rem;
-}
-#user-email-display {
-    font-weight: 500;
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 4px 8px;
-    border-radius: 3px;
-}
-#logout-btn {
-    background-color: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    color: white;
-    padding: 6px 10px; /* Leggermente più piccolo */
-}
-#logout-btn:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-    border-color: white;
-}
+header h1 { font-weight: 600; font-size: 1.7rem; margin: 0; display: flex; align-items: center; gap: 10px; }
+header h1 i { margin-right: 0; }
+.user-info { display: flex; align-items: center; gap: 15px; color: white; font-size: 0.9rem; }
+#user-email-display { font-weight: 500; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background-color: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 3px; }
+#logout-btn { background-color: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.5); color: white; padding: 6px 10px; }
+#logout-btn:hover { background-color: rgba(255, 255, 255, 0.3); border-color: white; }
 
 .main-content {
     display: flex;
-    flex: 1; /* Occupa lo spazio rimanente */
-    overflow: hidden; /* Nasconde overflow del main-content stesso */
+    flex: 1; /* Occupa spazio verticale rimanente */
+    overflow: hidden; /* Nasconde overflow main-content stesso */
+    /* overflow-y: auto; <-- VERRÀ AGGIUNTO SOLO PER MOBILE */
 }
 
-/* --- Sidebar --- */
-.sidebar { width: 320px; background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; /* Scroll per la sidebar */ }
+/* --- Sidebar (Stili Desktop) --- */
+.sidebar { width: 320px; background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; /* Scroll sidebar su desktop */ }
 .sidebar h2 { font-size: 1.3rem; color: #005f73; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .search-bar { position: relative; margin-bottom: 15px; }
 .search-bar input { width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9rem; }
 .search-bar i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6c757d; font-size: 0.9rem; }
 .trip-list-controls { margin-bottom: 15px; display: flex; gap: 10px; } .trip-list-controls button { flex: 1; }
-.trip-list { list-style: none; margin: 0 -20px; padding: 0 20px; flex-grow: 1; /* Occupa spazio disponibile */}
+.trip-list { list-style: none; margin: 0 -20px; padding: 0 20px; flex-grow: 1; }
 .trip-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; margin-bottom: 5px; border-radius: 5px; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; border: 1px solid transparent; overflow: hidden; font-size: 0.95rem; }
-.trip-list li.is-template { opacity: 0.7; font-style: italic; background-color: #f8f9fa; border-color: #e9ecef; cursor: not-allowed;} /* Template non selezionabili */
+.trip-list li.is-template { opacity: 0.7; font-style: italic; background-color: #f8f9fa; border-color: #e9ecef; cursor: not-allowed;}
 .trip-list li.hidden { display: none; }
 .trip-list li:not(.is-template):hover { background-color: #dee2e6; }
 .trip-list li.active:not(.is-template) { background-color: #007991; color: white; font-weight: 600; border-color: #005f73; }
@@ -188,11 +105,11 @@ header h1 i { /* Icona dentro H1 */
 .trip-list li.active:not(.is-template) .btn-delete-trip:hover { color: #f8d7da; }
 #loading-trips { color: #6c757d; } #loading-trips i { margin-right: 8px; color: #007991; }
 
-/* --- Area Dettagli --- */
-.trip-details-area { flex: 1; /* Occupa spazio rimanente */ padding: 25px; overflow-y: auto; /* Scroll per i dettagli */ background-color: #f8f9fa; }
+/* --- Area Dettagli (Stili Desktop) --- */
+.trip-details-area { flex: 1; padding: 25px; overflow-y: auto; /* Scroll dettagli su desktop */ background-color: #f8f9fa; }
 .trip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
-.trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; /* Spinge azioni a destra */ margin-bottom: 0; /* Rimuovi margine se su unica riga */ }
-.trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; } /* Ridotto gap bottoni */
+.trip-header h2 { color: #007991; font-size: 1.6rem; margin-right: auto; margin-bottom: 0; }
+.trip-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .card { background-color: #ffffff; border-radius: 6px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07); padding: 20px; margin-bottom: 20px; }
 .card h3 { display: flex; align-items: center; gap: 10px; color: #005f73; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; font-size: 1.3rem; }
 .card h4 { font-size: 1.1rem; color: #343a40; margin-bottom: 10px; }
@@ -324,31 +241,36 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
 
 /* --- Responsiveness --- */
 @media (max-width: 1200px) {
-    .app-container { max-width: calc(100% - 30px); /* Meno margine su schermi larghi ma non enormi */ }
+    .app-container { max-width: calc(100% - 30px); }
 }
+
+/* Tablet e inferiori */
 @media (max-width: 992px) {
     .app-container {
-        height: auto; /* Altezza automatica su tablet */
-        min-height: 100vh;
+        height: auto; /* Altezza automatica */
+        min-height: 100vh; /* Occupa almeno tutta l'altezza */
         margin: 0;
         border-radius: 0;
     }
     .main-content {
-        flex-direction: column;
-        height: auto; /* Altezza automatica */
-        overflow: visible;
+        flex-direction: column; /* Sidebar sopra, Dettagli sotto */
+        height: auto;
+        overflow: auto; /* <<<< MODIFICA: Main content diventa scrollabile */
+        -webkit-overflow-scrolling: touch; /* Scroll fluido su iOS */
     }
     .sidebar {
         width: 100%;
-        max-height: 45vh; /* Limita altezza sidebar */
-        overflow-y: auto;
+        /* max-height: 45vh; */ /* <<<< RIMOSSO: Non limitare altezza sidebar */
+        /* overflow-y: auto; */ /* <<<< RIMOSSO: Scroll gestito da main-content */
         border-bottom: 1px solid #dee2e6;
         border-right: none;
+        flex-shrink: 0; /* Impedisce che si restringa */
     }
     .trip-details-area {
-        overflow-y: auto; /* Permetti scroll per i dettagli */
+        /* overflow-y: auto; */ /* <<<< RIMOSSO: Scroll gestito da main-content */
         padding: 15px;
-        flex: 1; /* Occupa spazio rimanente se sidebar ha max-height */
+        flex: 1 0 auto; /* Permette crescita ma non restringimento eccessivo */
+        min-height: 0; /* Fix per flexbox in alcuni browser */
     }
     .trip-header { align-items: flex-start; }
     .trip-header h2 { width: 100%; margin-bottom: 10px; }
@@ -356,19 +278,17 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
     .form-row .form-control { flex-basis: 100%; }
     .form-control.quantity-control { flex-basis: 100px !important; }
 }
+
+/* Mobile */
 @media (max-width: 576px) {
      body { font-size: 14px; }
      .app-container {
-         height: 100svh;     /* <-- MODIFICA CHIAVE: Usa Small Viewport Height */
+         height: 100svh; /* <<<< MODIFICA: Usa Small Viewport Height */
          margin: 0;
          border-radius: 0;
      }
      .main-content {
-         /* height: calc(100% - 53px - 47px); */ /* <-- RIMOSSO CALC */
-         flex: 1; /* Assicura che prenda lo spazio rimanente */
-         display: flex; /* Mantiene flex per le sotto-aree */
-         flex-direction: column; /* Assicura stacking verticale su mobile */
-         overflow: hidden; /* Nasconde overflow del contenitore main */
+         /* Nessuna modifica necessaria qui rispetto a 992px, è già colonna e scrollabile */
      }
      header { flex-wrap: wrap; padding: 10px 15px; }
      header h1 { font-size: 1.4rem; width: 100%; text-align: center; margin-bottom: 8px; gap: 6px;}
@@ -376,17 +296,11 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
      #user-email-display { max-width: 150px; }
      .sidebar {
          padding: 15px;
-         max-height: 40vh; /* O un'altezza fissa se preferito */
-         overflow-y: auto; /* Scroll per sidebar */
-         flex-shrink: 0; /* Non farla ridurre troppo */
-         width: 100%;
-         border-bottom: 1px solid #dee2e6;
-         border-right: none;
+         /* max-height: 40vh; */ /* <<<< Già rimosso sopra, corretto */
      }
      .trip-details-area {
          padding: 10px;
-         overflow-y: auto; /* Scroll per dettagli */
-         flex: 1; /* Occupa lo spazio rimanente sotto la sidebar */
+         /* flex: 1; Rimosso, l'altezza è determinata dal contenuto */
      }
      .trip-header h2 { font-size: 1.3rem; }
      .tab-link { padding: 10px 10px; font-size: 0.8rem; gap: 4px; }
@@ -406,30 +320,12 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
 /* Opzionale: Stili specifici per dispositivi touch per migliorare usabilità */
 @media (hover: none) and (pointer: coarse) {
   /* Aumenta leggermente la dimensione dei bottoni principali */
-  .btn {
-    padding: 11px 18px;
-    min-height: 44px; /* Target tattile minimo */
-  }
-  .btn-sm {
-    padding: 8px 14px;
-    min-height: 40px;
-  }
-  /* Aumenta area cliccabile icone */
-  .btn-icon {
-    padding: 10px;
-    min-width: 44px;
-    min-height: 44px;
-  }
+  .btn { padding: 11px 18px; min-height: 44px; }
+  .btn-sm { padding: 8px 14px; min-height: 40px; }
+  .btn-icon { padding: 10px; min-width: 44px; min-height: 44px; }
   /* Rimuovi effetti hover che possono rimanere 'appiccicati' */
   .btn:hover:not(:disabled),
   .trip-list li:not(.is-template):hover,
-  .btn-icon:hover {
-    /* Reset o usa un effetto diverso da background-color/box-shadow */
-    background-color: inherit; /* Esempio: rimuovi cambio sfondo */
-    box-shadow: none;
-  }
-  /* Mantieni hover per bottoni attivi per feedback */
-   .trip-list li.active:not(.is-template):hover {
-        background-color: #005f73; /* Mantieni hover su attivo */
-   }
+  .btn-icon:hover { background-color: inherit; box-shadow: none; }
+  .trip-list li.active:not(.is-template):hover { background-color: #005f73; }
 }
