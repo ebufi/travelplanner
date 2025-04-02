@@ -298,3 +298,25 @@ footer.app-footer { text-align: center; padding: 15px; background-color: #e9ecef
     gap: 8px; /* Mantiene lo spazio tra dropdown ed elimina */
     align-items: center; /* Allinea verticalmente */
 }
+/* --- Fix Dropdown Stacking Context --- */
+.trip-header.card {
+    /* Assicura che l'header crei uno stacking context */
+    position: relative;
+    /* Dagli uno z-index per metterlo sopra il contenuto successivo */
+    z-index: 10; /* Un valore > 0 dovrebbe bastare, 10 è sicuro */
+}
+
+/* Assicurati che il menu stesso abbia uno z-index alto
+   (normalmente già impostato, ma lo confermiamo) */
+.dropdown-menu {
+    /* ... altri stili esistenti ... */
+    z-index: 1000; /* Deve essere alto per stare sopra altri elementi *dentro* l'header */
+}
+
+/* Potrebbe essere utile anche assicurare che il contenitore diretto
+   del dropdown sia posizionato correttamente (normalmente già fatto) */
+.action-dropdown {
+    position: relative; /* Conferma che sia relativo */
+    z-index: 1; /* Opzionale: assicura che sia sopra altri elementi in .trip-actions,
+                   ma .trip-header { z-index: 10; } è la modifica chiave */
+}
