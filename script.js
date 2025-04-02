@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         camping: [ { name: "Tenda", category: "Attrezzatura", quantity: 1 }, { name: "Sacco a pelo", category: "Attrezzatura", quantity: 1 }, { name: "Materassino", category: "Attrezzatura", quantity: 1 }, { name: "Fornello da campeggio + Gas", category: "Attrezzatura", quantity: 1 }, { name: "Gavetta/Stoviglie", category: "Attrezzatura", quantity: 1 }, { name: "Coltellino multiuso", category: "Attrezzatura", quantity: 1 }, { name: "Torcia frontale/Lanterna + Batterie", category: "Attrezzatura", quantity: 1 }, { name: "Kit igiene personale", category: "Igiene", quantity: 1 }, { name: "Asciugamano microfibra", category: "Igiene", quantity: 1 }, { name: "Repellente insetti", category: "Salute", quantity: 1 }, { name: "Sedia pieghevole (opzionale)", category: "Attrezzatura", quantity: 1 }, { name: "Cibo a lunga conservazione", category: "Cibo", quantity: 1 } ]
     };
     const DEFAULT_PACKING_CATEGORIES = ["Vestiti", "Accessori", "Igiene", "Salute", "Documenti/Tech", "Attrezzatura", "Intrattenimento", "Cibo", "Altro"];
+    const FORMS_TO_TOGGLE = ['participant', 'reminder', 'transport', 'accommodation', 'itinerary']; // Tipi di form da nascondere/mostrare
 
     // ==========================================================================
     // == ELEMENTI DOM ==
@@ -103,6 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailSummaryBtn = checkElement('email-summary-btn');
     const copySummaryBtn = checkElement('copy-summary-btn');
     const tabsContainer = checkElement('.tabs', true);
+
+    // Info Tab
     const tripInfoForm = checkElement('trip-info-form');
     const editTripIdInput = checkElement('edit-trip-id');
     const tripNameInput = checkElement('trip-name');
@@ -113,7 +116,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const tripIsTemplateCheckbox = checkElement('trip-is-template');
     const tripNotesTextarea = checkElement('trip-notes');
     const tripExtraInfoTextarea = checkElement('trip-extra-info');
+
+    // Participants Tab (Form Toggle)
+    const showAddParticipantFormBtn = checkElement('show-add-participant-form-btn');
     const addParticipantForm = checkElement('add-participant-form');
+    const participantFormTitle = checkElement('participant-form-title');
+    const hideAddParticipantFormBtn = checkElement('hide-add-participant-form-btn');
     const editParticipantIdInput = checkElement('edit-participant-id');
     const participantNameInput = checkElement('participant-name');
     const participantNotesInput = checkElement('participant-notes');
@@ -122,7 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const noParticipantsItemsP = checkElement('no-participants-items');
     const participantSubmitBtn = checkElement('participant-submit-btn');
     const participantCancelEditBtn = checkElement('participant-cancel-edit-btn');
+
+    // Reminders Tab (Form Toggle)
+    const showAddReminderFormBtn = checkElement('show-add-reminder-form-btn');
     const addReminderItemForm = checkElement('add-reminder-item-form');
+    const reminderFormTitle = checkElement('reminder-form-title');
+    const hideAddReminderFormBtn = checkElement('hide-add-reminder-form-btn');
     const editReminderItemIdInput = checkElement('edit-reminder-item-id');
     const reminderDescriptionInput = checkElement('reminder-description');
     const reminderDueDateInput = checkElement('reminder-due-date');
@@ -132,7 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const reminderSubmitBtn = checkElement('reminder-submit-btn');
     const reminderCancelEditBtn = checkElement('reminder-cancel-edit-btn');
     const reminderSortControl = checkElement('reminder-sort-control');
+
+    // Transport Tab (Form Toggle)
+    const showAddTransportFormBtn = checkElement('show-add-transport-form-btn');
     const addTransportItemForm = checkElement('add-transport-item-form');
+    const transportFormTitle = checkElement('transport-form-title');
+    const hideAddTransportFormBtn = checkElement('hide-add-transport-form-btn');
     const editTransportItemIdInput = checkElement('edit-transport-item-id');
     const transportTypeSelect = checkElement('transport-type');
     const transportDescriptionInput = checkElement('transport-description');
@@ -152,7 +170,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchTrainlineBtn = checkElement('search-trainline-btn');
     const addTransportTotalToBudgetBtn = checkElement('add-transport-total-to-budget-btn');
     const transportSortControl = checkElement('transport-sort-control');
+
+    // Accommodation Tab (Form Toggle)
+    const showAddAccommodationFormBtn = checkElement('show-add-accommodation-form-btn');
     const addAccommodationItemForm = checkElement('add-accommodation-item-form');
+    const accommodationFormTitle = checkElement('accommodation-form-title');
+    const hideAddAccommodationFormBtn = checkElement('hide-add-accommodation-form-btn');
     const editAccommodationItemIdInput = checkElement('edit-accommodation-item-id');
     const accommodationNameInput = checkElement('accommodation-name');
     const accommodationTypeSelect = checkElement('accommodation-type');
@@ -167,7 +190,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const noAccommodationItemsP = checkElement('no-accommodation-items');
     const accommodationSubmitBtn = checkElement('accommodation-submit-btn');
     const accommodationCancelEditBtn = checkElement('accommodation-cancel-edit-btn');
+
+    // Itinerary Tab (Form Toggle)
+    const showAddItineraryFormBtn = checkElement('show-add-itinerary-form-btn');
     const addItineraryItemForm = checkElement('add-itinerary-item-form');
+    const itineraryFormTitle = checkElement('itinerary-form-title');
+    const hideAddItineraryFormBtn = checkElement('hide-add-itinerary-form-btn');
     const editItineraryItemIdInput = checkElement('edit-itinerary-item-id');
     const itineraryDayInput = checkElement('itinerary-day');
     const itineraryTimeInput = checkElement('itinerary-time');
@@ -183,6 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const itineraryCancelEditBtn = checkElement('itinerary-cancel-edit-btn');
     const searchItineraryInput = checkElement('search-itinerary-input');
     const itinerarySortControl = checkElement('itinerary-sort-control');
+
+    // Budget Tab (Form Always Visible)
     const addBudgetItemForm = checkElement('add-budget-item-form');
     const editBudgetItemIdInput = checkElement('edit-budget-item-id');
     const budgetCategorySelect = checkElement('budget-category');
@@ -199,6 +229,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const budgetSubmitBtn = checkElement('budget-submit-btn');
     const budgetCancelEditBtn = checkElement('budget-cancel-edit-btn');
     const budgetSortControl = checkElement('budget-sort-control');
+
+    // Packing List Tab (Form Always Visible)
     const predefinedChecklistsContainer = checkElement('.predefined-checklists', true);
     const addPackingItemForm = checkElement('add-packing-item-form');
     const editPackingItemIdInput = checkElement('edit-packing-item-id');
@@ -211,11 +243,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const packingCancelEditBtn = checkElement('packing-cancel-edit-btn');
     const searchPackingInput = checkElement('search-packing-input');
     const packingSortControl = checkElement('packing-sort-control');
+
+    // Balance Tab
     const calculateBalanceBtn = checkElement('calculate-balance-btn');
     const balanceResultsContainer = checkElement('balance-results-container');
     const balanceResultsUl = checkElement('balance-results');
     const balanceSummaryDiv = checkElement('balance-summary');
     const balanceErrorMessageP = checkElement('balance-error-message');
+
+    // Modals & Misc
     const newTripModal = checkElement('new-trip-modal');
     const newTripNameInput = checkElement('new-trip-name-input');
     const newTripErrorP = checkElement('new-trip-modal-error');
@@ -262,7 +298,71 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeNewTripModal = () => closeModal(newTripModal);
     const showConfirmationModal = (title, message, onConfirm) => { if (!confirmationModal) return; confirmationModalTitle.textContent = title; confirmationModalMessage.textContent = message; confirmActionCallback = onConfirm; openModal(confirmationModal); };
     const closeConfirmationModal = () => { confirmActionCallback = null; closeModal(confirmationModal); };
-    const resetEditState = (formType) => { editingItemId[formType] = null; const form = document.getElementById(`add-${formType}-item-form`); const submitBtn = document.getElementById(`${formType}-submit-btn`); const cancelBtn = document.getElementById(`${formType}-cancel-edit-btn`); const hiddenInput = document.getElementById(`edit-${formType}-item-id`); if (form) form.reset(); if(hiddenInput) hiddenInput.value = ''; if (submitBtn) { let addText = 'Aggiungi'; switch(formType) { case 'participant': addText = 'Partecipante'; break; case 'reminder': addText = 'Promemoria'; break; case 'transport': addText = 'Trasporto'; break; case 'accommodation': addText = 'Alloggio'; break; case 'itinerary': addText = 'Attività'; break; case 'budget': addText = 'Spesa'; break; case 'packing': addText = 'Oggetto'; break; } submitBtn.innerHTML = `<i class="fas fa-plus"></i> ${addText}`; submitBtn.classList.remove('btn-warning'); submitBtn.classList.add('btn-secondary'); } if (cancelBtn) cancelBtn.style.display = 'none'; if(formType === 'transport' && typeof toggleSearchButtonsVisibility === 'function') toggleSearchButtonsVisibility(); };
+
+    // --- MODIFICATA ---
+    const resetEditState = (formType) => {
+        editingItemId[formType] = null;
+        const form = document.getElementById(`add-${formType}-item-form`);
+        const submitBtn = document.getElementById(`${formType}-submit-btn`);
+        const cancelBtn = document.getElementById(`${formType}-cancel-edit-btn`);
+        const hiddenInput = document.getElementById(`edit-${formType}-item-id`);
+        const showFormBtn = document.getElementById(`show-add-${formType}-form-btn`); // Può essere null per Budget/Packing/Info
+        const formTitleEl = document.getElementById(`${formType}-form-title`); // Può essere null
+
+        // Resetta e nasconde il form SOLO se esiste il bottone per mostrarlo (è un form toggleable)
+        if (form && showFormBtn) {
+            form.reset();
+            form.style.display = 'none'; // NASCONDE il form al reset
+        } else if (form) {
+            // Per Info/Budget/Packing che rimangono visibili, resetta solo i campi
+             form.reset();
+        }
+
+        if(hiddenInput) hiddenInput.value = '';
+
+        // Aggiorna testo bottone Submit
+        if (submitBtn) {
+            let addText = 'Aggiungi';
+            switch(formType) {
+                case 'participant': addText = 'Partecipante'; break;
+                case 'reminder': addText = 'Promemoria'; break;
+                case 'transport': addText = 'Trasporto'; break;
+                case 'accommodation': addText = 'Alloggio'; break;
+                case 'itinerary': addText = 'Attività'; break;
+                case 'budget': addText = 'Spesa'; break; // Mantenuto per Budget
+                case 'packing': addText = 'Oggetto'; break; // Mantenuto per Packing
+            }
+            submitBtn.innerHTML = `<i class="fas fa-plus"></i> ${addText}`; // Riporta a "Aggiungi" o testo specifico
+            submitBtn.classList.remove('btn-warning');
+            submitBtn.classList.add('btn-secondary');
+        }
+
+        if (cancelBtn) cancelBtn.style.display = 'none'; // Nasconde "Annulla Modifica"
+
+        // MOSTRA il bottone "Aggiungi Nuovo" (solo per i form che vengono nascosti)
+        if(showFormBtn) {
+            showFormBtn.style.display = 'inline-flex';
+        }
+
+        // Resetta il titolo del form (solo per i form che vengono nascosti)
+        if (formTitleEl && FORMS_TO_TOGGLE.includes(formType)) {
+             let titleText = 'Nuovo'; // Default
+             switch(formType) {
+                  case 'participant': titleText = 'Nuovo Partecipante'; break;
+                  case 'reminder': titleText = 'Nuovo Promemoria'; break;
+                  case 'transport': titleText = 'Nuovo Trasporto'; break;
+                  case 'accommodation': titleText = 'Nuovo Alloggio'; break;
+                  case 'itinerary': titleText = 'Nuova Attività'; break;
+             }
+             formTitleEl.textContent = `Aggiungi ${titleText}`;
+        }
+
+        // Logica specifica (es. bottoni Skyscanner/Trainline)
+        if(formType === 'transport' && typeof toggleSearchButtonsVisibility === 'function') {
+             toggleSearchButtonsVisibility();
+        }
+    };
+
     const createMapLink = (query) => query ? `${GOOGLE_MAPS_BASE_URL}${encodeURIComponent(query)}` : null;
     const formatDisplayLink = (link) => { if (!link) return ''; try { new URL(link); const displayLink = link.length > 40 ? link.substring(0, 37) + '...' : link; return `<a href="${link}" target="_blank" rel="noopener noreferrer" class="external-link" title="${link}">${displayLink} <i class="fas fa-external-link-alt"></i></a>`; } catch (_) { return link; } };
     const safeToNumberOrNull = (value) => { if (value === null || value === undefined || value === '') return null; const num = Number(value); if (isNaN(num) || !isFinite(num)) { return null; } return num; };
@@ -301,13 +401,241 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
     // == FUNZIONI MODIFICA ITEM ==
     // ==========================================================================
-    const startEditItem = (listType, itemId) => { if (!currentTripId) return; const trip = findTripById(currentTripId); if (!trip) return; let itemToEdit = null; let list = []; switch (listType) { case 'participant': list = trip.participants || []; break; case 'reminder': list = trip.reminders || []; break; case 'transport': list = trip.transportations || []; break; case 'accommodation': list = trip.accommodations || []; break; case 'itinerary': list = trip.itinerary || []; break; case 'budget': list = trip.budget?.items || []; break; case 'packing': list = trip.packingList || []; break; default: return; } itemToEdit = list.find(item => item && item.id === itemId); if (!itemToEdit) { console.error(`Item ${itemId} non trovato in lista ${listType}`); return; } Object.keys(editingItemId).forEach(type => { if (type !== listType) resetEditState(type); }); editingItemId[listType] = itemId; const form = document.getElementById(`add-${listType}-item-form`); const submitBtn = document.getElementById(`${listType}-submit-btn`); const cancelBtn = document.getElementById(`${listType}-cancel-edit-btn`); const hiddenInput = document.getElementById(`edit-${listType}-item-id`); if (hiddenInput) hiddenInput.value = itemId; try { switch (listType) { case 'participant': participantNameInput.value = itemToEdit.name || ''; participantNotesInput.value = itemToEdit.notes || ''; participantExtraInfoTextarea.value = itemToEdit.extraInfo || ''; break; case 'reminder': reminderDescriptionInput.value = itemToEdit.description || ''; reminderDueDateInput.value = itemToEdit.dueDate || ''; reminderStatusSelect.value = itemToEdit.status || 'todo'; break; case 'transport': transportTypeSelect.value = itemToEdit.type || 'Altro'; transportDescriptionInput.value = itemToEdit.description || ''; transportDepartureLocInput.value = itemToEdit.departureLoc || ''; transportDepartureDatetimeInput.value = itemToEdit.departureDateTime || ''; transportArrivalLocInput.value = itemToEdit.arrivalLoc || ''; transportArrivalDatetimeInput.value = itemToEdit.arrivalDateTime || ''; transportBookingRefInput.value = itemToEdit.bookingRef || ''; transportCostInput.value = itemToEdit.cost ?? ''; transportNotesInput.value = itemToEdit.notes || ''; transportLinkInput.value = itemToEdit.link || ''; break; case 'accommodation': accommodationNameInput.value = itemToEdit.name || ''; accommodationTypeSelect.value = itemToEdit.type || 'Hotel'; accommodationAddressInput.value = itemToEdit.address || ''; accommodationCheckinInput.value = itemToEdit.checkinDateTime || ''; accommodationCheckoutInput.value = itemToEdit.checkoutDateTime || ''; accommodationBookingRefInput.value = itemToEdit.bookingRef || ''; accommodationCostInput.value = itemToEdit.cost ?? ''; accommodationNotesInput.value = itemToEdit.notes || ''; accommodationLinkInput.value = itemToEdit.link || ''; break; case 'itinerary': itineraryDayInput.value = itemToEdit.day || ''; itineraryTimeInput.value = itemToEdit.time || ''; itineraryActivityInput.value = itemToEdit.activity || ''; itineraryLocationInput.value = itemToEdit.location || ''; itineraryBookingRefInput.value = itemToEdit.bookingRef || ''; itineraryCostInput.value = itemToEdit.cost ?? ''; itineraryNotesInput.value = itemToEdit.notes || ''; itineraryLinkInput.value = itemToEdit.link || ''; break; case 'budget': budgetCategorySelect.value = itemToEdit.category || 'Altro'; budgetDescriptionInput.value = itemToEdit.description || ''; budgetEstimatedInput.value = itemToEdit.estimated ?? ''; budgetActualInput.value = itemToEdit.actual ?? ''; budgetPaidByInput.value = itemToEdit.paidBy || ''; budgetSplitBetweenInput.value = itemToEdit.splitBetween || ''; break; case 'packing': packingItemNameInput.value = itemToEdit.name || ''; packingItemCategoryInput.value = itemToEdit.category || 'Altro'; packingItemQuantityInput.value = itemToEdit.quantity || 1; break; } } catch (error) { console.error(`Errore popola form ${listType}:`, error); showToast(`Errore caricamento dati.`, 'error'); resetEditState(listType); return; } if (submitBtn) { submitBtn.innerHTML = '<i class="fas fa-save"></i> Salva Modifiche'; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-warning'); } if (cancelBtn) cancelBtn.style.display = 'inline-flex'; if (listType === 'transport') toggleSearchButtonsVisibility(); if (form) form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
-    const handleItemFormSubmit = async (e, listType) => { e.preventDefault(); if (!currentTripId || !currentUserId) return; const tripIndex = trips.findIndex(t => t.id === currentTripId); if (tripIndex === -1) { showToast("Errore: Viaggio corrente non trovato.", "error"); return; } const trip = trips[tripIndex]; const currentEditId = editingItemId[listType]; let itemData = {}; let list = []; let listOwner = trip; let renderFn; switch (listType) { case 'participant': list = trip.participants = trip.participants || []; renderFn = renderParticipants; break; case 'reminder': list = trip.reminders = trip.reminders || []; renderFn = renderReminders; break; case 'transport': list = trip.transportations = trip.transportations || []; renderFn = renderTransportations; break; case 'accommodation': list = trip.accommodations = trip.accommodations || []; renderFn = renderAccommodations; break; case 'itinerary': list = trip.itinerary = trip.itinerary || []; renderFn = renderItinerary; break; case 'budget': trip.budget = trip.budget || { items: [], estimatedTotal: 0, actualTotal: 0 }; list = trip.budget.items = trip.budget.items || []; listOwner = trip.budget; renderFn = renderBudget; break; case 'packing': list = trip.packingList = trip.packingList || []; renderFn = renderPackingList; break; default: console.error("Tipo lista non valido:", listType); return; } try { switch (listType) { case 'participant': if (!participantNameInput.value.trim()) throw new Error("Nome partecipante richiesto."); itemData = { name: participantNameInput.value.trim(), notes: participantNotesInput.value.trim() || null, extraInfo: participantExtraInfoTextarea.value.trim() || null }; break; case 'reminder': if (!reminderDescriptionInput.value.trim()) throw new Error("Descrizione promemoria richiesta."); itemData = { description: reminderDescriptionInput.value.trim(), dueDate: reminderDueDateInput.value || null, status: reminderStatusSelect.value }; break; case 'transport': if (!transportDescriptionInput.value.trim()) throw new Error("Descrizione trasporto richiesta."); const depDateTime = transportDepartureDatetimeInput.value || null; const arrDateTime = transportArrivalDatetimeInput.value || null; if (depDateTime && arrDateTime && depDateTime >= arrDateTime) throw new Error("Arrivo deve essere dopo partenza."); const transportCost = safeToNumberOrNull(transportCostInput.value); if(transportCost !== null && transportCost < 0) throw new Error("Costo trasporto non valido."); itemData = { type: transportTypeSelect.value, description: transportDescriptionInput.value.trim(), departureLoc: transportDepartureLocInput.value.trim() || null, departureDateTime: depDateTime, arrivalLoc: transportArrivalLocInput.value.trim() || null, arrivalDateTime: arrDateTime, bookingRef: transportBookingRefInput.value.trim() || null, cost: transportCost, notes: transportNotesInput.value.trim() || null, link: transportLinkInput.value.trim() || null }; break; case 'accommodation': if (!accommodationNameInput.value.trim()) throw new Error("Nome alloggio richiesto."); const checkin = accommodationCheckinInput.value || null; const checkout = accommodationCheckoutInput.value || null; if(checkin && checkout && checkin >= checkout) throw new Error("Check-out deve essere dopo check-in."); const accomCost = safeToNumberOrNull(accommodationCostInput.value); if(accomCost !== null && accomCost < 0) throw new Error("Costo alloggio non valido."); itemData = { name: accommodationNameInput.value.trim(), type: accommodationTypeSelect.value, address: accommodationAddressInput.value.trim() || null, checkinDateTime: checkin, checkoutDateTime: checkout, bookingRef: accommodationBookingRefInput.value.trim() || null, cost: accomCost, notes: accommodationNotesInput.value.trim() || null, link: accommodationLinkInput.value.trim() || null }; break; case 'itinerary': const itinDay = itineraryDayInput.value; const itinAct = itineraryActivityInput.value.trim(); if (!itinDay || !itinAct) throw new Error("Giorno e attività richiesti."); const itinStartDate = trip.startDate ? trip.startDate.split('T')[0] : null; const itinEndDate = trip.endDate ? trip.endDate.split('T')[0] : null; if (itinStartDate && itinEndDate && itinDay && (itinDay < itinStartDate || itinDay > itinEndDate)) showToast(`Attenzione: data ${formatDate(itinDay)} fuori dal periodo del viaggio (${formatDate(itinStartDate)} - ${formatDate(itinEndDate)}).`, 'warning'); const itinCost = safeToNumberOrNull(itineraryCostInput.value); if(itinCost !== null && itinCost < 0) throw new Error("Costo attività non valido."); itemData = { day: itinDay, time: itineraryTimeInput.value || null, activity: itinAct, location: itineraryLocationInput.value.trim() || null, bookingRef: itineraryBookingRefInput.value.trim() || null, cost: itinCost, notes: itineraryNotesInput.value.trim() || null, link: itineraryLinkInput.value.trim() || null }; break; case 'budget': const descBudget = budgetDescriptionInput.value.trim(); const est = safeToNumberOrNull(budgetEstimatedInput.value); const act = safeToNumberOrNull(budgetActualInput.value); if (!descBudget || est === null || est < 0) throw new Error("Descrizione e costo stimato validi richiesti."); if (act !== null && act < 0) throw new Error("Costo effettivo non valido."); itemData = { category: budgetCategorySelect.value, description: descBudget, estimated: est, actual: act, paidBy: budgetPaidByInput.value.trim() || null, splitBetween: budgetSplitBetweenInput.value.trim() || null }; break; case 'packing': if (!packingItemNameInput.value.trim()) throw new Error("Nome oggetto richiesto."); const quantity = safeToPositiveIntegerOrDefault(packingItemQuantityInput.value); itemData = { name: packingItemNameInput.value.trim(), category: packingItemCategoryInput.value.trim() || 'Altro', quantity: quantity }; break; } } catch (error) { showToast(`Errore: ${error.message}`, "error"); return; } if (currentEditId) { const idx = list.findIndex(i => i && i.id === currentEditId); if (idx > -1) { const oldItem = list[idx]; list[idx] = { ...itemData, id: currentEditId, ...(listType === 'packing' ? { packed: oldItem.packed } : {}) }; } else { console.error(`Item ${currentEditId} non trovato.`); showToast("Errore: elemento da modificare non trovato.", "error"); return; } } else { itemData.id = generateId(listType); if (listType === 'packing') itemData.packed = false; if (listType === 'reminder') itemData.status = itemData.status || 'todo'; list.push(itemData); } if (listType === 'budget') { let calcEst = 0, calcAct = 0; trip.budget.items.forEach(item => { const est = safeToNumberOrNull(item.estimated); const act = safeToNumberOrNull(item.actual); if (est !== null) calcEst += est; if (act !== null) calcAct += act; }); trip.budget.estimatedTotal = calcEst; trip.budget.actualTotal = calcAct; } trip.updatedAt = new Date().toISOString(); const success = await saveTripToFirestore(trip); if (success) { if (listType === 'budget') { renderFn(listOwner); } else { renderFn(list); } resetEditState(listType); if(listType === 'participant') populateDatalists(trip); if(listType === 'packing') populatePackingCategoriesDatalist(trip.packingList); } };
-    const handleDeleteItem = (listType, itemId) => { if (!currentTripId || !currentUserId) return; const tripIndex = trips.findIndex(t => t.id === currentTripId); if (tripIndex === -1) return; const trip = trips[tripIndex]; let list, renderFn, listOwner = trip, itemName = "voce"; switch(listType) { case 'participant': list = trip.participants || []; renderFn = renderParticipants; itemName="partecipante"; break; case 'reminder': list = trip.reminders || []; renderFn = renderReminders; itemName="promemoria"; break; case 'transport': list = trip.transportations || []; renderFn = renderTransportations; itemName="trasporto"; break; case 'accommodation': list = trip.accommodations || []; renderFn = renderAccommodations; itemName="alloggio"; break; case 'itinerary': list = trip.itinerary || []; renderFn = renderItinerary; itemName="attività"; break; case 'budget': if (!trip.budget || !trip.budget.items) return; list = trip.budget.items; renderFn = renderBudget; listOwner = trip.budget; itemName="spesa"; break; case 'packing': list = trip.packingList || []; renderFn = renderPackingList; itemName="oggetto"; break; default: return; } if (!Array.isArray(list)) { return; } const itemIndex = list.findIndex(item => item && item.id === itemId); if (itemIndex > -1) { const itemDesc = list[itemIndex].name || list[itemIndex].description || list[itemIndex].activity || `ID: ${itemId}`; showConfirmationModal( `Conferma Eliminazione ${itemName}`, `Eliminare "${itemDesc}"?`, async () => { list.splice(itemIndex, 1); if (listType === 'budget') { let calcEst = 0, calcAct = 0; trip.budget.items.forEach(item => { const est = safeToNumberOrNull(item.estimated); const act = safeToNumberOrNull(item.actual); if (est !== null) calcEst += est; if (act !== null) calcAct += act; }); trip.budget.estimatedTotal = calcEst; trip.budget.actualTotal = calcAct; } trip.updatedAt = new Date().toISOString(); const success = await saveTripToFirestore(trip); if (success) { if (listType === 'budget') { renderFn(listOwner); } else { renderFn(list); } if (editingItemId[listType] === itemId) resetEditState(listType); showToast(`${itemName.charAt(0).toUpperCase() + itemName.slice(1)} eliminato/a.`, 'info'); if(listType === 'participant') populateDatalists(trip); if(listType === 'packing') populatePackingCategoriesDatalist(trip.packingList); } } ); } };
+
+    // --- MODIFICATA ---
+    const startEditItem = (listType, itemId) => {
+        // Verifica se il form è uno di quelli da nascondere/mostrare
+        const shouldToggleForm = FORMS_TO_TOGGLE.includes(listType);
+
+        if (!currentTripId) return;
+        const trip = findTripById(currentTripId);
+        if (!trip) return;
+
+        let itemToEdit = null;
+        let list = [];
+        // Trova la lista corretta
+        switch (listType) {
+            case 'participant': list = trip.participants || []; break;
+            case 'reminder': list = trip.reminders || []; break;
+            case 'transport': list = trip.transportations || []; break;
+            case 'accommodation': list = trip.accommodations || []; break;
+            case 'itinerary': list = trip.itinerary || []; break;
+            case 'budget': list = trip.budget?.items || []; break;
+            case 'packing': list = trip.packingList || []; break;
+            default: return;
+        }
+        itemToEdit = list.find(item => item && item.id === itemId);
+        if (!itemToEdit) { console.error(`Item ${itemId} non trovato in lista ${listType}`); return; }
+
+        // Resetta altri form, ma non nascondere Budget/Packing se erano aperti per modifica
+        Object.keys(editingItemId).forEach(type => {
+            if (type !== listType) {
+                resetEditState(type); // resetEditState ora gestisce la visibilità
+            }
+        });
+        editingItemId[listType] = itemId;
+
+        const form = document.getElementById(`add-${listType}-item-form`);
+        const submitBtn = document.getElementById(`${listType}-submit-btn`);
+        const cancelBtn = document.getElementById(`${listType}-cancel-edit-btn`);
+        const hiddenInput = document.getElementById(`edit-${listType}-item-id`);
+        const showFormBtn = document.getElementById(`show-add-${listType}-form-btn`); // Può essere null
+        const formTitleEl = document.getElementById(`${listType}-form-title`); // Può essere null
+
+        // MOSTRA IL FORM E NASCONDI IL BOTTONE "AGGIUNGI NUOVO" (solo se applicabile)
+        if (form && shouldToggleForm) {
+            form.style.display = 'block';
+            if (showFormBtn) showFormBtn.style.display = 'none';
+        } else if (form && !shouldToggleForm) {
+             // Per Budget/Packing, assicurati che il form sia visibile
+             form.style.display = 'block';
+        }
+
+        // Aggiorna Titolo del Form (solo se applicabile)
+        if (formTitleEl && shouldToggleForm) {
+             let titleText = 'Elemento'; // Default
+             switch(listType) {
+                  case 'participant': titleText = 'Partecipante'; break;
+                  case 'reminder': titleText = 'Promemoria'; break;
+                  case 'transport': titleText = 'Trasporto'; break;
+                  case 'accommodation': titleText = 'Alloggio'; break;
+                  case 'itinerary': titleText = 'Attività'; break;
+             }
+            formTitleEl.textContent = `Modifica ${titleText}`;
+        }
+
+        if (hiddenInput) hiddenInput.value = itemId;
+
+        // Popola i campi del form
+        try {
+            switch (listType) {
+                case 'participant': participantNameInput.value = itemToEdit.name || ''; participantNotesInput.value = itemToEdit.notes || ''; participantExtraInfoTextarea.value = itemToEdit.extraInfo || ''; break;
+                case 'reminder': reminderDescriptionInput.value = itemToEdit.description || ''; reminderDueDateInput.value = itemToEdit.dueDate || ''; reminderStatusSelect.value = itemToEdit.status || 'todo'; break;
+                case 'transport': transportTypeSelect.value = itemToEdit.type || 'Altro'; transportDescriptionInput.value = itemToEdit.description || ''; transportDepartureLocInput.value = itemToEdit.departureLoc || ''; transportDepartureDatetimeInput.value = itemToEdit.departureDateTime || ''; transportArrivalLocInput.value = itemToEdit.arrivalLoc || ''; transportArrivalDatetimeInput.value = itemToEdit.arrivalDateTime || ''; transportBookingRefInput.value = itemToEdit.bookingRef || ''; transportCostInput.value = itemToEdit.cost ?? ''; transportNotesInput.value = itemToEdit.notes || ''; transportLinkInput.value = itemToEdit.link || ''; break;
+                case 'accommodation': accommodationNameInput.value = itemToEdit.name || ''; accommodationTypeSelect.value = itemToEdit.type || 'Hotel'; accommodationAddressInput.value = itemToEdit.address || ''; accommodationCheckinInput.value = itemToEdit.checkinDateTime || ''; accommodationCheckoutInput.value = itemToEdit.checkoutDateTime || ''; accommodationBookingRefInput.value = itemToEdit.bookingRef || ''; accommodationCostInput.value = itemToEdit.cost ?? ''; accommodationNotesInput.value = itemToEdit.notes || ''; accommodationLinkInput.value = itemToEdit.link || ''; break;
+                case 'itinerary': itineraryDayInput.value = itemToEdit.day || ''; itineraryTimeInput.value = itemToEdit.time || ''; itineraryActivityInput.value = itemToEdit.activity || ''; itineraryLocationInput.value = itemToEdit.location || ''; itineraryBookingRefInput.value = itemToEdit.bookingRef || ''; itineraryCostInput.value = itemToEdit.cost ?? ''; itineraryNotesInput.value = itemToEdit.notes || ''; itineraryLinkInput.value = itemToEdit.link || ''; break;
+                case 'budget': budgetCategorySelect.value = itemToEdit.category || 'Altro'; budgetDescriptionInput.value = itemToEdit.description || ''; budgetEstimatedInput.value = itemToEdit.estimated ?? ''; budgetActualInput.value = itemToEdit.actual ?? ''; budgetPaidByInput.value = itemToEdit.paidBy || ''; budgetSplitBetweenInput.value = itemToEdit.splitBetween || ''; break;
+                case 'packing': packingItemNameInput.value = itemToEdit.name || ''; packingItemCategoryInput.value = itemToEdit.category || 'Altro'; packingItemQuantityInput.value = itemToEdit.quantity || 1; break;
+            }
+        } catch (error) {
+            console.error(`Errore popola form ${listType}:`, error);
+            showToast(`Errore caricamento dati per modifica.`, 'error');
+            resetEditState(listType); // Nascondi form in caso di errore nel popolare
+            return;
+        }
+
+        // Aggiorna bottone Submit
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Salva Modifiche';
+            submitBtn.classList.remove('btn-secondary');
+            submitBtn.classList.add('btn-warning');
+        }
+        if (cancelBtn) cancelBtn.style.display = 'inline-flex'; // Mostra "Annulla Modifica"
+
+        if (listType === 'transport') toggleSearchButtonsVisibility();
+        if (form) form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    const handleItemFormSubmit = async (e, listType) => {
+        e.preventDefault();
+        if (!currentTripId || !currentUserId) return;
+        const tripIndex = trips.findIndex(t => t.id === currentTripId);
+        if (tripIndex === -1) { showToast("Errore: Viaggio corrente non trovato.", "error"); return; }
+
+        const trip = trips[tripIndex];
+        const currentEditId = editingItemId[listType];
+        let itemData = {};
+        let list = [];
+        let listOwner = trip;
+        let renderFn;
+        let friendlyListName = listType; // Nome per i messaggi
+
+        // Determina lista, proprietario, funzione di rendering e nome user-friendly
+        switch (listType) {
+            case 'participant': list = trip.participants = trip.participants || []; renderFn = renderParticipants; friendlyListName="Partecipante"; break;
+            case 'reminder': list = trip.reminders = trip.reminders || []; renderFn = renderReminders; friendlyListName="Promemoria"; break;
+            case 'transport': list = trip.transportations = trip.transportations || []; renderFn = renderTransportations; friendlyListName="Trasporto"; break;
+            case 'accommodation': list = trip.accommodations = trip.accommodations || []; renderFn = renderAccommodations; friendlyListName="Alloggio"; break;
+            case 'itinerary': list = trip.itinerary = trip.itinerary || []; renderFn = renderItinerary; friendlyListName="Attività"; break;
+            case 'budget': trip.budget = trip.budget || { items: [], estimatedTotal: 0, actualTotal: 0 }; list = trip.budget.items = trip.budget.items || []; listOwner = trip.budget; renderFn = renderBudget; friendlyListName="Spesa"; break;
+            case 'packing': list = trip.packingList = trip.packingList || []; renderFn = renderPackingList; friendlyListName="Oggetto"; break;
+            default: console.error("Tipo lista non valido:", listType); return;
+        }
+
+        // Validazione e preparazione dati
+        try {
+            switch (listType) {
+                 case 'participant': if (!participantNameInput.value.trim()) throw new Error("Nome partecipante richiesto."); itemData = { name: participantNameInput.value.trim(), notes: participantNotesInput.value.trim() || null, extraInfo: participantExtraInfoTextarea.value.trim() || null }; break;
+                 case 'reminder': if (!reminderDescriptionInput.value.trim()) throw new Error("Descrizione promemoria richiesta."); itemData = { description: reminderDescriptionInput.value.trim(), dueDate: reminderDueDateInput.value || null, status: reminderStatusSelect.value }; break;
+                 case 'transport': if (!transportDescriptionInput.value.trim()) throw new Error("Descrizione trasporto richiesta."); const depDateTime = transportDepartureDatetimeInput.value || null; const arrDateTime = transportArrivalDatetimeInput.value || null; if (depDateTime && arrDateTime && depDateTime >= arrDateTime) throw new Error("Arrivo deve essere dopo partenza."); const transportCost = safeToNumberOrNull(transportCostInput.value); if(transportCost !== null && transportCost < 0) throw new Error("Costo trasporto non valido."); itemData = { type: transportTypeSelect.value, description: transportDescriptionInput.value.trim(), departureLoc: transportDepartureLocInput.value.trim() || null, departureDateTime: depDateTime, arrivalLoc: transportArrivalLocInput.value.trim() || null, arrivalDateTime: arrDateTime, bookingRef: transportBookingRefInput.value.trim() || null, cost: transportCost, notes: transportNotesInput.value.trim() || null, link: transportLinkInput.value.trim() || null }; break;
+                 case 'accommodation': if (!accommodationNameInput.value.trim()) throw new Error("Nome alloggio richiesto."); const checkin = accommodationCheckinInput.value || null; const checkout = accommodationCheckoutInput.value || null; if(checkin && checkout && checkin >= checkout) throw new Error("Check-out deve essere dopo check-in."); const accomCost = safeToNumberOrNull(accommodationCostInput.value); if(accomCost !== null && accomCost < 0) throw new Error("Costo alloggio non valido."); itemData = { name: accommodationNameInput.value.trim(), type: accommodationTypeSelect.value, address: accommodationAddressInput.value.trim() || null, checkinDateTime: checkin, checkoutDateTime: checkout, bookingRef: accommodationBookingRefInput.value.trim() || null, cost: accomCost, notes: accommodationNotesInput.value.trim() || null, link: accommodationLinkInput.value.trim() || null }; break;
+                 case 'itinerary': const itinDay = itineraryDayInput.value; const itinAct = itineraryActivityInput.value.trim(); if (!itinDay || !itinAct) throw new Error("Giorno e attività richiesti."); const itinStartDate = trip.startDate ? trip.startDate.split('T')[0] : null; const itinEndDate = trip.endDate ? trip.endDate.split('T')[0] : null; if (itinStartDate && itinEndDate && itinDay && (itinDay < itinStartDate || itinDay > itinEndDate)) showToast(`Attenzione: data ${formatDate(itinDay)} fuori dal periodo del viaggio (${formatDate(itinStartDate)} - ${formatDate(itinEndDate)}).`, 'warning'); const itinCost = safeToNumberOrNull(itineraryCostInput.value); if(itinCost !== null && itinCost < 0) throw new Error("Costo attività non valido."); itemData = { day: itinDay, time: itineraryTimeInput.value || null, activity: itinAct, location: itineraryLocationInput.value.trim() || null, bookingRef: itineraryBookingRefInput.value.trim() || null, cost: itinCost, notes: itineraryNotesInput.value.trim() || null, link: itineraryLinkInput.value.trim() || null }; break;
+                 case 'budget': const descBudget = budgetDescriptionInput.value.trim(); const est = safeToNumberOrNull(budgetEstimatedInput.value); const act = safeToNumberOrNull(budgetActualInput.value); if (!descBudget || est === null || est < 0) throw new Error("Descrizione e costo stimato validi richiesti."); if (act !== null && act < 0) throw new Error("Costo effettivo non valido."); itemData = { category: budgetCategorySelect.value, description: descBudget, estimated: est, actual: act, paidBy: budgetPaidByInput.value.trim() || null, splitBetween: budgetSplitBetweenInput.value.trim() || null }; break;
+                 case 'packing': if (!packingItemNameInput.value.trim()) throw new Error("Nome oggetto richiesto."); const quantity = safeToPositiveIntegerOrDefault(packingItemQuantityInput.value); itemData = { name: packingItemNameInput.value.trim(), category: packingItemCategoryInput.value.trim() || 'Altro', quantity: quantity }; break;
+            }
+        } catch (error) {
+            showToast(`Errore: ${error.message}`, "error");
+            return; // Non procedere se la validazione fallisce
+        }
+
+        // Aggiunta o Modifica nella lista locale
+        if (currentEditId) {
+            const idx = list.findIndex(i => i && i.id === currentEditId);
+            if (idx > -1) {
+                const oldItem = list[idx];
+                list[idx] = { ...itemData, id: currentEditId, ...(listType === 'packing' ? { packed: oldItem.packed } : {}) };
+            } else {
+                console.error(`Item ${currentEditId} non trovato per modifica.`);
+                showToast("Errore: elemento da modificare non trovato.", "error");
+                return;
+            }
+        } else {
+            itemData.id = generateId(listType);
+            if (listType === 'packing') itemData.packed = false;
+            if (listType === 'reminder') itemData.status = itemData.status || 'todo';
+            list.push(itemData);
+        }
+
+        // Ricalcolo totali budget se necessario
+        if (listType === 'budget') {
+            let calcEst = 0, calcAct = 0;
+            trip.budget.items.forEach(item => {
+                const est = safeToNumberOrNull(item.estimated);
+                const act = safeToNumberOrNull(item.actual);
+                if (est !== null) calcEst += est;
+                if (act !== null) calcAct += act;
+            });
+            trip.budget.estimatedTotal = calcEst;
+            trip.budget.actualTotal = calcAct;
+        }
+
+        trip.updatedAt = new Date().toISOString();
+
+        // Disabilita bottone durante salvataggio
+        const submitBtn = document.getElementById(`${listType}-submit-btn`);
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
+        }
+
+        // Salva su Firestore
+        const success = await saveTripToFirestore(trip);
+
+        // Riabilita bottone
+         if (submitBtn) {
+             submitBtn.disabled = false;
+             // Il testo verrà reimpostato correttamente da resetEditState
+         }
+
+        if (success) {
+            // Renderizza la lista aggiornata
+            if (listType === 'budget') {
+                renderFn(listOwner); // Passa l'oggetto budget che contiene la lista e i totali
+            } else {
+                renderFn(list); // Passa direttamente la lista
+            }
+
+            // Resetta lo stato del form (nasconde form, mostra bottone Aggiungi, etc.)
+            resetEditState(listType);
+
+            // Aggiorna datalist se necessario
+            if(listType === 'participant') populateDatalists(trip);
+            if(listType === 'packing') populatePackingCategoriesDatalist(trip.packingList);
+
+             // Mostra toast di successo
+             const actionVerb = currentEditId ? 'modificato/a' : 'aggiunto/a';
+             showToast(`${friendlyListName} ${actionVerb} con successo!`, 'success');
+
+        } else {
+           // Gestione errore salvataggio - non nascondere il form in caso di errore
+           showToast(`Errore durante il salvataggio ${friendlyListName}.`, 'error');
+           // Rimuovi l'elemento aggiunto localmente se era una nuova aggiunta e il salvataggio è fallito
+           if (!currentEditId) {
+                const addedItemIndex = list.findIndex(i => i.id === itemData.id);
+                if (addedItemIndex > -1) list.splice(addedItemIndex, 1);
+                // Ricalcola totali budget se l'aggiunta fallita era una spesa
+                 if (listType === 'budget') {
+                     let calcEst = 0, calcAct = 0;
+                     trip.budget.items.forEach(item => {
+                         const est = safeToNumberOrNull(item.estimated);
+                         const act = safeToNumberOrNull(item.actual);
+                         if (est !== null) calcEst += est;
+                         if (act !== null) calcAct += act;
+                     });
+                     trip.budget.estimatedTotal = calcEst;
+                     trip.budget.actualTotal = calcAct;
+                     renderBudget(trip.budget); // Rerender budget UI
+                 }
+           }
+        }
+    };
+
+    const handleDeleteItem = (listType, itemId) => { if (!currentTripId || !currentUserId) return; const tripIndex = trips.findIndex(t => t.id === currentTripId); if (tripIndex === -1) return; const trip = trips[tripIndex]; let list, renderFn, listOwner = trip, itemName = "voce", friendlyListName = listType; switch(listType) { case 'participant': list = trip.participants || []; renderFn = renderParticipants; itemName="partecipante"; friendlyListName="Partecipante"; break; case 'reminder': list = trip.reminders || []; renderFn = renderReminders; itemName="promemoria"; friendlyListName="Promemoria"; break; case 'transport': list = trip.transportations || []; renderFn = renderTransportations; itemName="trasporto"; friendlyListName="Trasporto"; break; case 'accommodation': list = trip.accommodations || []; renderFn = renderAccommodations; itemName="alloggio"; friendlyListName="Alloggio"; break; case 'itinerary': list = trip.itinerary || []; renderFn = renderItinerary; itemName="attività"; friendlyListName="Attività"; break; case 'budget': if (!trip.budget || !trip.budget.items) return; list = trip.budget.items; renderFn = renderBudget; listOwner = trip.budget; itemName="spesa"; friendlyListName="Spesa"; break; case 'packing': list = trip.packingList || []; renderFn = renderPackingList; itemName="oggetto"; friendlyListName="Oggetto"; break; default: return; } if (!Array.isArray(list)) { return; } const itemIndex = list.findIndex(item => item && item.id === itemId); if (itemIndex > -1) { const itemDesc = list[itemIndex].name || list[itemIndex].description || list[itemIndex].activity || `ID: ${itemId}`; showConfirmationModal( `Conferma Eliminazione ${friendlyListName}`, `Eliminare "${itemDesc}"?`, async () => { list.splice(itemIndex, 1); if (listType === 'budget') { let calcEst = 0, calcAct = 0; trip.budget.items.forEach(item => { const est = safeToNumberOrNull(item.estimated); const act = safeToNumberOrNull(item.actual); if (est !== null) calcEst += est; if (act !== null) calcAct += act; }); trip.budget.estimatedTotal = calcEst; trip.budget.actualTotal = calcAct; } trip.updatedAt = new Date().toISOString(); const success = await saveTripToFirestore(trip); if (success) { if (listType === 'budget') { renderFn(listOwner); } else { renderFn(list); } if (editingItemId[listType] === itemId) resetEditState(listType); showToast(`${friendlyListName} eliminato/a.`, 'info'); if(listType === 'participant') populateDatalists(trip); if(listType === 'packing') populatePackingCategoriesDatalist(trip.packingList); } } ); } };
     const handleTogglePacked = async (itemId, isPacked) => { if (!currentTripId || !currentUserId) return; const tripIndex = trips.findIndex(t => t.id === currentTripId); if (tripIndex === -1) return; const trip = trips[tripIndex]; if (!trip.packingList) trip.packingList = []; const idx = trip.packingList.findIndex(i => i && i.id === itemId); if (idx > -1) { trip.packingList[idx].packed = isPacked; trip.updatedAt = new Date().toISOString(); const success = await saveTripToFirestore(trip); if (success) { if (currentSort.packing === 'status') { renderPackingList(trip.packingList); } else { const li = packingListUl?.querySelector(`li[data-item-id="${itemId}"]`); if (li) li.classList.toggle('packed', isPacked); const checkbox = packingListUl?.querySelector(`input[data-item-id="${itemId}"]`); if (checkbox) checkbox.checked = isPacked; } } } };
-    const handleImportPackingList = async (type) => { if (!currentTripId || !PREDEFINED_PACKING_LISTS[type] || !currentUserId) return; const tripIndex = trips.findIndex(t => t.id === currentTripId); if (tripIndex === -1) return; const trip = trips[tripIndex]; const predefined = PREDEFINED_PACKING_LISTS[type]; let added = 0; trip.packingList = trip.packingList || []; const currentLower = trip.packingList.map(i => (i?.name || '').toLowerCase()); predefined.forEach(predefItem => { if (!currentLower.includes(predefItem.name.toLowerCase())) { trip.packingList.push({ id: generateId('pack'), name: predefItem.name, packed: false, category: predefItem.category || 'Altro', quantity: predefItem.quantity || 1 }); added++; } }); if (added > 0) { trip.updatedAt = new Date().toISOString(); const success = await saveTripToFirestore(trip); if (success) { renderPackingList(trip.packingList); populatePackingCategoriesDatalist(trip.packingList); showToast(`${added} oggetti aggiunti!`, 'success'); } } else { showToast(`Nessun nuovo oggetto da aggiungere.`, 'info'); } };
+    const handleImportPackingList = async (type) => { if (!currentTripId || !PREDEFINED_PACKING_LISTS[type] || !currentUserId) return; const tripIndex = trips.findIndex(t => t.id === currentTripId); if (tripIndex === -1) return; const trip = trips[tripIndex]; const predefined = PREDEFINED_PACKING_LISTS[type]; let added = 0; trip.packingList = trip.packingList || []; const currentLower = trip.packingList.map(i => (i?.name || '').toLowerCase()); predefined.forEach(predefItem => { if (!currentLower.includes(predefItem.name.toLowerCase())) { trip.packingList.push({ id: generateId('pack'), name: predefItem.name, packed: false, category: predefItem.category || 'Altro', quantity: predefItem.quantity || 1 }); added++; } }); if (added > 0) { trip.updatedAt = new Date().toISOString(); const success = await saveTripToFirestore(trip); if (success) { renderPackingList(trip.packingList); populatePackingCategoriesDatalist(trip.packingList); showToast(`${added} oggetti aggiunti dalla lista "${type}"!`, 'success'); } } else { showToast(`Nessun nuovo oggetto da aggiungere dalla lista "${type}".`, 'info'); } };
     const addCostToBudget = async (category, description, cost) => { if (!currentTripId || cost === null || cost <= 0 || !currentUserId) return false; const tripIndex = trips.findIndex(t => t.id === currentTripId); if (tripIndex === -1) return false; const trip = trips[tripIndex]; const budgetItem = { id: generateId('budget'), category: category, description: description, estimated: cost, actual: null, paidBy: null, splitBetween: null }; trip.budget = trip.budget || { items: [], estimatedTotal: 0, actualTotal: 0 }; trip.budget.items = trip.budget.items || []; trip.budget.items.push(budgetItem); trip.budget.estimatedTotal = (trip.budget.estimatedTotal || 0) + cost; trip.updatedAt = new Date().toISOString(); const success = await saveTripToFirestore(trip); if (success) { renderBudget(trip.budget); return true; } else { trip.budget.items.pop(); trip.budget.estimatedTotal -= cost; renderBudget(trip.budget); return false; } };
-    const handleCalculateAndAddTransportCost = async () => { if (!currentTripId) { showToast("Seleziona un viaggio.", "error"); return; } const trip = findTripById(currentTripId); if (!trip || !Array.isArray(trip.transportations)) { showToast("Errore dati trasporti.", "error"); return; } let totalCost = 0; trip.transportations.forEach(item => { const cost = Number(item?.cost || 0); if (!isNaN(cost) && cost > 0) { totalCost += cost; } }); if (totalCost <= 0) { showToast("Nessun costo trasporto valido.", "info"); return; } const success = await addCostToBudget("Trasporti", `Totale Costi Trasporti (del ${formatDate(new Date().toISOString().slice(0,10))})`, totalCost); if(success) { showToast(`Costo trasporti (${formatCurrency(totalCost)}) aggiunto al budget!`, 'success'); switchTab('budget-tab'); } };
+    const handleCalculateAndAddTransportCost = async () => { if (!currentTripId) { showToast("Seleziona un viaggio.", "error"); return; } const trip = findTripById(currentTripId); if (!trip || !Array.isArray(trip.transportations)) { showToast("Errore dati trasporti.", "error"); return; } let totalCost = 0; trip.transportations.forEach(item => { const cost = Number(item?.cost || 0); if (!isNaN(cost) && cost > 0) { totalCost += cost; } }); if (totalCost <= 0) { showToast("Nessun costo trasporto valido da aggiungere.", "info"); return; } const success = await addCostToBudget("Trasporti", `Totale Costi Trasporti (al ${formatDate(new Date().toISOString().slice(0,10))})`, totalCost); if(success) { showToast(`Costo trasporti (${formatCurrency(totalCost)}) aggiunto al budget!`, 'success'); switchTab('budget-tab'); } };
 
     // ==========================================================================
     // == FUNZIONI RENDER LISTE ==
@@ -332,6 +660,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleSortChange = (listType, selectElement) => { if (!currentTripId) return; const trip = findTripById(currentTripId); if (!trip) return; currentSort[listType] = selectElement.value; switch(listType) { case 'reminder': renderReminders(trip.reminders); break; case 'transport': renderTransportations(trip.transportations); break; case 'itinerary': renderItinerary(trip.itinerary); break; case 'budget': renderBudget(trip.budget); break; case 'packing': renderPackingList(trip.packingList); break; } saveLocalStorageAppState(); };
     const applyCurrentSortToControls = () => { if(reminderSortControl) reminderSortControl.value = currentSort.reminder; if(transportSortControl) transportSortControl.value = currentSort.transport; if(itinerarySortControl) itinerarySortControl.value = currentSort.itinerary; if(budgetSortControl) budgetSortControl.value = currentSort.budget; if(packingSortControl) packingSortControl.value = currentSort.packing; };
     const handleInternalSearch = (listType, inputElement) => { if (!currentTripId) return; const trip = findTripById(currentTripId); if (!trip) return; currentSearchTerm[listType] = inputElement.value.toLowerCase(); if (listType === 'itinerary') renderItinerary(trip.itinerary); else if (listType === 'packing') renderPackingList(trip.packingList); saveLocalStorageAppState(); };
+
+    // --- NUOVA FUNZIONE ---
+    const setupToggleFormButtons = () => {
+        console.log("DEBUG: Setup Toggle Form Buttons...");
+        // Lista dei tipi di form che devono essere nascosti/mostrati
+        const formToggleConfigs = [
+            { showBtnId: 'show-add-participant-form-btn', formId: 'add-participant-form', hideBtnId: 'hide-add-participant-form-btn', listType: 'participant' },
+            { showBtnId: 'show-add-reminder-form-btn', formId: 'add-reminder-item-form', hideBtnId: 'hide-add-reminder-form-btn', listType: 'reminder' },
+            { showBtnId: 'show-add-transport-form-btn', formId: 'add-transport-item-form', hideBtnId: 'hide-add-transport-form-btn', listType: 'transport' },
+            { showBtnId: 'show-add-accommodation-form-btn', formId: 'add-accommodation-item-form', hideBtnId: 'hide-add-accommodation-form-btn', listType: 'accommodation' },
+            { showBtnId: 'show-add-itinerary-form-btn', formId: 'add-itinerary-item-form', hideBtnId: 'hide-add-itinerary-form-btn', listType: 'itinerary' },
+        ];
+
+        formToggleConfigs.forEach(({ showBtnId, formId, hideBtnId, listType }) => {
+            const showBtn = document.getElementById(showBtnId);
+            const form = document.getElementById(formId);
+            const hideBtn = document.getElementById(hideBtnId);
+            const formTitleEl = document.getElementById(`${listType}-form-title`); // Titolo dinamico
+
+            if (showBtn && form) {
+                showBtn.addEventListener('click', () => {
+                    // Prima resetta per assicurarsi che sia in modalità "Aggiungi"
+                    resetEditState(listType);
+                    // Mostra il form
+                    form.style.display = 'block';
+                    showBtn.style.display = 'none'; // Nasconde il bottone "Aggiungi"
+                    // Aggiorna il titolo del form
+                    if (formTitleEl) {
+                        let titleText = 'Nuovo Elemento'; // Default
+                        switch(listType) {
+                             case 'participant': titleText = 'Partecipante'; break;
+                             case 'reminder': titleText = 'Promemoria'; break;
+                             case 'transport': titleText = 'Trasporto'; break;
+                             case 'accommodation': titleText = 'Alloggio'; break;
+                             case 'itinerary': titleText = 'Attività'; break;
+                        }
+                         formTitleEl.textContent = `Aggiungi ${titleText}`;
+                    }
+                    form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                     // Focus sul primo input del form (opzionale, migliora UX)
+                     const firstInput = form.querySelector('input:not([type="hidden"]), select, textarea');
+                     if (firstInput) firstInput.focus();
+                });
+            }
+
+            if (hideBtn && form && showBtn) {
+                 hideBtn.addEventListener('click', () => {
+                    form.style.display = 'none';
+                    showBtn.style.display = 'inline-flex'; // Mostra di nuovo il bottone "Aggiungi"
+                    resetEditState(listType); // Pulisce il form
+                 });
+            }
+        });
+        console.log("DEBUG: Toggle Form Buttons Setup Complete.");
+    }
 
     // ==========================================================================
     // == FUNZIONI RICERCA ESTERNA ==
@@ -376,7 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
      // ===== Gestione Cambio Stato Autenticazione =====
      const updateUIBasedOnAuthState = async (user) => { currentUser = user; if (user) { currentUserId = user.uid; if(authContainer) authContainer.style.display = 'none'; if(appMainContainer) appMainContainer.style.display = 'flex'; if (user.isAnonymous) { if(userEmailDisplay) userEmailDisplay.textContent = "Ospite"; if(logoutBtn) logoutBtn.innerHTML = '<i class="fas fa-user-plus"></i> Registrati/Accedi'; if(resendVerificationBtn) resendVerificationBtn.style.display = 'none'; if(emailVerificationNotice) emailVerificationNotice.style.display = 'none'; if(anonymousUserPrompt) anonymousUserPrompt.style.display = 'block'; if(linkAccountPrompt) linkAccountPrompt.onclick = (e) => { e.preventDefault(); handleSignOut(); }; } else { if(userEmailDisplay) userEmailDisplay.textContent = user.email; if(logoutBtn) logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout'; if(anonymousUserPrompt) anonymousUserPrompt.style.display = 'none'; if (!user.emailVerified) { if(emailVerificationNotice) emailVerificationNotice.style.display = 'flex'; if(resendVerificationBtn) resendVerificationBtn.style.display = 'inline-flex'; } else { if(emailVerificationNotice) emailVerificationNotice.style.display = 'none'; if(resendVerificationBtn) resendVerificationBtn.style.display = 'none'; } } if(authErrorDiv) authErrorDiv.style.display = 'none'; if(authSuccessDiv) authSuccessDiv.style.display = 'none'; await loadUserTrips(user.uid); loadLocalStorageAppState(); applyCurrentSortToControls(); if(currentTripId && findTripById(currentTripId)) { selectTrip(currentTripId); } else { deselectTrip(); } await checkForSharedTrip(); } else { currentUser = null; currentUserId = null; if(authContainer) authContainer.style.display = 'flex'; if(appMainContainer) appMainContainer.style.display = 'none'; if(userEmailDisplay) userEmailDisplay.textContent = ''; if(passwordResetForm) passwordResetForm.style.display = 'none'; if(loginForm) loginForm.style.display = 'block'; if(signupForm) signupForm.style.display = 'none'; if(signupPromptP) signupPromptP.style.display = 'block'; clearAppDataUI(); } };
-     const clearAppDataUI = () => { console.log("DEBUG: Pulizia UI..."); trips = []; currentTripId = null; editingItemId = { /*...*/ }; if (tripListUl) tripListUl.innerHTML = ''; if (noTripsMessage) noTripsMessage.style.display = 'block'; if (tripDetailsAreaDiv) tripDetailsAreaDiv.style.display = 'none'; if (welcomeMessageDiv) welcomeMessageDiv.style.display = 'none'; if(tripInfoForm) tripInfoForm.reset(); document.querySelectorAll('.add-item-form').forEach(form => form.reset()); Object.keys(editingItemId).forEach(resetEditState); document.querySelectorAll('.item-list').forEach(ul => ul.innerHTML = ''); document.querySelectorAll('.item-list-container p[id^="no-"]').forEach(p => p.style.display = 'block'); if(budgetTotalEstimatedStrong) budgetTotalEstimatedStrong.textContent = formatCurrency(0); if(budgetTotalActualStrong) budgetTotalActualStrong.textContent = formatCurrency(0); if(budgetDifferenceStrong) budgetDifferenceStrong.textContent = formatCurrency(0); if(balanceResultsContainer) balanceResultsContainer.style.display = 'none'; if(downloadTextBtn) downloadTextBtn.disabled = true; if(downloadExcelBtn) downloadExcelBtn.disabled = true; if(deleteTripBtn) deleteTripBtn.disabled = true; if(shareTripBtn) shareTripBtn.disabled = true; if(emailSummaryBtn) emailSummaryBtn.disabled = true; if(copySummaryBtn) copySummaryBtn.disabled = true; if(tripTitleH2) tripTitleH2.textContent = 'Dettagli Viaggio'; console.log("DEBUG: Pulizia UI completata."); };
+     const clearAppDataUI = () => { console.log("DEBUG: Pulizia UI..."); trips = []; currentTripId = null; editingItemId = { participant: null, transport: null, accommodation: null, itinerary: null, budget: null, packing: null, reminder: null }; // Reset state if(tripListUl) tripListUl.innerHTML = ''; if(noTripsMessage) noTripsMessage.style.display = 'block'; if(tripDetailsAreaDiv) tripDetailsAreaDiv.style.display = 'none'; if(welcomeMessageDiv) welcomeMessageDiv.style.display = 'none'; if(tripInfoForm) tripInfoForm.reset(); document.querySelectorAll('.add-item-form').forEach(form => { form.reset(); // Reset forms if (FORMS_TO_TOGGLE.some(type => form.id === `add-${type}-item-form`)) { form.style.display = 'none'; // Hide toggleable forms const showBtn = document.getElementById(`show-${form.id}-btn`); if (showBtn) showBtn.style.display = 'inline-flex'; } }); Object.keys(editingItemId).forEach(resetEditState); // Ensure state is fully reset document.querySelectorAll('.item-list').forEach(ul => ul.innerHTML = ''); document.querySelectorAll('.item-list-container p[id^="no-"]').forEach(p => p.style.display = 'block'); if(budgetTotalEstimatedStrong) budgetTotalEstimatedStrong.textContent = formatCurrency(0); if(budgetTotalActualStrong) budgetTotalActualStrong.textContent = formatCurrency(0); if(budgetDifferenceStrong) budgetDifferenceStrong.textContent = formatCurrency(0); if(balanceResultsContainer) balanceResultsContainer.style.display = 'none'; if(downloadTextBtn) downloadTextBtn.disabled = true; if(downloadExcelBtn) downloadExcelBtn.disabled = true; if(deleteTripBtn) deleteTripBtn.disabled = true; if(shareTripBtn) shareTripBtn.disabled = true; if(emailSummaryBtn) emailSummaryBtn.disabled = true; if(copySummaryBtn) copySummaryBtn.disabled = true; if(tripTitleH2) tripTitleH2.textContent = 'Dettagli Viaggio'; console.log("DEBUG: Pulizia UI completata."); };
 
     // ==========================================================================
     // == GESTIONE STATO UI (LocalStorage) ==
@@ -389,7 +772,147 @@ document.addEventListener('DOMContentLoaded', () => {
     // == INIZIALIZZAZIONE E EVENT LISTENER ==
     // ==========================================================================
     const executeConfirmAction = () => { if (typeof confirmActionCallback === 'function') { try { confirmActionCallback(); } catch(err) { console.error("Errore callback conferma:", err); showToast("Errore.", "error"); } } closeConfirmationModal(); };
-    const initAppEventListeners = () => { console.log("DEBUG: Init App Event Listeners..."); if (newTripBtn) newTripBtn.onclick = handleNewTrip; if (createFromTemplateBtn) createFromTemplateBtn.onclick = openSelectTemplateModal; if (searchTripInput) searchTripInput.oninput = handleSearchTrip; if (tripInfoForm) tripInfoForm.onsubmit = handleSaveTripInfo; if (deleteTripBtn) deleteTripBtn.onclick = () => { if (currentTripId) handleDeleteTrip(currentTripId); }; if (tabsContainer) tabsContainer.onclick = (e) => { const tl = e.target.closest('.tab-link'); if (tl?.dataset.tab) switchTab(tl.dataset.tab); }; if (downloadTextBtn) downloadTextBtn.onclick = handleDownloadText; if (downloadExcelBtn) downloadExcelBtn.onclick = handleDownloadExcel; if (emailSummaryBtn) emailSummaryBtn.onclick = handleEmailSummary; if (copySummaryBtn) copySummaryBtn.onclick = handleCopySummary; if (shareTripBtn) shareTripBtn.onclick = handleShareViaLink; const formsToListen = [ { form: 'add-participant-form', type: 'participant' }, { form: 'add-reminder-item-form', type: 'reminder' }, { form: 'add-transport-item-form', type: 'transport' }, { form: 'add-accommodation-item-form', type: 'accommodation' }, { form: 'add-itinerary-item-form', type: 'itinerary' }, { form: 'add-budget-item-form', type: 'budget' }, { form: 'add-packing-item-form', type: 'packing' }, ]; formsToListen.forEach(item => { const formElement = document.getElementById(item.form); if (formElement) { formElement.onsubmit = (e) => handleItemFormSubmit(e, item.type); } }); const cancelButtons = [ { btn: 'participant-cancel-edit-btn', type: 'participant'}, { btn: 'reminder-cancel-edit-btn', type: 'reminder'}, { btn: 'transport-cancel-edit-btn', type: 'transport'}, { btn: 'accommodation-cancel-edit-btn', type: 'accommodation'}, { btn: 'itinerary-cancel-edit-btn', type: 'itinerary'}, { btn: 'budget-cancel-edit-btn', type: 'budget'}, { btn: 'packing-cancel-edit-btn', type: 'packing'}, ]; cancelButtons.forEach(item => { const btnElement = document.getElementById(item.btn); if(btnElement) { btnElement.onclick = () => resetEditState(item.type); } }); if (tripDetailsAreaDiv) tripDetailsAreaDiv.onclick = (e) => { const editBtn = e.target.closest('.btn-icon.edit'); const deleteBtn = e.target.closest('.btn-icon.delete'); const packingCheckbox = e.target.closest('.packing-checkbox'); if (editBtn) { const itemId = editBtn.dataset.itemId; if(!itemId) return; const type = editBtn.className.match(/(participant|reminder|transport|accommodation|itinerary|budget|packing)-edit-btn/)?.[1]; if(type) startEditItem(type, itemId); } else if (deleteBtn) { const itemId = deleteBtn.dataset.itemId; if(!itemId) return; const type = deleteBtn.className.match(/(participant|reminder|transport|accommodation|itinerary|budget|packing)-delete-btn/)?.[1]; if(type) handleDeleteItem(type, itemId); } else if (packingCheckbox) { const itemId = packingCheckbox.dataset.itemId; if(itemId) handleTogglePacked(itemId, packingCheckbox.checked); } }; if (predefinedChecklistsContainer) { predefinedChecklistsContainer.onclick = (e) => { const btn = e.target.closest('button[data-checklist]'); if (btn?.dataset.checklist) handleImportPackingList(btn.dataset.checklist); }; } if (newTripModal) { if(createTripConfirmBtn) createTripConfirmBtn.onclick = handleCreateTripConfirm; newTripModal.querySelectorAll('.modal-close').forEach(btn => btn.onclick = closeNewTripModal); if(newTripNameInput) newTripNameInput.onkeypress = (e) => { if(e.key === 'Enter') handleCreateTripConfirm(); }; newTripModal.onclick = (e) => { if (e.target === newTripModal) closeNewTripModal(); }; } if (confirmationModal) { const confirmBtn = confirmationModal.querySelector('#confirmation-modal-confirm-btn'); const closeBtns = confirmationModal.querySelectorAll('.modal-close'); if(confirmBtn) { confirmBtn.onclick = executeConfirmAction; } closeBtns.forEach(btn => btn.onclick = closeConfirmationModal); confirmationModal.onclick = (e) => { if (e.target === confirmationModal) closeConfirmationModal(); }; } if (addTransportTotalToBudgetBtn) { addTransportTotalToBudgetBtn.onclick = handleCalculateAndAddTransportCost; } if (searchSkyscannerBtn) { searchSkyscannerBtn.onclick = handleSearchFlights; } if (searchTrainlineBtn) { searchTrainlineBtn.onclick = handleSearchTrains; } if(transportTypeSelect) { transportTypeSelect.onchange = toggleSearchButtonsVisibility; } const sortControls = [ { ctrl: 'reminder-sort-control', type: 'reminder' }, { ctrl: 'transport-sort-control', type: 'transport' }, { ctrl: 'itinerary-sort-control', type: 'itinerary' }, { ctrl: 'budget-sort-control', type: 'budget' }, { ctrl: 'packing-sort-control', type: 'packing' }, ]; sortControls.forEach(item => { const ctrlElement = document.getElementById(item.ctrl); if(ctrlElement) { ctrlElement.onchange = (e) => handleSortChange(item.type, e.target); } }); if(searchItineraryInput) searchItineraryInput.oninput = (e) => handleInternalSearch('itinerary', e.target); if(searchPackingInput) searchPackingInput.oninput = (e) => handleInternalSearch('packing', e.target); if(calculateBalanceBtn) { calculateBalanceBtn.onclick = () => { const balanceResult = calculateExpenseBalance(); renderBalanceResults(balanceResult); }; } if(resendVerificationBtn) resendVerificationBtn.onclick = handleResendVerificationEmail; if(resendVerificationBtnNotice) resendVerificationBtnNotice.onclick = handleResendVerificationEmail; console.log("DEBUG: App listeners aggiunti."); };
+    const initAppEventListeners = () => {
+        console.log("DEBUG: Init App Event Listeners...");
+        if (newTripBtn) newTripBtn.onclick = handleNewTrip;
+        if (createFromTemplateBtn) createFromTemplateBtn.onclick = openSelectTemplateModal;
+        if (searchTripInput) searchTripInput.oninput = handleSearchTrip;
+        if (tripInfoForm) tripInfoForm.onsubmit = handleSaveTripInfo;
+        if (deleteTripBtn) deleteTripBtn.onclick = () => { if (currentTripId) handleDeleteTrip(currentTripId); };
+        if (tabsContainer) tabsContainer.onclick = (e) => { const tl = e.target.closest('.tab-link'); if (tl?.dataset.tab) switchTab(tl.dataset.tab); };
+        if (downloadTextBtn) downloadTextBtn.onclick = handleDownloadText;
+        if (downloadExcelBtn) downloadExcelBtn.onclick = handleDownloadExcel;
+        if (emailSummaryBtn) emailSummaryBtn.onclick = handleEmailSummary;
+        if (copySummaryBtn) copySummaryBtn.onclick = handleCopySummary;
+        if (shareTripBtn) shareTripBtn.onclick = handleShareViaLink;
+
+        // Listener per submit dei form item
+        const formsToListen = [
+            { form: 'add-participant-form', type: 'participant' },
+            { form: 'add-reminder-item-form', type: 'reminder' },
+            { form: 'add-transport-item-form', type: 'transport' },
+            { form: 'add-accommodation-item-form', type: 'accommodation' },
+            { form: 'add-itinerary-item-form', type: 'itinerary' },
+            { form: 'add-budget-item-form', type: 'budget' },
+            { form: 'add-packing-item-form', type: 'packing' },
+        ];
+        formsToListen.forEach(item => {
+            const formElement = document.getElementById(item.form);
+            if (formElement) {
+                formElement.onsubmit = (e) => handleItemFormSubmit(e, item.type);
+            }
+        });
+
+        // Listener per bottoni Annulla Modifica
+        const cancelButtons = [
+            { btn: 'participant-cancel-edit-btn', type: 'participant'},
+            { btn: 'reminder-cancel-edit-btn', type: 'reminder'},
+            { btn: 'transport-cancel-edit-btn', type: 'transport'},
+            { btn: 'accommodation-cancel-edit-btn', type: 'accommodation'},
+            { btn: 'itinerary-cancel-edit-btn', type: 'itinerary'},
+            { btn: 'budget-cancel-edit-btn', type: 'budget'},
+            { btn: 'packing-cancel-edit-btn', type: 'packing'},
+        ];
+        cancelButtons.forEach(item => {
+            const btnElement = document.getElementById(item.btn);
+            if(btnElement) {
+                btnElement.onclick = () => resetEditState(item.type);
+            }
+        });
+
+        // Listener delegato per azioni su item (Edit, Delete, Checkbox Packing)
+        if (tripDetailsAreaDiv) {
+            tripDetailsAreaDiv.onclick = (e) => {
+                const editBtn = e.target.closest('.btn-icon.edit');
+                const deleteBtn = e.target.closest('.btn-icon.delete');
+                const packingCheckbox = e.target.closest('.packing-checkbox');
+
+                if (editBtn) {
+                    const itemId = editBtn.dataset.itemId;
+                    if(!itemId) return;
+                    // Trova il tipo dall'array di classi del bottone
+                    const typeMatch = Array.from(editBtn.classList).find(cls => cls.endsWith('-edit-btn'));
+                    const type = typeMatch ? typeMatch.replace('-edit-btn', '') : null;
+                    if(type) startEditItem(type, itemId);
+                } else if (deleteBtn) {
+                    const itemId = deleteBtn.dataset.itemId;
+                    if(!itemId) return;
+                    // Trova il tipo dall'array di classi del bottone
+                    const typeMatch = Array.from(deleteBtn.classList).find(cls => cls.endsWith('-delete-btn'));
+                    const type = typeMatch ? typeMatch.replace('-delete-btn', '') : null;
+                    if(type) handleDeleteItem(type, itemId);
+                } else if (packingCheckbox) {
+                    const itemId = packingCheckbox.dataset.itemId;
+                    if(itemId) handleTogglePacked(itemId, packingCheckbox.checked);
+                }
+            };
+        }
+
+        // Listener per import liste predefinite Packing
+        if (predefinedChecklistsContainer) {
+            predefinedChecklistsContainer.onclick = (e) => {
+                const btn = e.target.closest('button[data-checklist]');
+                if (btn?.dataset.checklist) handleImportPackingList(btn.dataset.checklist);
+            };
+        }
+
+        // Listener Modals
+        if (newTripModal) {
+            if(createTripConfirmBtn) createTripConfirmBtn.onclick = handleCreateTripConfirm;
+            newTripModal.querySelectorAll('.modal-close').forEach(btn => btn.onclick = closeNewTripModal);
+            if(newTripNameInput) newTripNameInput.onkeypress = (e) => { if(e.key === 'Enter') handleCreateTripConfirm(); };
+            newTripModal.onclick = (e) => { if (e.target === newTripModal) closeNewTripModal(); };
+        }
+        if (confirmationModal) {
+            const confirmBtn = confirmationModal.querySelector('#confirmation-modal-confirm-btn');
+            const closeBtns = confirmationModal.querySelectorAll('.modal-close');
+            if(confirmBtn) { confirmBtn.onclick = executeConfirmAction; }
+            closeBtns.forEach(btn => btn.onclick = closeConfirmationModal);
+            confirmationModal.onclick = (e) => { if (e.target === confirmationModal) closeConfirmationModal(); };
+        }
+
+        // Altri Listener Specifici
+        if (addTransportTotalToBudgetBtn) { addTransportTotalToBudgetBtn.onclick = handleCalculateAndAddTransportCost; }
+        if (searchSkyscannerBtn) { searchSkyscannerBtn.onclick = handleSearchFlights; }
+        if (searchTrainlineBtn) { searchTrainlineBtn.onclick = handleSearchTrains; }
+        if(transportTypeSelect) { transportTypeSelect.onchange = toggleSearchButtonsVisibility; }
+
+        // Listener Controlli Ordinamento
+        const sortControls = [
+            { ctrl: 'reminder-sort-control', type: 'reminder' },
+            { ctrl: 'transport-sort-control', type: 'transport' },
+            { ctrl: 'itinerary-sort-control', type: 'itinerary' },
+            { ctrl: 'budget-sort-control', type: 'budget' },
+            { ctrl: 'packing-sort-control', type: 'packing' },
+        ];
+        sortControls.forEach(item => {
+            const ctrlElement = document.getElementById(item.ctrl);
+            if(ctrlElement) {
+                ctrlElement.onchange = (e) => handleSortChange(item.type, e.target);
+            }
+        });
+
+        // Listener Ricerca Interna
+        if(searchItineraryInput) searchItineraryInput.oninput = (e) => handleInternalSearch('itinerary', e.target);
+        if(searchPackingInput) searchPackingInput.oninput = (e) => handleInternalSearch('packing', e.target);
+
+        // Listener Calcolo Bilancio
+        if(calculateBalanceBtn) {
+            calculateBalanceBtn.onclick = () => {
+                const balanceResult = calculateExpenseBalance();
+                renderBalanceResults(balanceResult);
+            };
+        }
+
+        // Listener Reinvia Email Verifica
+        if(resendVerificationBtn) resendVerificationBtn.onclick = handleResendVerificationEmail;
+        if(resendVerificationBtnNotice) resendVerificationBtnNotice.onclick = handleResendVerificationEmail;
+
+        // Setup per mostrare/nascondere i form
+        setupToggleFormButtons(); // <<-- CHIAMATA ALLA NUOVA FUNZIONE
+
+        console.log("DEBUG: App listeners aggiunti.");
+    };
 
     // ==========================================================================
     // == PUNTO DI INGRESSO PRINCIPALE ==
@@ -403,7 +926,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(loginForm) loginForm.addEventListener('submit', handleSignIn);
     if(signupForm) signupForm.addEventListener('submit', handleSignUp);
     if(logoutBtn) logoutBtn.addEventListener('click', handleSignOut);
-    // I listener per resendVerificationBtn e resendVerificationBtnNotice sono aggiunti dentro initAppEventListeners
 
     // Listener Stato Autenticazione Firebase
     if (auth) {
@@ -411,10 +933,24 @@ document.addEventListener('DOMContentLoaded', () => {
         onAuthStateChanged(auth, async (user) => {
             console.log("Auth state changed. User:", user ? (user.isAnonymous ? `Anon ${user.uid}`: user.uid) : 'None');
             await updateUIBasedOnAuthState(user);
+            // Inizializza i listener dell'app SOLO dopo che l'utente è loggato
+            // e solo la prima volta che l'utente si logga in questa sessione.
             if (user && !listenersInitialized) {
-                 initAppEventListeners(); listenersInitialized = true;
-            } else if (!user) { listenersInitialized = false; }
+                 initAppEventListeners();
+                 listenersInitialized = true;
+                 console.log("Listeners dell'app inizializzati.");
+            } else if (!user) {
+                // Se l'utente fa logout, potremmo voler rimuovere i listener o
+                // semplicemente resettare lo stato per la prossima inizializzazione.
+                listenersInitialized = false;
+                console.log("Utente sloggato, stato listener resettato.");
+            }
         });
-    } else { console.error("Auth non inizializzato."); /* ... gestione errore UI ... */ }
+    } else {
+        console.error("Auth non inizializzato.");
+        showAuthError("Errore critico: impossibile inizializzare l'autenticazione.");
+        if(authContainer) authContainer.style.display = 'flex';
+        if(appMainContainer) appMainContainer.style.display = 'none';
+    }
 
 }); // Fine DOMContentLoaded
