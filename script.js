@@ -1,3 +1,4 @@
+```javascript
 // ==========================================================================
 // == FIREBASE MODULE IMPORTS & INITIALIZATION ==
 // ==========================================================================
@@ -16,7 +17,7 @@ import {
     signInAnonymously       // Per login anonimo
 } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 
-// Configurazione Firebase (ATTENZIONE ALLA API KEY IN PRODUZIONE)
+// Configurazione Firebase (ATTENZIONE ALLA API KEY IN PRODUZIONE - Spostare in .env se si usa un build tool)
 const firebaseConfig = {
     apiKey: "AIzaSyBV7k95kgUnMhIzTQR1Xae-O_ksNYzzvmw",
     authDomain: "travel-planner-pro-5dd4f.firebaseapp.com",
@@ -36,8 +37,13 @@ try {
     console.log("Firebase (App, Firestore, Auth) inizializzato correttamente.");
 } catch (error) {
     console.error("Errore inizializzazione Firebase:", error);
+    // MODIFICA: Gestione errore meno drastica. Evita di cancellare l'intera pagina.
     alert("Impossibile inizializzare l'applicazione. Controlla la console per errori.");
-    document.body.innerHTML = '<p style="color: red; text-align: center; margin-top: 50px;">Errore critico nell\'inizializzazione. Impossibile caricare l\'app.</p>';
+    const appContainer = document.getElementById('app-container');
+    if (appContainer) {
+        appContainer.innerHTML = '<p style="color: red; text-align: center; margin-top: 50px;">Errore critico nell\'inizializzazione. Impossibile caricare l\'app.</p>';
+        appContainer.style.display = 'block';
+    }
 }
 
 // ==========================================================================
@@ -301,7 +307,117 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
     // == FUNZIONI MODIFICA ITEM ==
     // ==========================================================================
-    const startEditItem = (listType, itemId) => { if (!currentTripId) return; const trip = findTripById(currentTripId); if (!trip) return; let itemToEdit = null; let list = []; switch (listType) { case 'participant': list = trip.participants || []; break; case 'reminder': list = trip.reminders || []; break; case 'transport': list = trip.transportations || []; break; case 'accommodation': list = trip.accommodations || []; break; case 'itinerary': list = trip.itinerary || []; break; case 'budget': list = trip.budget?.items || []; break; case 'packing': list = trip.packingList || []; break; default: return; } itemToEdit = list.find(item => item && item.id === itemId); if (!itemToEdit) { console.error(`Item ${itemId} non trovato in lista ${listType}`); return; } Object.keys(editingItemId).forEach(type => { if (type !== listType) resetEditState(type); }); editingItemId[listType] = itemId; const form = document.getElementById(`add-${listType}-item-form`); const submitBtn = document.getElementById(`${listType}-submit-btn`); const cancelBtn = document.getElementById(`${listType}-cancel-edit-btn`); const hiddenInput = document.getElementById(`edit-${listType}-item-id`); if (hiddenInput) hiddenInput.value = itemId; try { switch (listType) { case 'participant': participantNameInput.value = itemToEdit.name || ''; participantNotesInput.value = itemToEdit.notes || ''; participantExtraInfoTextarea.value = itemToEdit.extraInfo || ''; break; case 'reminder': reminderDescriptionInput.value = itemToEdit.description || ''; reminderDueDateInput.value = itemToEdit.dueDate || ''; reminderStatusSelect.value = itemToEdit.status || 'todo'; break; case 'transport': transportTypeSelect.value = itemToEdit.type || 'Altro'; transportDescriptionInput.value = itemToEdit.description || ''; transportDepartureLocInput.value = itemToEdit.departureLoc || ''; transportDepartureDatetimeInput.value = itemToEdit.departureDateTime || ''; transportArrivalLocInput.value = itemToEdit.arrivalLoc || ''; transportArrivalDatetimeInput.value = itemToEdit.arrivalDateTime || ''; transportBookingRefInput.value = itemToEdit.bookingRef || ''; transportCostInput.value = itemToEdit.cost ?? ''; transportNotesInput.value = itemToEdit.notes || ''; transportLinkInput.value = itemToEdit.link || ''; break; case 'accommodation': accommodationNameInput.value = itemToEdit.name || ''; accommodationTypeSelect.value = itemToEdit.type || 'Hotel'; accommodationAddressInput.value = itemToEdit.address || ''; accommodationCheckinInput.value = itemToEdit.checkinDateTime || ''; accommodationCheckoutInput.value = itemToEdit.checkoutDateTime || ''; accommodationBookingRefInput.value = itemToEdit.bookingRef || ''; accommodationCostInput.value = itemToEdit.cost ?? ''; accommodationNotesInput.value = itemToEdit.notes || ''; accommodationLinkInput.value = itemToEdit.link || ''; break; case 'itinerary': itineraryDayInput.value = itemToEdit.day || ''; itineraryTimeInput.value = itemToEdit.time || ''; itineraryActivityInput.value = itemToEdit.activity || ''; itineraryLocationInput.value = itemToEdit.location || ''; itineraryBookingRefInput.value = itemToEdit.bookingRef || ''; itineraryCostInput.value = itemToEdit.cost ?? ''; itineraryNotesInput.value = itemToEdit.notes || ''; itineraryLinkInput.value = itemToEdit.link || ''; break; case 'budget': budgetCategorySelect.value = itemToEdit.category || 'Altro'; budgetDescriptionInput.value = itemToEdit.description || ''; budgetEstimatedInput.value = itemToEdit.estimated ?? ''; budgetActualInput.value = itemToEdit.actual ?? ''; budgetPaidByInput.value = itemToEdit.paidBy || ''; budgetSplitBetweenInput.value = itemToEdit.splitBetween || ''; break; case 'packing': packingItemNameInput.value = itemToEdit.name || ''; packingItemCategoryInput.value = itemToEdit.category || 'Altro'; packingItemQuantityInput.value = itemToEdit.quantity || 1; break; } } catch (error) { console.error(`Errore popola form ${listType}:`, error); showToast(`Errore caricamento dati.`, 'error'); resetEditState(listType); return; } if (submitBtn) { submitBtn.innerHTML = '<i class="fas fa-save"></i> Salva Modifiche'; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-warning'); } if (cancelBtn) cancelBtn.style.display = 'inline-flex'; if (listType === 'transport') toggleSearchButtonsVisibility(); if (form) form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
+    const startEditItem = (listType, itemId) => {
+        if (!currentTripId) return;
+        const trip = findTripById(currentTripId);
+        if (!trip) return;
+
+        let itemToEdit = null;
+        let list = [];
+        switch (listType) {
+            case 'participant': list = trip.participants || []; break;
+            case 'reminder': list = trip.reminders || []; break;
+            case 'transport': list = trip.transportations || []; break;
+            case 'accommodation': list = trip.accommodations || []; break;
+            case 'itinerary': list = trip.itinerary || []; break;
+            case 'budget': list = trip.budget?.items || []; break;
+            case 'packing': list = trip.packingList || []; break;
+            default: return;
+        }
+
+        itemToEdit = list.find(item => item && item.id === itemId);
+        if (!itemToEdit) {
+            console.error(`Item ${itemId} non trovato in lista ${listType}`);
+            return;
+        }
+        
+        // --- MODIFICA: Miglioramento UX ---
+        // Non resettare tutti gli altri form, solo quello corrente se necessario.
+        // La riga `Object.keys(editingItemId).forEach(...)` è stata rimossa.
+        editingItemId[listType] = itemId;
+
+        const form = document.getElementById(`add-${listType}-item-form`);
+        const submitBtn = document.getElementById(`${listType}-submit-btn`);
+        const cancelBtn = document.getElementById(`${listType}-cancel-edit-btn`);
+        const hiddenInput = document.getElementById(`edit-${listType}-item-id`);
+        
+        if (hiddenInput) hiddenInput.value = itemId;
+
+        try {
+            switch (listType) {
+                case 'participant':
+                    participantNameInput.value = itemToEdit.name || '';
+                    participantNotesInput.value = itemToEdit.notes || '';
+                    participantExtraInfoTextarea.value = itemToEdit.extraInfo || '';
+                    break;
+                case 'reminder':
+                    reminderDescriptionInput.value = itemToEdit.description || '';
+                    reminderDueDateInput.value = itemToEdit.dueDate || '';
+                    reminderStatusSelect.value = itemToEdit.status || 'todo';
+                    break;
+                case 'transport':
+                    transportTypeSelect.value = itemToEdit.type || 'Altro';
+                    transportDescriptionInput.value = itemToEdit.description || '';
+                    transportDepartureLocInput.value = itemToEdit.departureLoc || '';
+                    transportDepartureDatetimeInput.value = itemToEdit.departureDateTime || '';
+                    transportArrivalLocInput.value = itemToEdit.arrivalLoc || '';
+                    transportArrivalDatetimeInput.value = itemToEdit.arrivalDateTime || '';
+                    transportBookingRefInput.value = itemToEdit.bookingRef || '';
+                    transportCostInput.value = itemToEdit.cost ?? '';
+                    transportNotesInput.value = itemToEdit.notes || '';
+                    transportLinkInput.value = itemToEdit.link || '';
+                    break;
+                case 'accommodation':
+                    accommodationNameInput.value = itemToEdit.name || '';
+                    accommodationTypeSelect.value = itemToEdit.type || 'Hotel';
+                    accommodationAddressInput.value = itemToEdit.address || '';
+                    accommodationCheckinInput.value = itemToEdit.checkinDateTime || '';
+                    accommodationCheckoutInput.value = itemToEdit.checkoutDateTime || '';
+                    accommodationBookingRefInput.value = itemToEdit.bookingRef || '';
+                    accommodationCostInput.value = itemToEdit.cost ?? '';
+                    accommodationNotesInput.value = itemToEdit.notes || '';
+                    accommodationLinkInput.value = itemToEdit.link || '';
+                    break;
+                case 'itinerary':
+                    itineraryDayInput.value = itemToEdit.day || '';
+                    itineraryTimeInput.value = itemToEdit.time || '';
+                    itineraryActivityInput.value = itemToEdit.activity || '';
+                    itineraryLocationInput.value = itemToEdit.location || '';
+                    itineraryBookingRefInput.value = itemToEdit.bookingRef || '';
+                    itineraryCostInput.value = itemToEdit.cost ?? '';
+                    itineraryNotesInput.value = itemToEdit.notes || '';
+                    itineraryLinkInput.value = itemToEdit.link || '';
+                    break;
+                case 'budget':
+                    budgetCategorySelect.value = itemToEdit.category || 'Altro';
+                    budgetDescriptionInput.value = itemToEdit.description || '';
+                    budgetEstimatedInput.value = itemToEdit.estimated ?? '';
+                    budgetActualInput.value = itemToEdit.actual ?? '';
+                    budgetPaidByInput.value = itemToEdit.paidBy || '';
+                    budgetSplitBetweenInput.value = itemToEdit.splitBetween || '';
+                    break;
+                case 'packing':
+                    packingItemNameInput.value = itemToEdit.name || '';
+                    packingItemCategoryInput.value = itemToEdit.category || 'Altro';
+                    packingItemQuantityInput.value = itemToEdit.quantity || 1;
+                    break;
+            }
+        } catch (error) {
+            console.error(`Errore popola form ${listType}:`, error);
+            showToast(`Errore caricamento dati.`, 'error');
+            resetEditState(listType);
+            return;
+        }
+
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Salva Modifiche';
+            submitBtn.classList.remove('btn-secondary');
+            submitBtn.classList.add('btn-warning');
+        }
+        if (cancelBtn) cancelBtn.style.display = 'inline-flex';
+        if (listType === 'transport') toggleSearchButtonsVisibility();
+        if (form) form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
     const handleItemFormSubmit = async (e, listType) => { e.preventDefault(); if (!currentTripId || !currentUserId) return; const tripIndex = trips.findIndex(t => t.id === currentTripId); if (tripIndex === -1) { showToast("Errore: Viaggio corrente non trovato.", "error"); return; } const trip = trips[tripIndex]; const currentEditId = editingItemId[listType]; let itemData = {}; let list = []; let listOwner = trip; let renderFn; switch (listType) { case 'participant': list = trip.participants = trip.participants || []; renderFn = renderParticipants; break; case 'reminder': list = trip.reminders = trip.reminders || []; renderFn = renderReminders; break; case 'transport': list = trip.transportations = trip.transportations || []; renderFn = renderTransportations; break; case 'accommodation': list = trip.accommodations = trip.accommodations || []; renderFn = renderAccommodations; break; case 'itinerary': list = trip.itinerary = trip.itinerary || []; renderFn = renderItinerary; break; case 'budget': trip.budget = trip.budget || { items: [], estimatedTotal: 0, actualTotal: 0 }; list = trip.budget.items = trip.budget.items || []; listOwner = trip.budget; renderFn = renderBudget; break; case 'packing': list = trip.packingList = trip.packingList || []; renderFn = renderPackingList; break; default: console.error("Tipo lista non valido:", listType); return; } try { switch (listType) { case 'participant': if (!participantNameInput.value.trim()) throw new Error("Nome partecipante richiesto."); itemData = { name: participantNameInput.value.trim(), notes: participantNotesInput.value.trim() || null, extraInfo: participantExtraInfoTextarea.value.trim() || null }; break; case 'reminder': if (!reminderDescriptionInput.value.trim()) throw new Error("Descrizione promemoria richiesta."); itemData = { description: reminderDescriptionInput.value.trim(), dueDate: reminderDueDateInput.value || null, status: reminderStatusSelect.value }; break; case 'transport': if (!transportDescriptionInput.value.trim()) throw new Error("Descrizione trasporto richiesta."); const depDateTime = transportDepartureDatetimeInput.value || null; const arrDateTime = transportArrivalDatetimeInput.value || null; if (depDateTime && arrDateTime && depDateTime >= arrDateTime) throw new Error("Arrivo deve essere dopo partenza."); const transportCost = safeToNumberOrNull(transportCostInput.value); if(transportCost !== null && transportCost < 0) throw new Error("Costo trasporto non valido."); itemData = { type: transportTypeSelect.value, description: transportDescriptionInput.value.trim(), departureLoc: transportDepartureLocInput.value.trim() || null, departureDateTime: depDateTime, arrivalLoc: transportArrivalLocInput.value.trim() || null, arrivalDateTime: arrDateTime, bookingRef: transportBookingRefInput.value.trim() || null, cost: transportCost, notes: transportNotesInput.value.trim() || null, link: transportLinkInput.value.trim() || null }; break; case 'accommodation': if (!accommodationNameInput.value.trim()) throw new Error("Nome alloggio richiesto."); const checkin = accommodationCheckinInput.value || null; const checkout = accommodationCheckoutInput.value || null; if(checkin && checkout && checkin >= checkout) throw new Error("Check-out deve essere dopo check-in."); const accomCost = safeToNumberOrNull(accommodationCostInput.value); if(accomCost !== null && accomCost < 0) throw new Error("Costo alloggio non valido."); itemData = { name: accommodationNameInput.value.trim(), type: accommodationTypeSelect.value, address: accommodationAddressInput.value.trim() || null, checkinDateTime: checkin, checkoutDateTime: checkout, bookingRef: accommodationBookingRefInput.value.trim() || null, cost: accomCost, notes: accommodationNotesInput.value.trim() || null, link: accommodationLinkInput.value.trim() || null }; break; case 'itinerary': const itinDay = itineraryDayInput.value; const itinAct = itineraryActivityInput.value.trim(); if (!itinDay || !itinAct) throw new Error("Giorno e attività richiesti."); const itinStartDate = trip.startDate ? trip.startDate.split('T')[0] : null; const itinEndDate = trip.endDate ? trip.endDate.split('T')[0] : null; if (itinStartDate && itinEndDate && itinDay && (itinDay < itinStartDate || itinDay > itinEndDate)) showToast(`Attenzione: data ${formatDate(itinDay)} fuori dal periodo del viaggio (${formatDate(itinStartDate)} - ${formatDate(itinEndDate)}).`, 'warning'); const itinCost = safeToNumberOrNull(itineraryCostInput.value); if(itinCost !== null && itinCost < 0) throw new Error("Costo attività non valido."); itemData = { day: itinDay, time: itineraryTimeInput.value || null, activity: itinAct, location: itineraryLocationInput.value.trim() || null, bookingRef: itineraryBookingRefInput.value.trim() || null, cost: itinCost, notes: itineraryNotesInput.value.trim() || null, link: itineraryLinkInput.value.trim() || null }; break; case 'budget': const descBudget = budgetDescriptionInput.value.trim(); const est = safeToNumberOrNull(budgetEstimatedInput.value); const act = safeToNumberOrNull(budgetActualInput.value); if (!descBudget || est === null || est < 0) throw new Error("Descrizione e costo stimato validi richiesti."); if (act !== null && act < 0) throw new Error("Costo effettivo non valido."); itemData = { category: budgetCategorySelect.value, description: descBudget, estimated: est, actual: act, paidBy: budgetPaidByInput.value.trim() || null, splitBetween: budgetSplitBetweenInput.value.trim() || null }; break; case 'packing': if (!packingItemNameInput.value.trim()) throw new Error("Nome oggetto richiesto."); const quantity = safeToPositiveIntegerOrDefault(packingItemQuantityInput.value); itemData = { name: packingItemNameInput.value.trim(), category: packingItemCategoryInput.value.trim() || 'Altro', quantity: quantity }; break; } } catch (error) { showToast(`Errore: ${error.message}`, "error"); return; } if (currentEditId) { const idx = list.findIndex(i => i && i.id === currentEditId); if (idx > -1) { const oldItem = list[idx]; list[idx] = { ...itemData, id: currentEditId, ...(listType === 'packing' ? { packed: oldItem.packed } : {}) }; } else { console.error(`Item ${currentEditId} non trovato.`); showToast("Errore: elemento da modificare non trovato.", "error"); return; } } else { itemData.id = generateId(listType); if (listType === 'packing') itemData.packed = false; if (listType === 'reminder') itemData.status = itemData.status || 'todo'; list.push(itemData); } if (listType === 'budget') { let calcEst = 0, calcAct = 0; trip.budget.items.forEach(item => { const est = safeToNumberOrNull(item.estimated); const act = safeToNumberOrNull(item.actual); if (est !== null) calcEst += est; if (act !== null) calcAct += act; }); trip.budget.estimatedTotal = calcEst; trip.budget.actualTotal = calcAct; } trip.updatedAt = new Date().toISOString(); const success = await saveTripToFirestore(trip); if (success) { if (listType === 'budget') { renderFn(listOwner); } else { renderFn(list); } resetEditState(listType); if(listType === 'participant') populateDatalists(trip); if(listType === 'packing') populatePackingCategoriesDatalist(trip.packingList); } };
     const handleDeleteItem = (listType, itemId) => { if (!currentTripId || !currentUserId) return; const tripIndex = trips.findIndex(t => t.id === currentTripId); if (tripIndex === -1) return; const trip = trips[tripIndex]; let list, renderFn, listOwner = trip, itemName = "voce"; switch(listType) { case 'participant': list = trip.participants || []; renderFn = renderParticipants; itemName="partecipante"; break; case 'reminder': list = trip.reminders || []; renderFn = renderReminders; itemName="promemoria"; break; case 'transport': list = trip.transportations || []; renderFn = renderTransportations; itemName="trasporto"; break; case 'accommodation': list = trip.accommodations || []; renderFn = renderAccommodations; itemName="alloggio"; break; case 'itinerary': list = trip.itinerary || []; renderFn = renderItinerary; itemName="attività"; break; case 'budget': if (!trip.budget || !trip.budget.items) return; list = trip.budget.items; renderFn = renderBudget; listOwner = trip.budget; itemName="spesa"; break; case 'packing': list = trip.packingList || []; renderFn = renderPackingList; itemName="oggetto"; break; default: return; } if (!Array.isArray(list)) { return; } const itemIndex = list.findIndex(item => item && item.id === itemId); if (itemIndex > -1) { const itemDesc = list[itemIndex].name || list[itemIndex].description || list[itemIndex].activity || `ID: ${itemId}`; showConfirmationModal( `Conferma Eliminazione ${itemName}`, `Eliminare "${itemDesc}"?`, async () => { list.splice(itemIndex, 1); if (listType === 'budget') { let calcEst = 0, calcAct = 0; trip.budget.items.forEach(item => { const est = safeToNumberOrNull(item.estimated); const act = safeToNumberOrNull(item.actual); if (est !== null) calcEst += est; if (act !== null) calcAct += act; }); trip.budget.estimatedTotal = calcEst; trip.budget.actualTotal = calcAct; } trip.updatedAt = new Date().toISOString(); const success = await saveTripToFirestore(trip); if (success) { if (listType === 'budget') { renderFn(listOwner); } else { renderFn(list); } if (editingItemId[listType] === itemId) resetEditState(listType); showToast(`${itemName.charAt(0).toUpperCase() + itemName.slice(1)} eliminato/a.`, 'info'); if(listType === 'participant') populateDatalists(trip); if(listType === 'packing') populatePackingCategoriesDatalist(trip.packingList); } } ); } };
     const handleTogglePacked = async (itemId, isPacked) => { if (!currentTripId || !currentUserId) return; const tripIndex = trips.findIndex(t => t.id === currentTripId); if (tripIndex === -1) return; const trip = trips[tripIndex]; if (!trip.packingList) trip.packingList = []; const idx = trip.packingList.findIndex(i => i && i.id === itemId); if (idx > -1) { trip.packingList[idx].packed = isPacked; trip.updatedAt = new Date().toISOString(); const success = await saveTripToFirestore(trip); if (success) { if (currentSort.packing === 'status') { renderPackingList(trip.packingList); } else { const li = packingListUl?.querySelector(`li[data-item-id="${itemId}"]`); if (li) li.classList.toggle('packed', isPacked); const checkbox = packingListUl?.querySelector(`input[data-item-id="${itemId}"]`); if (checkbox) checkbox.checked = isPacked; } } } };
@@ -314,6 +430,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
     const populateDatalists = (trip) => { if (!trip || !participantDatalist) return; participantDatalist.innerHTML = ''; (trip.participants || []).forEach(p => { const option = document.createElement('option'); option.value = p.name; participantDatalist.appendChild(option); }); populatePackingCategoriesDatalist(trip.packingList); };
     const populatePackingCategoriesDatalist = (packingList) => { if (!packingCategoryDatalist) return; packingCategoryDatalist.innerHTML = ''; const categories = new Set(DEFAULT_PACKING_CATEGORIES); (packingList || []).forEach(p => { if(p.category) categories.add(p.category); }); Array.from(categories).sort().forEach(cat => { const option = document.createElement('option'); option.value = cat; packingCategoryDatalist.appendChild(option); }); };
+    // --- MIGLIORAMENTO: Le funzioni di rendering ora non aggiungono più event listener.
+    // La logica è centralizzata tramite Event Delegation.
     const renderParticipants = (participantsInput = []) => { const items = Array.isArray(participantsInput) ? participantsInput : []; if (!participantListUl) return; participantListUl.innerHTML = ''; if(noParticipantsItemsP) noParticipantsItemsP.style.display = items.length === 0 ? 'block' : 'none'; if (!Array.isArray(items)) return; items.sort((a, b) => (a?.name || '').localeCompare(b?.name || '')); items.forEach(item => { if (!item || !item.id) return; const li = document.createElement('li'); li.dataset.itemId = item.id; li.innerHTML = ` <div class="item-details"> <strong><i class="fas fa-user fa-fw"></i> ${item.name || 'N/D'}</strong> ${item.notes ? `<span class="meta"><i class="fas fa-info-circle fa-fw"></i> ${item.notes}</span>`:''} ${item.extraInfo ? `<span class="meta"><i class="fas fa-sticky-note fa-fw"></i> ${item.extraInfo}</span>`:''} </div> <div class="item-actions"> <button class="btn-icon edit participant-edit-btn" data-item-id="${item.id}" title="Modifica"><i class="fas fa-edit"></i></button> <button class="btn-icon delete participant-delete-btn" data-item-id="${item.id}" title="Elimina"><i class="fas fa-trash-alt"></i></button> </div>`; participantListUl.appendChild(li); }); };
     const renderReminders = (remindersInput = []) => { let items = Array.isArray(remindersInput) ? remindersInput : []; if (!reminderListUl) return; reminderListUl.innerHTML = ''; if(noReminderItemsP) noReminderItemsP.style.display = items.length === 0 ? 'block' : 'none'; if (!Array.isArray(items)) return; const sortKey = currentSort.reminder; items.sort((a, b) => { if (sortKey === 'dueDate') { return (a?.dueDate || '9999-12-31').localeCompare(b?.dueDate || '9999-12-31'); } if (sortKey === 'status') { const statusOrder = { 'todo': 0, 'done': 1 }; return (statusOrder[a?.status] ?? 9) - (statusOrder[b?.status] ?? 9) || (a?.dueDate || '9999').localeCompare(b?.dueDate || '9999'); } return (a?.description || '').localeCompare(b?.description || ''); }); items.forEach(item => { if (!item || !item.id) return; const li = document.createElement('li'); li.dataset.itemId = item.id; li.classList.toggle('done', item.status === 'done'); const statusClass = item.status === 'done' ? 'done' : 'todo'; const statusText = item.status === 'done' ? 'FATTO' : 'DA FARE'; li.innerHTML = ` <div class="item-details"> <strong> <span class="status-indicator ${statusClass}">${statusText}</span> ${item.description || 'N/D'} </strong> ${item.dueDate ? `<span class="meta due-date"><i class="fas fa-calendar-alt fa-fw"></i> Scadenza: ${formatDate(item.dueDate)}</span>` : ''} </div> <div class="item-actions"> <button class="btn-icon edit reminder-edit-btn" data-item-id="${item.id}" title="Modifica"><i class="fas fa-edit"></i></button> <button class="btn-icon delete reminder-delete-btn" data-item-id="${item.id}" title="Elimina"><i class="fas fa-trash-alt"></i></button> </div>`; reminderListUl.appendChild(li); }); };
     const renderTransportations = (transportItemsInput) => { let items = Array.isArray(transportItemsInput) ? transportItemsInput : []; if (!transportListUl) return; transportListUl.innerHTML = ''; if(noTransportItemsP) noTransportItemsP.style.display = items.length === 0 ? 'block' : 'none'; if (!Array.isArray(items)) return; const sortKey = currentSort.transport; items.sort((a, b) => { if (sortKey === 'type') { return (a?.type || '').localeCompare(b?.type || '') || (a?.departureDateTime || '').localeCompare(b?.departureDateTime || ''); } if (sortKey === 'cost') { return (b?.cost ?? -Infinity) - (a?.cost ?? -Infinity); } return (a?.departureDateTime || '').localeCompare(b?.departureDateTime || ''); }); items.forEach(item => { if (!item || !item.id) return; const li = document.createElement('li'); li.dataset.itemId = item.id; const iconClass = getTransportIcon(item.type); li.innerHTML = ` <div class="item-details"> <strong><i class="fas ${iconClass} fa-fw"></i> ${item.type}: ${item.description || 'N/D'}</strong> <span class="meta"><i class="fas fa-plane-departure fa-fw"></i> Da: ${item.departureLoc || '?'} (${formatDateTime(item.departureDateTime)})</span> <span class="meta"><i class="fas fa-plane-arrival fa-fw"></i> A: ${item.arrivalLoc || '?'} (${formatDateTime(item.arrivalDateTime)})</span> ${item.bookingRef ? `<span class="meta"><i class="fas fa-ticket-alt fa-fw"></i> Rif: ${item.bookingRef}</span>`:''} ${item.cost!==null ? `<span class="meta"><i class="fas fa-euro-sign fa-fw"></i> Costo: ${formatCurrency(item.cost)}</span>`:''} ${item.notes ? `<span class="meta"><i class="fas fa-info-circle fa-fw"></i> Note: ${item.notes}</span>`:''} ${item.link ? `<span class="meta"><i class="fas fa-link fa-fw"></i> Link: ${formatDisplayLink(item.link)}</span>`:''} </div> <div class="item-actions"> <button class="btn-icon edit transport-edit-btn" data-item-id="${item.id}" title="Modifica"><i class="fas fa-edit"></i></button> <button class="btn-icon delete transport-delete-btn" data-item-id="${item.id}" title="Elimina"><i class="fas fa-trash-alt"></i></button> </div>`; transportListUl.appendChild(li); }); };
@@ -353,7 +471,62 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleShareViaLink = async () => { if (!db) { showToast("Condivisione non disponibile.", "error"); return; } if (!currentTripId || !currentUserId) { showToast("Seleziona un viaggio e accedi.", "warning"); return; } if (currentUser && currentUser.isAnonymous) { showToast("Registrati o accedi per condividere.", "warning"); return; } const originalTrip = findTripById(currentTripId); if (!originalTrip) { showToast("Viaggio non trovato.", "error"); return; } const shareButton = shareTripBtn; if (shareButton) { shareButton.disabled = true; shareButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparando...'; } let dataToSend = null; let shareLink = null; try { const cleanTripBase = JSON.parse(JSON.stringify(originalTrip)); dataToSend = { name: cleanTripBase.name || 'S.N.', originCity: cleanTripBase.originCity || null, destination: cleanTripBase.destination || null, notes: cleanTripBase.notes || null, extraInfo: cleanTripBase.extraInfo || null, startDate: toTimestampOrNull(cleanTripBase.startDate), endDate: toTimestampOrNull(cleanTripBase.endDate), participants: (cleanTripBase.participants || []).map(p => ({ name: p.name || '?', notes: p.notes || null, extraInfo: p.extraInfo || null })), reminders: (cleanTripBase.reminders || []).map(r => ({ description: r.description || '?', dueDate: toTimestampOrNull(r.dueDate), status: r.status || 'todo' })), transportations: (cleanTripBase.transportations || []).map(t => ({ type: t.type || 'Altro', description: t.description || '?', departureLoc: t.departureLoc || null, departureDateTime: toTimestampOrNull(t.departureDateTime), arrivalLoc: t.arrivalLoc || null, arrivalDateTime: toTimestampOrNull(t.arrivalDateTime), bookingRef: t.bookingRef || null, cost: safeToNumberOrNull(t.cost), notes: t.notes || null, link: t.link || null })), accommodations: (cleanTripBase.accommodations || []).map(a => ({ name: a.name || '?', type: a.type || 'Altro', address: a.address || null, checkinDateTime: toTimestampOrNull(a.checkinDateTime), checkoutDateTime: toTimestampOrNull(a.checkoutDateTime), bookingRef: a.bookingRef || null, cost: safeToNumberOrNull(a.cost), notes: a.notes || null, link: a.link || null })), itinerary: (cleanTripBase.itinerary || []).map(i => ({ day: i.day || null, time: i.time || null, activity: i.activity || '?', location: i.location || null, bookingRef: i.bookingRef || null, cost: safeToNumberOrNull(i.cost), notes: i.notes || null, link: i.link || null })), budget: { items: (cleanTripBase.budget?.items || []).map(b => ({ category: b.category || 'Altro', description: b.description || '?', estimated: safeToNumberOrNull(b.estimated), actual: safeToNumberOrNull(b.actual), paidBy: b.paidBy || null, splitBetween: b.splitBetween || null })) }, packingList: (cleanTripBase.packingList || []).map(p => ({ name: p.name || '?', category: p.category || 'Altro', quantity: safeToPositiveIntegerOrDefault(p.quantity), packed: p.packed || false })), sharedAt: Timestamp.now() }; if (shareButton) shareButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...'; const docRef = await addDoc(collection(db, "sharedTrips"), dataToSend); shareLink = `${window.location.origin}${window.location.pathname}?shareId=${docRef.id}`; console.log("Viaggio condiviso con ID:", docRef.id); if (navigator.share) { const shareData = { title: `Viaggio: ${originalTrip.name || 'S.N.'}`, text: `Dettagli viaggio "${originalTrip.name || 'S.N.'}": Dest: ${originalTrip.destination || 'N/D'}, Date: ${formatDate(originalTrip.startDate)} - ${formatDate(originalTrip.endDate)}. Apri il link per importare!`, url: shareLink, }; if (shareButton) shareButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Apro...'; await navigator.share(shareData); showToast("Pannello condivisione aperto.", "success"); } else { prompt("Copia questo link:", shareLink); showToast("Link condivisione generato!", "success"); } } catch (error) { if (error.name === 'AbortError') { showToast("Condivisione annullata.", "info"); } else { console.error('Errore condivisione:', error); showToast("Errore condivisione.", "error"); if (shareLink) { prompt("Errore apertura condivisione. Copia manualmente:", shareLink); } } } finally { if (shareButton) { shareButton.disabled = false; shareButton.innerHTML = '<i class="fas fa-share-alt"></i> Condividi'; } } };
     const cloneAndRegenerateTripIds = (tripDataFromFirebaseShared) => { const convertTimestampsToStringsImport = (data) => { if (data === null || typeof data !== 'object') return data; if (data instanceof Timestamp) { try { return data.toDate().toISOString(); } catch (e) { return null; } } if (Array.isArray(data)) { return data.map(item => convertTimestampsToStringsImport(item)); } const newData = {}; for (const key in data) { if (Object.prototype.hasOwnProperty.call(data, key)) { newData[key] = convertTimestampsToStringsImport(data[key]); } } return newData; }; const tripDataWithStrings = convertTimestampsToStringsImport(tripDataFromFirebaseShared); const newTrip = JSON.parse(JSON.stringify(tripDataWithStrings)); delete newTrip.id; newTrip.isTemplate = false; newTrip.sharedAt = null; const regenerateSubItemsIds = (items) => { if (!Array.isArray(items)) return []; return items.map(item => ({ ...item, id: generateId(item?.id?.split('_')[0] || 'item') })); }; newTrip.participants = regenerateSubItemsIds(newTrip.participants); newTrip.reminders = regenerateSubItemsIds(newTrip.reminders); newTrip.transportations = regenerateSubItemsIds(newTrip.transportations); newTrip.accommodations = regenerateSubItemsIds(newTrip.accommodations); newTrip.itinerary = regenerateSubItemsIds(newTrip.itinerary); if (!newTrip.budget) newTrip.budget = { items: [], estimatedTotal: 0, actualTotal: 0 }; newTrip.budget.items = regenerateSubItemsIds(newTrip.budget.items); newTrip.packingList = regenerateSubItemsIds(newTrip.packingList); let calcEst = 0, calcAct = 0; (newTrip.budget.items || []).forEach(item => { const est = safeToNumberOrNull(item.estimated); const act = safeToNumberOrNull(item.actual); if (est !== null) calcEst += est; if (act !== null) calcAct += act; }); newTrip.budget.estimatedTotal = calcEst; newTrip.budget.actualTotal = calcAct; return newTrip; }
     const handleImportSharedTrip = async (sharedTripData) => { if (!sharedTripData || !currentUserId) { showToast("Errore import: utente non loggato o dati mancanti.", "error"); return; } try { const newTripObjectForUser = cloneAndRegenerateTripIds(sharedTripData); newTripObjectForUser.createdAt = Timestamp.now(); const newTripId = await saveTripToFirestore(newTripObjectForUser); if (newTripId) { const savedTrip = processTripDataFromFirestore(newTripId, prepareTripDataForFirestore({...newTripObjectForUser, id: newTripId})); trips.unshift(savedTrip); renderTripList(); selectTrip(newTripId); showToast(`Viaggio "${newTripObjectForUser.name || 'S.N.'}" importato!`, "success"); } } catch (error) { console.error("Errore import viaggio:", error); showToast("Errore durante l'importazione.", "error"); } };
-    const checkForSharedTrip = async () => { if (!db) { return; } const urlParams = new URLSearchParams(window.location.search); const shareId = urlParams.get('shareId'); if (shareId) { console.log("Trovato shareId:", shareId); const currentUrl = new URL(window.location.href); currentUrl.searchParams.delete('shareId'); history.replaceState(null, '', currentUrl.toString()); if (!currentUserId) { showToast("Accedi o registrati per importare il viaggio.", "warning"); try { sessionStorage.setItem('pendingShareId', shareId); } catch(e) {} return; } showToast("Recupero viaggio condiviso...", "info"); try { const docRef = doc(db, "sharedTrips", shareId); const docSnap = await getDoc(docRef); if (docSnap.exists()) { const sharedTripData = docSnap.data(); showConfirmationModal( 'Importa Viaggio Condiviso', `Importare il viaggio "${sharedTripData.name || 'S.N.'}"?`, () => handleImportSharedTrip(sharedTripData) ); } else { showToast("Viaggio condiviso non trovato.", "error"); } } catch (error) { showToast("Errore recupero viaggio.", "error"); } } else { if (currentUserId) { try { const pendingId = sessionStorage.getItem('pendingShareId'); if (pendingId) { sessionStorage.removeItem('pendingShareId'); const fakeUrl = new URL(window.location.href); fakeUrl.searchParams.set('shareId', pendingId); window.history.pushState({}, '', fakeUrl); await checkForSharedTrip(); } } catch(e) {} } } };
+    
+    // --- MODIFICA: Logica di importazione viaggio condiviso più robusta e lineare ---
+    const checkForSharedTrip = async () => {
+        if (!db) return;
+    
+        // La fonte di verità è prima l'URL, poi il sessionStorage come fallback.
+        const urlParams = new URLSearchParams(window.location.search);
+        let shareId = urlParams.get('shareId');
+    
+        if (!shareId) {
+            try {
+                shareId = sessionStorage.getItem('pendingShareId');
+            } catch (e) { /* Ignora errori di accesso allo storage */ }
+        }
+    
+        // Se non c'è nessun ID, non fare nulla.
+        if (!shareId) return;
+    
+        // Pulisci subito lo stato per evitare elaborazioni multiple.
+        console.log("Trovato shareId:", shareId, ". Inizio elaborazione.");
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('shareId');
+        history.replaceState(null, '', currentUrl.toString());
+        try {
+            sessionStorage.removeItem('pendingShareId');
+        } catch (e) {}
+    
+        // Se l'utente non è loggato, salva l'ID per un tentativo futuro e avvisa.
+        if (!currentUserId) {
+            showToast("Accedi o registrati per importare il viaggio.", "warning");
+            try {
+                sessionStorage.setItem('pendingShareId', shareId);
+            } catch (e) {}
+            return;
+        }
+    
+        // Se l'utente è loggato, procedi con l'importazione.
+        showToast("Recupero viaggio condiviso...", "info");
+        try {
+            const docRef = doc(db, "sharedTrips", shareId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const sharedTripData = docSnap.data();
+                showConfirmationModal(
+                    'Importa Viaggio Condiviso',
+                    `Importare il viaggio "${sharedTripData.name || 'S.N.'}"?`,
+                    () => handleImportSharedTrip(sharedTripData)
+                );
+            } else {
+                showToast("Viaggio condiviso non trovato o scaduto.", "error");
+            }
+        } catch (error) {
+            console.error("Errore nel recupero del viaggio condiviso:", error);
+            showToast("Errore durante il recupero del viaggio.", "error");
+        }
+    };
 
     // ==========================================================================
     // == FUNZIONI CALCOLO BILANCIO SPESE ==
@@ -375,8 +548,72 @@ document.addEventListener('DOMContentLoaded', () => {
      const getFirebaseErrorMessage = (error) => { switch (error.code) { case 'auth/invalid-email': return 'Formato email non valido.'; case 'auth/user-disabled': return 'Account disabilitato.'; case 'auth/user-not-found': return 'Utente non trovato.'; case 'auth/wrong-password': return 'Password errata.'; case 'auth/email-already-in-use': return 'Email già registrata.'; case 'auth/weak-password': return 'Password troppo debole (min. 6 caratteri).'; case 'auth/operation-not-allowed': return 'Operazione non permessa.'; case 'auth/network-request-failed': return 'Errore di rete.'; default: console.error("Errore Firebase:", error); return 'Errore imprevisto. Riprova.'; } };
 
      // ===== Gestione Cambio Stato Autenticazione =====
-     const updateUIBasedOnAuthState = async (user) => { currentUser = user; if (user) { currentUserId = user.uid; if(authContainer) authContainer.style.display = 'none'; if(appMainContainer) appMainContainer.style.display = 'flex'; if (user.isAnonymous) { if(userEmailDisplay) userEmailDisplay.textContent = "Ospite"; if(logoutBtn) logoutBtn.innerHTML = '<i class="fas fa-user-plus"></i> Registrati/Accedi'; if(resendVerificationBtn) resendVerificationBtn.style.display = 'none'; if(emailVerificationNotice) emailVerificationNotice.style.display = 'none'; if(anonymousUserPrompt) anonymousUserPrompt.style.display = 'block'; if(linkAccountPrompt) linkAccountPrompt.onclick = (e) => { e.preventDefault(); handleSignOut(); }; } else { if(userEmailDisplay) userEmailDisplay.textContent = user.email; if(logoutBtn) logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout'; if(anonymousUserPrompt) anonymousUserPrompt.style.display = 'none'; if (!user.emailVerified) { if(emailVerificationNotice) emailVerificationNotice.style.display = 'flex'; if(resendVerificationBtn) resendVerificationBtn.style.display = 'inline-flex'; } else { if(emailVerificationNotice) emailVerificationNotice.style.display = 'none'; if(resendVerificationBtn) resendVerificationBtn.style.display = 'none'; } } if(authErrorDiv) authErrorDiv.style.display = 'none'; if(authSuccessDiv) authSuccessDiv.style.display = 'none'; await loadUserTrips(user.uid); loadLocalStorageAppState(); applyCurrentSortToControls(); if(currentTripId && findTripById(currentTripId)) { selectTrip(currentTripId); } else { deselectTrip(); } await checkForSharedTrip(); } else { currentUser = null; currentUserId = null; if(authContainer) authContainer.style.display = 'flex'; if(appMainContainer) appMainContainer.style.display = 'none'; if(userEmailDisplay) userEmailDisplay.textContent = ''; if(passwordResetForm) passwordResetForm.style.display = 'none'; if(loginForm) loginForm.style.display = 'block'; if(signupForm) signupForm.style.display = 'none'; if(signupPromptP) signupPromptP.style.display = 'block'; clearAppDataUI(); } };
-     const clearAppDataUI = () => { console.log("DEBUG: Pulizia UI..."); trips = []; currentTripId = null; editingItemId = { /*...*/ }; if (tripListUl) tripListUl.innerHTML = ''; if (noTripsMessage) noTripsMessage.style.display = 'block'; if (tripDetailsAreaDiv) tripDetailsAreaDiv.style.display = 'none'; if (welcomeMessageDiv) welcomeMessageDiv.style.display = 'none'; if(tripInfoForm) tripInfoForm.reset(); document.querySelectorAll('.add-item-form').forEach(form => form.reset()); Object.keys(editingItemId).forEach(resetEditState); document.querySelectorAll('.item-list').forEach(ul => ul.innerHTML = ''); document.querySelectorAll('.item-list-container p[id^="no-"]').forEach(p => p.style.display = 'block'); if(budgetTotalEstimatedStrong) budgetTotalEstimatedStrong.textContent = formatCurrency(0); if(budgetTotalActualStrong) budgetTotalActualStrong.textContent = formatCurrency(0); if(budgetDifferenceStrong) budgetDifferenceStrong.textContent = formatCurrency(0); if(balanceResultsContainer) balanceResultsContainer.style.display = 'none'; if(downloadTextBtn) downloadTextBtn.disabled = true; if(downloadExcelBtn) downloadExcelBtn.disabled = true; if(deleteTripBtn) deleteTripBtn.disabled = true; if(shareTripBtn) shareTripBtn.disabled = true; if(emailSummaryBtn) emailSummaryBtn.disabled = true; if(copySummaryBtn) copySummaryBtn.disabled = true; if(tripTitleH2) tripTitleH2.textContent = 'Dettagli Viaggio'; console.log("DEBUG: Pulizia UI completata."); };
+     const updateUIBasedOnAuthState = async (user) => {
+        currentUser = user;
+        if (user) {
+            currentUserId = user.uid;
+            if (authContainer) authContainer.style.display = 'none';
+            if (appMainContainer) appMainContainer.style.display = 'flex';
+
+            if (user.isAnonymous) {
+                if (userEmailDisplay) userEmailDisplay.textContent = "Ospite";
+                if (logoutBtn) logoutBtn.innerHTML = '<i class="fas fa-user-plus"></i> Registrati/Accedi';
+                if (resendVerificationBtn) resendVerificationBtn.style.display = 'none';
+                if (emailVerificationNotice) emailVerificationNotice.style.display = 'none';
+                if (anonymousUserPrompt) anonymousUserPrompt.style.display = 'block';
+
+                // --- MODIFICA: Bug Fix per Utenti Anonimi ---
+                // Previene la perdita di dati mostrando una conferma prima del logout.
+                if (linkAccountPrompt) {
+                    linkAccountPrompt.onclick = (e) => {
+                        e.preventDefault();
+                        showConfirmationModal(
+                            "Attenzione: Dati Ospite",
+                            "Se procedi, farai il logout e perderai l'accesso ai viaggi creati come ospite. Per salvarli, dovresti usare la funzione di condivisione e re-importarli dopo la registrazione. Vuoi continuare con il logout?",
+                            handleSignOut // Esegui il logout solo dopo la conferma dell'utente.
+                        );
+                    };
+                }
+            } else {
+                if(userEmailDisplay) userEmailDisplay.textContent = user.email;
+                if(logoutBtn) logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+                if(anonymousUserPrompt) anonymousUserPrompt.style.display = 'none';
+                if (!user.emailVerified) {
+                    if(emailVerificationNotice) emailVerificationNotice.style.display = 'flex';
+                    if(resendVerificationBtn) resendVerificationBtn.style.display = 'inline-flex';
+                } else {
+                    if(emailVerificationNotice) emailVerificationNotice.style.display = 'none';
+                    if(resendVerificationBtn) resendVerificationBtn.style.display = 'none';
+                }
+            }
+
+            if(authErrorDiv) authErrorDiv.style.display = 'none';
+            if(authSuccessDiv) authSuccessDiv.style.display = 'none';
+
+            await loadUserTrips(user.uid);
+            loadLocalStorageAppState();
+            applyCurrentSortToControls();
+
+            if (currentTripId && findTripById(currentTripId)) {
+                selectTrip(currentTripId);
+            } else {
+                deselectTrip();
+            }
+            await checkForSharedTrip();
+        } else {
+            currentUser = null;
+            currentUserId = null;
+            if(authContainer) authContainer.style.display = 'flex';
+            if(appMainContainer) appMainContainer.style.display = 'none';
+            if(userEmailDisplay) userEmailDisplay.textContent = '';
+            if(passwordResetForm) passwordResetForm.style.display = 'none';
+            if(loginForm) loginForm.style.display = 'block';
+            if(signupForm) signupForm.style.display = 'none';
+            if(signupPromptP) signupPromptP.style.display = 'block';
+            clearAppDataUI();
+        }
+     };
+     const clearAppDataUI = () => { console.log("DEBUG: Pulizia UI..."); trips = []; currentTripId = null; editingItemId = { participant: null, transport: null, accommodation: null, itinerary: null, budget: null, packing: null, reminder: null }; if (tripListUl) tripListUl.innerHTML = ''; if (noTripsMessage) noTripsMessage.style.display = 'block'; if (tripDetailsAreaDiv) tripDetailsAreaDiv.style.display = 'none'; if (welcomeMessageDiv) welcomeMessageDiv.style.display = 'none'; if(tripInfoForm) tripInfoForm.reset(); document.querySelectorAll('.add-item-form').forEach(form => form.reset()); Object.keys(editingItemId).forEach(resetEditState); document.querySelectorAll('.item-list').forEach(ul => ul.innerHTML = ''); document.querySelectorAll('.item-list-container p[id^="no-"]').forEach(p => p.style.display = 'block'); if(budgetTotalEstimatedStrong) budgetTotalEstimatedStrong.textContent = formatCurrency(0); if(budgetTotalActualStrong) budgetTotalActualStrong.textContent = formatCurrency(0); if(budgetDifferenceStrong) budgetDifferenceStrong.textContent = formatCurrency(0); if(balanceResultsContainer) balanceResultsContainer.style.display = 'none'; if(downloadTextBtn) downloadTextBtn.disabled = true; if(downloadExcelBtn) downloadExcelBtn.disabled = true; if(deleteTripBtn) deleteTripBtn.disabled = true; if(shareTripBtn) shareTripBtn.disabled = true; if(emailSummaryBtn) emailSummaryBtn.disabled = true; if(copySummaryBtn) copySummaryBtn.disabled = true; if(tripTitleH2) tripTitleH2.textContent = 'Dettagli Viaggio'; console.log("DEBUG: Pulizia UI completata."); };
 
     // ==========================================================================
     // == GESTIONE STATO UI (LocalStorage) ==
@@ -389,7 +626,80 @@ document.addEventListener('DOMContentLoaded', () => {
     // == INIZIALIZZAZIONE E EVENT LISTENER ==
     // ==========================================================================
     const executeConfirmAction = () => { if (typeof confirmActionCallback === 'function') { try { confirmActionCallback(); } catch(err) { console.error("Errore callback conferma:", err); showToast("Errore.", "error"); } } closeConfirmationModal(); };
-    const initAppEventListeners = () => { console.log("DEBUG: Init App Event Listeners..."); if (newTripBtn) newTripBtn.onclick = handleNewTrip; if (createFromTemplateBtn) createFromTemplateBtn.onclick = openSelectTemplateModal; if (searchTripInput) searchTripInput.oninput = handleSearchTrip; if (tripInfoForm) tripInfoForm.onsubmit = handleSaveTripInfo; if (deleteTripBtn) deleteTripBtn.onclick = () => { if (currentTripId) handleDeleteTrip(currentTripId); }; if (tabsContainer) tabsContainer.onclick = (e) => { const tl = e.target.closest('.tab-link'); if (tl?.dataset.tab) switchTab(tl.dataset.tab); }; if (downloadTextBtn) downloadTextBtn.onclick = handleDownloadText; if (downloadExcelBtn) downloadExcelBtn.onclick = handleDownloadExcel; if (emailSummaryBtn) emailSummaryBtn.onclick = handleEmailSummary; if (copySummaryBtn) copySummaryBtn.onclick = handleCopySummary; if (shareTripBtn) shareTripBtn.onclick = handleShareViaLink; const formsToListen = [ { form: 'add-participant-form', type: 'participant' }, { form: 'add-reminder-item-form', type: 'reminder' }, { form: 'add-transport-item-form', type: 'transport' }, { form: 'add-accommodation-item-form', type: 'accommodation' }, { form: 'add-itinerary-item-form', type: 'itinerary' }, { form: 'add-budget-item-form', type: 'budget' }, { form: 'add-packing-item-form', type: 'packing' }, ]; formsToListen.forEach(item => { const formElement = document.getElementById(item.form); if (formElement) { formElement.onsubmit = (e) => handleItemFormSubmit(e, item.type); } }); const cancelButtons = [ { btn: 'participant-cancel-edit-btn', type: 'participant'}, { btn: 'reminder-cancel-edit-btn', type: 'reminder'}, { btn: 'transport-cancel-edit-btn', type: 'transport'}, { btn: 'accommodation-cancel-edit-btn', type: 'accommodation'}, { btn: 'itinerary-cancel-edit-btn', type: 'itinerary'}, { btn: 'budget-cancel-edit-btn', type: 'budget'}, { btn: 'packing-cancel-edit-btn', type: 'packing'}, ]; cancelButtons.forEach(item => { const btnElement = document.getElementById(item.btn); if(btnElement) { btnElement.onclick = () => resetEditState(item.type); } }); if (tripDetailsAreaDiv) tripDetailsAreaDiv.onclick = (e) => { const editBtn = e.target.closest('.btn-icon.edit'); const deleteBtn = e.target.closest('.btn-icon.delete'); const packingCheckbox = e.target.closest('.packing-checkbox'); if (editBtn) { const itemId = editBtn.dataset.itemId; if(!itemId) return; const type = editBtn.className.match(/(participant|reminder|transport|accommodation|itinerary|budget|packing)-edit-btn/)?.[1]; if(type) startEditItem(type, itemId); } else if (deleteBtn) { const itemId = deleteBtn.dataset.itemId; if(!itemId) return; const type = deleteBtn.className.match(/(participant|reminder|transport|accommodation|itinerary|budget|packing)-delete-btn/)?.[1]; if(type) handleDeleteItem(type, itemId); } else if (packingCheckbox) { const itemId = packingCheckbox.dataset.itemId; if(itemId) handleTogglePacked(itemId, packingCheckbox.checked); } }; if (predefinedChecklistsContainer) { predefinedChecklistsContainer.onclick = (e) => { const btn = e.target.closest('button[data-checklist]'); if (btn?.dataset.checklist) handleImportPackingList(btn.dataset.checklist); }; } if (newTripModal) { if(createTripConfirmBtn) createTripConfirmBtn.onclick = handleCreateTripConfirm; newTripModal.querySelectorAll('.modal-close').forEach(btn => btn.onclick = closeNewTripModal); if(newTripNameInput) newTripNameInput.onkeypress = (e) => { if(e.key === 'Enter') handleCreateTripConfirm(); }; newTripModal.onclick = (e) => { if (e.target === newTripModal) closeNewTripModal(); }; } if (confirmationModal) { const confirmBtn = confirmationModal.querySelector('#confirmation-modal-confirm-btn'); const closeBtns = confirmationModal.querySelectorAll('.modal-close'); if(confirmBtn) { confirmBtn.onclick = executeConfirmAction; } closeBtns.forEach(btn => btn.onclick = closeConfirmationModal); confirmationModal.onclick = (e) => { if (e.target === confirmationModal) closeConfirmationModal(); }; } if (addTransportTotalToBudgetBtn) { addTransportTotalToBudgetBtn.onclick = handleCalculateAndAddTransportCost; } if (searchSkyscannerBtn) { searchSkyscannerBtn.onclick = handleSearchFlights; } if (searchTrainlineBtn) { searchTrainlineBtn.onclick = handleSearchTrains; } if(transportTypeSelect) { transportTypeSelect.onchange = toggleSearchButtonsVisibility; } const sortControls = [ { ctrl: 'reminder-sort-control', type: 'reminder' }, { ctrl: 'transport-sort-control', type: 'transport' }, { ctrl: 'itinerary-sort-control', type: 'itinerary' }, { ctrl: 'budget-sort-control', type: 'budget' }, { ctrl: 'packing-sort-control', type: 'packing' }, ]; sortControls.forEach(item => { const ctrlElement = document.getElementById(item.ctrl); if(ctrlElement) { ctrlElement.onchange = (e) => handleSortChange(item.type, e.target); } }); if(searchItineraryInput) searchItineraryInput.oninput = (e) => handleInternalSearch('itinerary', e.target); if(searchPackingInput) searchPackingInput.oninput = (e) => handleInternalSearch('packing', e.target); if(calculateBalanceBtn) { calculateBalanceBtn.onclick = () => { const balanceResult = calculateExpenseBalance(); renderBalanceResults(balanceResult); }; } if(resendVerificationBtn) resendVerificationBtn.onclick = handleResendVerificationEmail; if(resendVerificationBtnNotice) resendVerificationBtnNotice.onclick = handleResendVerificationEmail; console.log("DEBUG: App listeners aggiunti."); };
+    const initAppEventListeners = () => {
+        console.log("DEBUG: Init App Event Listeners...");
+        if (newTripBtn) newTripBtn.onclick = handleNewTrip;
+        if (createFromTemplateBtn) createFromTemplateBtn.onclick = openSelectTemplateModal;
+        if (searchTripInput) searchTripInput.oninput = handleSearchTrip;
+        if (tripInfoForm) tripInfoForm.onsubmit = handleSaveTripInfo;
+        if (deleteTripBtn) deleteTripBtn.onclick = () => { if (currentTripId) handleDeleteTrip(currentTripId); };
+        if (tabsContainer) tabsContainer.onclick = (e) => { const tl = e.target.closest('.tab-link'); if (tl?.dataset.tab) switchTab(tl.dataset.tab); };
+        if (downloadTextBtn) downloadTextBtn.onclick = handleDownloadText;
+        if (downloadExcelBtn) downloadExcelBtn.onclick = handleDownloadExcel;
+        if (emailSummaryBtn) emailSummaryBtn.onclick = handleEmailSummary;
+        if (copySummaryBtn) copySummaryBtn.onclick = handleCopySummary;
+        if (shareTripBtn) shareTripBtn.onclick = handleShareViaLink;
+
+        const formsToListen = [ 'participant', 'reminder', 'transport', 'accommodation', 'itinerary', 'budget', 'packing' ];
+        formsToListen.forEach(type => {
+            const formElement = document.getElementById(`add-${type}-item-form`);
+            if (formElement) {
+                formElement.onsubmit = (e) => handleItemFormSubmit(e, type);
+            }
+            const cancelBtn = document.getElementById(`${type}-cancel-edit-btn`);
+            if(cancelBtn) {
+                cancelBtn.onclick = () => resetEditState(type);
+            }
+        });
+
+        // --- MIGLIORAMENTO: Event Delegation per tutti gli item delle liste ---
+        // Un solo listener gestisce tutti i click su modifica, elimina e checkbox.
+        if (tripDetailsAreaDiv) {
+            tripDetailsAreaDiv.addEventListener('click', (e) => {
+                const target = e.target;
+                const editBtn = target.closest('.btn-icon.edit');
+                const deleteBtn = target.closest('.btn-icon.delete');
+                const packingCheckbox = target.closest('.packing-checkbox');
+
+                if (editBtn) {
+                    const itemId = editBtn.dataset.itemId;
+                    if (!itemId) return;
+                    // Estrae il tipo (es. 'participant') dalla classe del bottone
+                    const type = editBtn.className.match(/(participant|reminder|transport|accommodation|itinerary|budget|packing)-edit-btn/)?.[1];
+                    if (type) startEditItem(type, itemId);
+                } else if (deleteBtn) {
+                    const itemId = deleteBtn.dataset.itemId;
+                    if (!itemId) return;
+                    const type = deleteBtn.className.match(/(participant|reminder|transport|accommodation|itinerary|budget|packing)-delete-btn/)?.[1];
+                    if (type) handleDeleteItem(type, itemId);
+                } else if (packingCheckbox) {
+                    const itemId = packingCheckbox.dataset.itemId;
+                    if (itemId) handleTogglePacked(itemId, packingCheckbox.checked);
+                }
+            });
+        }
+
+        if (predefinedChecklistsContainer) { predefinedChecklistsContainer.onclick = (e) => { const btn = e.target.closest('button[data-checklist]'); if (btn?.dataset.checklist) handleImportPackingList(btn.dataset.checklist); }; }
+        if (newTripModal) { if(createTripConfirmBtn) createTripConfirmBtn.onclick = handleCreateTripConfirm; newTripModal.querySelectorAll('.modal-close').forEach(btn => btn.onclick = closeNewTripModal); if(newTripNameInput) newTripNameInput.onkeypress = (e) => { if(e.key === 'Enter') handleCreateTripConfirm(); }; newTripModal.onclick = (e) => { if (e.target === newTripModal) closeNewTripModal(); }; }
+        if (confirmationModal) { const confirmBtn = confirmationModal.querySelector('#confirmation-modal-confirm-btn'); const closeBtns = confirmationModal.querySelectorAll('.modal-close'); if(confirmBtn) { confirmBtn.onclick = executeConfirmAction; } closeBtns.forEach(btn => btn.onclick = closeConfirmationModal); confirmationModal.onclick = (e) => { if (e.target === confirmationModal) closeConfirmationModal(); }; }
+        if (addTransportTotalToBudgetBtn) { addTransportTotalToBudgetBtn.onclick = handleCalculateAndAddTransportCost; }
+        if (searchSkyscannerBtn) { searchSkyscannerBtn.onclick = handleSearchFlights; }
+        if (searchTrainlineBtn) { searchTrainlineBtn.onclick = handleSearchTrains; }
+        if(transportTypeSelect) { transportTypeSelect.onchange = toggleSearchButtonsVisibility; }
+        
+        const sortControls = [ 'reminder', 'transport', 'itinerary', 'budget', 'packing' ];
+        sortControls.forEach(type => {
+            const ctrlElement = document.getElementById(`${type}-sort-control`);
+            if(ctrlElement) { ctrlElement.onchange = (e) => handleSortChange(type, e.target); }
+        });
+
+        if(searchItineraryInput) searchItineraryInput.oninput = (e) => handleInternalSearch('itinerary', e.target);
+        if(searchPackingInput) searchPackingInput.oninput = (e) => handleInternalSearch('packing', e.target);
+        if(calculateBalanceBtn) { calculateBalanceBtn.onclick = () => { const balanceResult = calculateExpenseBalance(); renderBalanceResults(balanceResult); }; }
+        if(resendVerificationBtn) resendVerificationBtn.onclick = handleResendVerificationEmail;
+        if(resendVerificationBtnNotice) resendVerificationBtnNotice.onclick = handleResendVerificationEmail;
+        console.log("DEBUG: App listeners aggiunti.");
+    };
 
     // ==========================================================================
     // == PUNTO DI INGRESSO PRINCIPALE ==
@@ -403,7 +713,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(loginForm) loginForm.addEventListener('submit', handleSignIn);
     if(signupForm) signupForm.addEventListener('submit', handleSignUp);
     if(logoutBtn) logoutBtn.addEventListener('click', handleSignOut);
-    // I listener per resendVerificationBtn e resendVerificationBtnNotice sono aggiunti dentro initAppEventListeners
 
     // Listener Stato Autenticazione Firebase
     if (auth) {
@@ -412,9 +721,18 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Auth state changed. User:", user ? (user.isAnonymous ? `Anon ${user.uid}`: user.uid) : 'None');
             await updateUIBasedOnAuthState(user);
             if (user && !listenersInitialized) {
-                 initAppEventListeners(); listenersInitialized = true;
-            } else if (!user) { listenersInitialized = false; }
+                 initAppEventListeners();
+                 listenersInitialized = true;
+            } else if (!user) {
+                 // Potrebbe essere utile rimuovere alcuni listener se necessario, ma con la
+                 // logica attuale non è strettamente richiesto dato che l'UI viene nascosta.
+                 listenersInitialized = false;
+            }
         });
-    } else { console.error("Auth non inizializzato."); /* ... gestione errore UI ... */ }
+    } else {
+        console.error("Auth non inizializzato.");
+        showAuthError("Servizio di autenticazione non disponibile.");
+    }
 
 }); // Fine DOMContentLoaded
+```
