@@ -67,13 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // == ELEMENTI DOM ==
     // ==========================================================================
     let domSelectionError = false;
-    const checkElement = (id, isQuerySelector = false, isEssential = true) => { 
+    const checkElement = (id, isQuerySelector = false) => { 
         const element = isQuerySelector ? document.querySelector(id) : document.getElementById(id); 
-        if (!element && isEssential) { 
-            console.error(`ERRORE SELEZIONE DOM: Elemento ESSENZIALE "${id}" non trovato!`); 
+        if (!element) { 
+            console.error(`ERRORE SELEZIONE DOM: Elemento "${id}" non trovato!`); 
             domSelectionError = true; 
-        } else if (!element && !isEssential) {
-            console.warn(`ATTENZIONE: Elemento opzionale "${id}" non trovato. La funzionalità associata potrebbe non essere disponibile.`);
         }
         return element; 
     };
@@ -103,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingTripsDiv = checkElement('loading-trips');
     const tripListUl = checkElement('trip-list');
     const newTripBtn = checkElement('new-trip-btn');
-    const createFromTemplateBtn = checkElement('create-from-template-btn', false, false); 
+    const createFromTemplateBtn = checkElement('create-from-template-btn');
     const searchTripInput = checkElement('search-trip-input');
     const noTripsMessage = checkElement('no-trips-message');
     const welcomeMessageDiv = checkElement('welcome-message');
@@ -123,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tripDestinationInput = checkElement('trip-destination');
     const tripStartDateInput = checkElement('trip-start-date');
     const tripEndDateInput = checkElement('trip-end-date');
-    const tripIsTemplateCheckbox = checkElement('trip-is-template', false, false);
+    const tripIsTemplateCheckbox = checkElement('trip-is-template');
     const tripNotesTextarea = checkElement('trip-notes');
     const tripExtraInfoTextarea = checkElement('trip-extra-info');
     const addParticipantForm = checkElement('add-participant-form');
@@ -163,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const transportCancelEditBtn = checkElement('transport-cancel-edit-btn');
     const searchSkyscannerBtn = checkElement('search-skyscanner-btn');
     const searchTrainlineBtn = checkElement('search-trainline-btn');
-    const addTransportTotalToBudgetBtn = checkElement('add-transport-total-to-budget-btn', false, false);
+    const addTransportTotalToBudgetBtn = checkElement('add-transport-total-to-budget-btn');
     const transportSortControl = checkElement('transport-sort-control');
     const addAccommodationItemForm = checkElement('add-accommodation-item-form');
     const editAccommodationItemIdInput = checkElement('edit-accommodation-item-id');
@@ -180,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const noAccommodationItemsP = checkElement('no-accommodation-items');
     const accommodationSubmitBtn = checkElement('accommodation-submit-btn');
     const accommodationCancelEditBtn = checkElement('accommodation-cancel-edit-btn');
-    const addAccommodationTotalToBudgetBtn = checkElement('add-accommodation-total-to-budget-btn', false, false);
+    const addAccommodationTotalToBudgetBtn = checkElement('add-accommodation-total-to-budget-btn');
     const addItineraryItemForm = checkElement('add-itinerary-item-form');
     const editItineraryItemIdInput = checkElement('edit-itinerary-item-id');
     const itineraryDayInput = checkElement('itinerary-day');
@@ -197,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const itineraryCancelEditBtn = checkElement('itinerary-cancel-edit-btn');
     const searchItineraryInput = checkElement('search-itinerary-input');
     const itinerarySortControl = checkElement('itinerary-sort-control');
-    const addItineraryTotalToBudgetBtn = checkElement('add-itinerary-total-to-budget-btn', false, false);
+    const addItineraryTotalToBudgetBtn = checkElement('add-itinerary-total-to-budget-btn');
     const addBudgetItemForm = checkElement('add-budget-item-form');
     const editBudgetItemIdInput = checkElement('edit-budget-item-id');
     const budgetCategorySelect = checkElement('budget-category');
@@ -235,10 +233,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const newTripNameInput = checkElement('new-trip-name-input');
     const newTripErrorP = checkElement('new-trip-modal-error');
     const createTripConfirmBtn = checkElement('create-trip-confirm-btn');
-    const selectTemplateModal = checkElement('select-template-modal', false, false);
-    const templateSelectInput = checkElement('template-select-input', false, false);
-    const selectTemplateErrorP = checkElement('select-template-modal-error', false, false);
-    const createFromTemplateConfirmBtn = checkElement('create-from-template-confirm-btn', false, false);
+    const selectTemplateModal = checkElement('select-template-modal');
+    const templateSelectInput = checkElement('template-select-input');
+    const selectTemplateErrorP = checkElement('select-template-modal-error');
+    const createFromTemplateConfirmBtn = checkElement('create-from-template-confirm-btn');
     const confirmationModal = checkElement('confirmation-modal');
     const confirmationModalTitle = checkElement('confirmation-modal-title');
     const confirmationModalMessage = checkElement('confirmation-modal-message');
@@ -247,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const participantDatalist = checkElement('participant-datalist');
     const packingCategoryDatalist = checkElement('packing-category-list');
 
-    if (domSelectionError) { alert("Errore critico: alcuni elementi dell'interfaccia non sono stati trovati. L'app non può continuare."); return; }
+    if (domSelectionError) { alert("Errore critico: alcuni elementi dell'interfaccia non sono stati trovati. L'app non può continuare. Controlla la console."); return; }
 
     // ==========================================================================
     // == STATO APPLICAZIONE ==
@@ -347,56 +345,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleInternalSearch = (listType, inputElement) => { if (!currentTripId) return; const trip = findTripById(currentTripId); if (!trip) return; currentSearchTerm[listType] = inputElement.value.toLowerCase(); if (listType === 'itinerary') renderItinerary(trip.itinerary); else if (listType === 'packing') renderPackingList(trip.packingList); saveLocalStorageAppState(); };
 
     // ==========================================================================
-    // == FUNZIONI RICERCA ESTERNA (CON CORREZIONE) ==
+    // == FUNZIONI RICERCA ESTERNA ==
     // ==========================================================================
-    const handleSearchFlights = () => {
-        const origin = transportDepartureLocInput.value.trim();
-        const dest = transportArrivalLocInput.value.trim();
-        // CORREZIONE: Usa la data di partenza del segmento e la data di fine viaggio per andata/ritorno
-        const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : '';
-        const endRaw = tripEndDateInput.value || ''; // Usa la data di fine del viaggio come ritorno
-        const startSky = formatSkyscannerDate(startRaw);
-        const endSky = formatSkyscannerDate(endRaw);
-
-        if (!origin || !dest) { showToast("Inserisci Origine e Destinazione.", "warning"); return; }
-        if (!startSky) { showToast("Inserisci una data di partenza valida.", "warning"); return; }
-        if (startRaw && endRaw && startRaw > endRaw) { showToast("La data di ritorno non può essere prima della partenza.", "warning"); return; }
-
-        const baseUrl = "https://www.skyscanner.it/trasporti/voli/";
-        const origCode = origin.toLowerCase().replace(/\s+/g, '-') || 'anywhere';
-        const destCode = dest.toLowerCase().replace(/\s+/g, '-') || 'anywhere';
-        // Costruisce l'URL in base alla presenza della data di ritorno
-        const url = endSky 
-            ? `${baseUrl}${origCode}/${destCode}/${startSky}/${endSky}/?rtn=1`
-            : `${baseUrl}${origCode}/${destCode}/${startSky}/`;
-        
-        window.open(url, '_blank', 'noopener,noreferrer');
-    };
-
-    const handleSearchTrains = () => {
-        const origin = transportDepartureLocInput.value.trim();
-        const dest = transportArrivalLocInput.value.trim();
-        // CORREZIONE: Usa la data di partenza del segmento e la data di fine viaggio
-        const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : '';
-        const endRaw = tripEndDateInput.value || ''; // Usa la data di fine del viaggio come ritorno
-
-        if (!origin || !dest) { showToast("Inserisci Origine e Destinazione.", "warning"); return; }
-        if (!startRaw) { showToast("Inserisci una data di partenza valida.", "warning"); return; }
-        if (startRaw && endRaw && startRaw > endRaw) { showToast("La data di ritorno non può essere prima della partenza.", "warning"); return; }
-
-        const baseUrl = "https://www.thetrainline.com/it/orari-treni/";
-        const origFmt = origin.toUpperCase().replace(/\s+/g, '-');
-        const destFmt = dest.toUpperCase().replace(/\s+/g, '-');
-        
-        let url = `${baseUrl}${origFmt}-a-${destFmt}?departureDate=${startRaw}&adults=1`;
-        if (endRaw) {
-            url += `&returnDate=${endRaw}`;
-        }
-        window.open(url, '_blank', 'noopener,noreferrer');
-    };
+    const handleSearchFlights = () => { const origin = transportDepartureLocInput.value.trim(); const dest = transportArrivalLocInput.value.trim(); const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : ''; const endRaw = tripEndDateInput.value || ''; const startSky = formatSkyscannerDate(startRaw); const endSky = formatSkyscannerDate(endRaw); if (!origin || !dest) { showToast("Inserisci Origine e Destinazione.", "warning"); return; } if (!startSky) { showToast("Inserisci una data di partenza valida.", "warning"); return; } if (startRaw && endRaw && startRaw > endRaw) { showToast("La data di ritorno non può essere prima della partenza.", "warning"); return; } const baseUrl = "https://www.skyscanner.it/trasporti/voli/"; const origCode = origin.toLowerCase().replace(/\s+/g, '-') || 'anywhere'; const destCode = dest.toLowerCase().replace(/\s+/g, '-') || 'anywhere'; const url = endSky ? `${baseUrl}${origCode}/${destCode}/${startSky}/${endSky}/?rtn=1` : `${baseUrl}${origCode}/${destCode}/${startSky}/`; window.open(url, '_blank', 'noopener,noreferrer'); };
+    const handleSearchTrains = () => { const origin = transportDepartureLocInput.value.trim(); const dest = transportArrivalLocInput.value.trim(); const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : ''; const endRaw = tripEndDateInput.value || ''; if (!origin || !dest) { showToast("Inserisci Origine e Destinazione.", "warning"); return; } if (!startRaw) { showToast("Inserisci una data di partenza valida.", "warning"); return; } if (startRaw && endRaw && startRaw > endRaw) { showToast("La data di ritorno non può essere prima della partenza.", "warning"); return; } const baseUrl = "https://www.thetrainline.com/it/orari-treni/"; const origFmt = origin.toUpperCase().replace(/\s+/g, '-'); const destFmt = dest.toUpperCase().replace(/\s+/g, '-'); let url = `${baseUrl}${origFmt}-a-${destFmt}?departureDate=${startRaw}&adults=1`; if (endRaw) { url += `&returnDate=${endRaw}`; } window.open(url, '_blank', 'noopener,noreferrer'); };
     
-    // ... (Il resto del codice rimane invariato)
-    
+    // ... (Il resto del codice rimane invariato, lo includo per completezza) ...
+
     // ==========================================================================
     // == INIZIALIZZAZIONE E EVENT LISTENER ==
     // ==========================================================================
@@ -475,6 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
     // == PUNTO DI INGRESSO PRINCIPALE ==
     // ==========================================================================
+    // Aggancia i listener per l'autenticazione una sola volta.
     if (showSignupLink && signupForm && signupPromptP) { showSignupLink.addEventListener('click', (event) => { event.preventDefault(); if (signupForm.style.display === 'none') { signupForm.style.display = 'block'; signupPromptP.style.display = 'none'; if(passwordResetForm) passwordResetForm.style.display = 'none'; if(loginForm) loginForm.style.display = 'block'; showAuthError(''); showAuthSuccess(''); } }); }
     if (forgotPasswordLink && passwordResetForm && loginForm) { forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); passwordResetForm.style.display = 'block'; loginForm.style.display = 'none'; if(signupForm) signupForm.style.display = 'none'; if(signupPromptP) signupPromptP.style.display = 'block'; showAuthError(''); showAuthSuccess(''); }); }
     if (cancelResetBtn && passwordResetForm && loginForm) { cancelResetBtn.addEventListener('click', () => { passwordResetForm.style.display = 'none'; loginForm.style.display = 'block'; showAuthError(''); showAuthSuccess(''); }); }
@@ -484,17 +440,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if(signupForm) signupForm.addEventListener('submit', handleSignUp);
     if(logoutBtn) logoutBtn.addEventListener('click', handleSignOut);
 
+    // Inizializza gli altri listener dell'app
+    initAppEventListeners();
+
+    // Listener Stato Autenticazione Firebase
     if (auth) {
-        let listenersInitialized = false;
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             console.log("Auth state changed. User:", user ? (user.isAnonymous ? `Anon ${user.uid}`: user.uid) : 'None');
-            await updateUIBasedOnAuthState(user);
-            if (user && !listenersInitialized) {
-                 initAppEventListeners();
-                 listenersInitialized = true;
-            } else if (!user) {
-                 listenersInitialized = false;
-            }
+            updateUIBasedOnAuthState(user);
         });
     } else {
         console.error("Auth non inizializzato.");
