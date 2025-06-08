@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const DEFAULT_PACKING_CATEGORIES = ["Vestiti", "Accessori", "Igiene", "Salute", "Documenti/Tech", "Attrezzatura", "Intrattenimento", "Cibo", "Altro"];
 
     // ==========================================================================
-    // == ELEMENTI DOM (SELEZIONE COMPLETA E RIGOROSA) ==
+    // == ELEMENTI DOM ==
     // ==========================================================================
     let domSelectionError = false;
     const checkElement = (id, isQuerySelector = false) => { 
@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addCostToBudget = async (category, description, cost) => { if (!currentTripId || cost === null || cost <= 0 || !currentUserId) return false; const tripIndex = trips.findIndex(t => t.id === currentTripId); if (tripIndex === -1) return false; const trip = trips[tripIndex]; const budgetItem = { id: generateId('budget'), category: category, description: description, estimated: cost, actual: null, paidBy: null, splitBetween: null }; trip.budget = trip.budget || { items: [], estimatedTotal: 0, actualTotal: 0 }; trip.budget.items = trip.budget.items || []; trip.budget.items.push(budgetItem); trip.budget.estimatedTotal = (trip.budget.estimatedTotal || 0) + cost; trip.updatedAt = new Date().toISOString(); const success = await saveTripToFirestore(trip); if (success) { renderBudget(trip.budget); return true; } else { trip.budget.items.pop(); trip.budget.estimatedTotal -= cost; renderBudget(trip.budget); return false; } };
     const handleCalculateAndAddTotalCostToBudget = async (itemTypeKey, categoryName) => { if (!currentTripId) { showToast("Seleziona un viaggio.", "error"); return; } const trip = findTripById(currentTripId); if (!trip || !Array.isArray(trip[itemTypeKey])) { showToast(`Errore dati ${categoryName.toLowerCase()}.`, "error"); return; } let totalCost = 0; trip[itemTypeKey].forEach(item => { const cost = Number(item?.cost || 0); if (!isNaN(cost) && cost > 0) { totalCost += cost; } }); if (totalCost <= 0) { showToast(`Nessun costo valido da aggiungere per ${categoryName.toLowerCase()}.`, "info"); return; } const success = await addCostToBudget( categoryName, `Totale Costi ${categoryName} (del ${formatDate(new Date().toISOString().slice(0,10))})`, totalCost ); if(success) { showToast(`Costo ${categoryName.toLowerCase()} (${formatCurrency(totalCost)}) aggiunto al budget!`, 'success'); switchTab('budget-tab'); } };
 
-    // ==========================================================================
+        // ==========================================================================
     // == FUNZIONI RENDER LISTE ==
     // ==========================================================================
     const populateDatalists = (trip) => { if (!trip || !participantDatalist) return; participantDatalist.innerHTML = ''; (trip.participants || []).forEach(p => { const option = document.createElement('option'); option.value = p.name; participantDatalist.appendChild(option); }); populatePackingCategoriesDatalist(trip.packingList); };
@@ -353,12 +353,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleSearchFlights = () => { const origin = transportDepartureLocInput.value.trim(); const dest = transportArrivalLocInput.value.trim(); const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : ''; const endRaw = tripEndDateInput.value || ''; const startSky = formatSkyscannerDate(startRaw); const endSky = formatSkyscannerDate(endRaw); if (!origin || !dest) { showToast("Inserisci Origine e Destinazione.", "warning"); return; } if (!startSky) { showToast("Inserisci una data di partenza valida.", "warning"); return; } if (startRaw && endRaw && startRaw > endRaw) { showToast("La data di ritorno non può essere prima della partenza.", "warning"); return; } const baseUrl = "https://www.skyscanner.it/trasporti/voli/"; const origCode = origin.toLowerCase().replace(/\s+/g, '-') || 'anywhere'; const destCode = dest.toLowerCase().replace(/\s+/g, '-') || 'anywhere'; const url = endSky ? `${baseUrl}${origCode}/${destCode}/${startSky}/${endSky}/?rtn=1` : `${baseUrl}${origCode}/${destCode}/${startSky}/`; window.open(url, '_blank', 'noopener,noreferrer'); };
     const handleSearchTrains = () => { const origin = transportDepartureLocInput.value.trim(); const dest = transportArrivalLocInput.value.trim(); const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : ''; const endRaw = tripEndDateInput.value || ''; if (!origin || !dest) { showToast("Inserisci Origine e Destinazione.", "warning"); return; } if (!startRaw) { showToast("Inserisci una data di partenza valida.", "warning"); return; } if (startRaw && endRaw && startRaw > endRaw) { showToast("La data di ritorno non può essere prima della partenza.", "warning"); return; } const baseUrl = "https://www.thetrainline.com/it/orari-treni/"; const origFmt = origin.toUpperCase().replace(/\s+/g, '-'); const destFmt = dest.toUpperCase().replace(/\s+/g, '-'); let url = `${baseUrl}${origFmt}-a-${destFmt}?departureDate=${startRaw}&adults=1`; if (endRaw) { url += `&returnDate=${endRaw}`; } window.open(url, '_blank', 'noopener,noreferrer'); };
     
+    // ... (Il resto del codice rimane invariato, lo includo per completezza) ...
+
     // ==========================================================================
     // == INIZIALIZZAZIONE E EVENT LISTENER ==
     // ==========================================================================
     const executeConfirmAction = () => { if (typeof confirmActionCallback === 'function') { try { confirmActionCallback(); } catch(err) { console.error("Errore callback conferma:", err); showToast("Errore.", "error"); } } closeConfirmationModal(); };
+    
     const initAppEventListeners = () => {
-        console.log("DEBUG: Init App Event Listeners...");
+        console.log("DEBUG: Aggiungo listener per l'app interna.");
         if (newTripBtn) newTripBtn.onclick = handleNewTrip;
         if (createFromTemplateBtn) createFromTemplateBtn.onclick = openSelectTemplateModal;
         if (searchTripInput) searchTripInput.oninput = handleSearchTrip;
@@ -425,29 +428,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if(calculateBalanceBtn) { calculateBalanceBtn.onclick = () => { const balanceResult = calculateExpenseBalance(); renderBalanceResults(balanceResult); }; }
         if(resendVerificationBtn) resendVerificationBtn.onclick = handleResendVerificationEmail;
         if(resendVerificationBtnNotice) resendVerificationBtnNotice.onclick = handleResendVerificationEmail;
-        console.log("DEBUG: App listeners aggiunti.");
+    };
+
+    const initAuthEventListeners = () => {
+        console.log("DEBUG: Aggiungo listener per l'autenticazione.");
+        if (showSignupLink) { showSignupLink.addEventListener('click', (event) => { event.preventDefault(); if (signupForm.style.display === 'none') { signupForm.style.display = 'block'; signupPromptP.style.display = 'none'; if(passwordResetForm) passwordResetForm.style.display = 'none'; if(loginForm) loginForm.style.display = 'block'; showAuthError(''); showAuthSuccess(''); } }); }
+        if (forgotPasswordLink) { forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); passwordResetForm.style.display = 'block'; loginForm.style.display = 'none'; if(signupForm) signupForm.style.display = 'none'; if(signupPromptP) signupPromptP.style.display = 'block'; showAuthError(''); showAuthSuccess(''); }); }
+        if (cancelResetBtn) { cancelResetBtn.addEventListener('click', () => { passwordResetForm.style.display = 'none'; loginForm.style.display = 'block'; showAuthError(''); showAuthSuccess(''); }); }
+        if(passwordResetForm) passwordResetForm.addEventListener('submit', handlePasswordResetRequest);
+        if(anonymousSigninBtn) anonymousSigninBtn.addEventListener('click', handleAnonymousSignIn);
+        if(loginForm) loginForm.addEventListener('submit', handleSignIn);
+        if(signupForm) signupForm.addEventListener('submit', handleSignUp);
+        // Il listener per il logout viene gestito dinamicamente in updateUIBasedOnAuthState
     };
 
     // ==========================================================================
     // == PUNTO DI INGRESSO PRINCIPALE ==
     // ==========================================================================
-    // Aggancia i listener per l'autenticazione una sola volta.
-    if (showSignupLink) { showSignupLink.addEventListener('click', (event) => { event.preventDefault(); if (signupForm.style.display === 'none') { signupForm.style.display = 'block'; signupPromptP.style.display = 'none'; if(passwordResetForm) passwordResetForm.style.display = 'none'; if(loginForm) loginForm.style.display = 'block'; showAuthError(''); showAuthSuccess(''); } }); }
-    if (forgotPasswordLink) { forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); passwordResetForm.style.display = 'block'; loginForm.style.display = 'none'; if(signupForm) signupForm.style.display = 'none'; if(signupPromptP) signupPromptP.style.display = 'block'; showAuthError(''); showAuthSuccess(''); }); }
-    if (cancelResetBtn) { cancelResetBtn.addEventListener('click', () => { passwordResetForm.style.display = 'none'; loginForm.style.display = 'block'; showAuthError(''); showAuthSuccess(''); }); }
-    if(passwordResetForm) passwordResetForm.addEventListener('submit', handlePasswordResetRequest);
-    if(anonymousSigninBtn) anonymousSigninBtn.addEventListener('click', handleAnonymousSignIn);
-    if(loginForm) loginForm.addEventListener('submit', handleSignIn);
-    if(signupForm) signupForm.addEventListener('submit', handleSignUp);
+    initAuthEventListeners();
 
-    // Inizializza tutti gli altri listener dell'app
-    initAppEventListeners();
+    let appListenersInitialized = false;
 
-    // Listener Stato Autenticazione Firebase
     if (auth) {
         onAuthStateChanged(auth, (user) => {
             console.log("Auth state changed. User:", user ? (user.isAnonymous ? `Anon ${user.uid}`: user.uid) : 'None');
             updateUIBasedOnAuthState(user);
+
+            if (user && !appListenersInitialized) {
+                initAppEventListeners();
+                appListenersInitialized = true;
+            } else if (!user) {
+                // Se necessario, qui si potrebbero rimuovere i listener, ma nascondere l'UI è sufficiente.
+                appListenersInitialized = false;
+            }
         });
     } else {
         console.error("Auth non inizializzato.");
