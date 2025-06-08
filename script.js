@@ -1,4 +1,3 @@
-```javascript
 // ==========================================================================
 // == FIREBASE MODULE IMPORTS & INITIALIZATION ==
 // ==========================================================================
@@ -735,4 +734,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 }); // Fine DOMContentLoaded
-```
+
