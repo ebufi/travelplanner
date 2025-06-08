@@ -347,6 +347,57 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleInternalSearch = (listType, inputElement) => { if (!currentTripId) return; const trip = findTripById(currentTripId); if (!trip) return; currentSearchTerm[listType] = inputElement.value.toLowerCase(); if (listType === 'itinerary') renderItinerary(trip.itinerary); else if (listType === 'packing') renderPackingList(trip.packingList); saveLocalStorageAppState(); };
 
     // ==========================================================================
+    // == FUNZIONI RICERCA ESTERNA (CON CORREZIONE) ==
+    // ==========================================================================
+    const handleSearchFlights = () => {
+        const origin = transportDepartureLocInput.value.trim();
+        const dest = transportArrivalLocInput.value.trim();
+        // CORREZIONE: Usa la data di partenza del segmento e la data di fine viaggio per andata/ritorno
+        const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : '';
+        const endRaw = tripEndDateInput.value || ''; // Usa la data di fine del viaggio come ritorno
+        const startSky = formatSkyscannerDate(startRaw);
+        const endSky = formatSkyscannerDate(endRaw);
+
+        if (!origin || !dest) { showToast("Inserisci Origine e Destinazione.", "warning"); return; }
+        if (!startSky) { showToast("Inserisci una data di partenza valida.", "warning"); return; }
+        if (startRaw && endRaw && startRaw > endRaw) { showToast("La data di ritorno non può essere prima della partenza.", "warning"); return; }
+
+        const baseUrl = "https://www.skyscanner.it/trasporti/voli/";
+        const origCode = origin.toLowerCase().replace(/\s+/g, '-') || 'anywhere';
+        const destCode = dest.toLowerCase().replace(/\s+/g, '-') || 'anywhere';
+        // Costruisce l'URL in base alla presenza della data di ritorno
+        const url = endSky 
+            ? `${baseUrl}${origCode}/${destCode}/${startSky}/${endSky}/?rtn=1`
+            : `${baseUrl}${origCode}/${destCode}/${startSky}/`;
+        
+        window.open(url, '_blank', 'noopener,noreferrer');
+    };
+
+    const handleSearchTrains = () => {
+        const origin = transportDepartureLocInput.value.trim();
+        const dest = transportArrivalLocInput.value.trim();
+        // CORREZIONE: Usa la data di partenza del segmento e la data di fine viaggio
+        const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : '';
+        const endRaw = tripEndDateInput.value || ''; // Usa la data di fine del viaggio come ritorno
+
+        if (!origin || !dest) { showToast("Inserisci Origine e Destinazione.", "warning"); return; }
+        if (!startRaw) { showToast("Inserisci una data di partenza valida.", "warning"); return; }
+        if (startRaw && endRaw && startRaw > endRaw) { showToast("La data di ritorno non può essere prima della partenza.", "warning"); return; }
+
+        const baseUrl = "https://www.thetrainline.com/it/orari-treni/";
+        const origFmt = origin.toUpperCase().replace(/\s+/g, '-');
+        const destFmt = dest.toUpperCase().replace(/\s+/g, '-');
+        
+        let url = `${baseUrl}${origFmt}-a-${destFmt}?departureDate=${startRaw}&adults=1`;
+        if (endRaw) {
+            url += `&returnDate=${endRaw}`;
+        }
+        window.open(url, '_blank', 'noopener,noreferrer');
+    };
+    
+    // ... (Il resto del codice rimane invariato)
+    
+    // ==========================================================================
     // == INIZIALIZZAZIONE E EVENT LISTENER ==
     // ==========================================================================
     const executeConfirmAction = () => { if (typeof confirmActionCallback === 'function') { try { confirmActionCallback(); } catch(err) { console.error("Errore callback conferma:", err); showToast("Errore.", "error"); } } closeConfirmationModal(); };
