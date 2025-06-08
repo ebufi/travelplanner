@@ -64,13 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const DEFAULT_PACKING_CATEGORIES = ["Vestiti", "Accessori", "Igiene", "Salute", "Documenti/Tech", "Attrezzatura", "Intrattenimento", "Cibo", "Altro"];
 
     // ==========================================================================
-    // == ELEMENTI DOM ==
+    // == ELEMENTI DOM (SELEZIONE COMPLETA E RIGOROSA) ==
     // ==========================================================================
     let domSelectionError = false;
     const checkElement = (id, isQuerySelector = false) => { 
         const element = isQuerySelector ? document.querySelector(id) : document.getElementById(id); 
         if (!element) { 
-            console.error(`ERRORE SELEZIONE DOM: Elemento "${id}" non trovato!`); 
+            console.error(`ERRORE SELEZIONE DOM: Elemento essenziale "${id}" non trovato!`); 
             domSelectionError = true; 
         }
         return element; 
@@ -245,7 +245,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const participantDatalist = checkElement('participant-datalist');
     const packingCategoryDatalist = checkElement('packing-category-list');
 
-    if (domSelectionError) { alert("Errore critico: alcuni elementi dell'interfaccia non sono stati trovati. L'app non può continuare. Controlla la console."); return; }
+    if (domSelectionError) {
+        alert("Errore critico: alcuni elementi dell'interfaccia non sono stati trovati. L'applicazione non può continuare. Controlla la console per vedere quali ID mancano.");
+        return; 
+    }
 
     // ==========================================================================
     // == STATO APPLICAZIONE ==
@@ -350,8 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleSearchFlights = () => { const origin = transportDepartureLocInput.value.trim(); const dest = transportArrivalLocInput.value.trim(); const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : ''; const endRaw = tripEndDateInput.value || ''; const startSky = formatSkyscannerDate(startRaw); const endSky = formatSkyscannerDate(endRaw); if (!origin || !dest) { showToast("Inserisci Origine e Destinazione.", "warning"); return; } if (!startSky) { showToast("Inserisci una data di partenza valida.", "warning"); return; } if (startRaw && endRaw && startRaw > endRaw) { showToast("La data di ritorno non può essere prima della partenza.", "warning"); return; } const baseUrl = "https://www.skyscanner.it/trasporti/voli/"; const origCode = origin.toLowerCase().replace(/\s+/g, '-') || 'anywhere'; const destCode = dest.toLowerCase().replace(/\s+/g, '-') || 'anywhere'; const url = endSky ? `${baseUrl}${origCode}/${destCode}/${startSky}/${endSky}/?rtn=1` : `${baseUrl}${origCode}/${destCode}/${startSky}/`; window.open(url, '_blank', 'noopener,noreferrer'); };
     const handleSearchTrains = () => { const origin = transportDepartureLocInput.value.trim(); const dest = transportArrivalLocInput.value.trim(); const startRaw = transportDepartureDatetimeInput.value ? transportDepartureDatetimeInput.value.split('T')[0] : ''; const endRaw = tripEndDateInput.value || ''; if (!origin || !dest) { showToast("Inserisci Origine e Destinazione.", "warning"); return; } if (!startRaw) { showToast("Inserisci una data di partenza valida.", "warning"); return; } if (startRaw && endRaw && startRaw > endRaw) { showToast("La data di ritorno non può essere prima della partenza.", "warning"); return; } const baseUrl = "https://www.thetrainline.com/it/orari-treni/"; const origFmt = origin.toUpperCase().replace(/\s+/g, '-'); const destFmt = dest.toUpperCase().replace(/\s+/g, '-'); let url = `${baseUrl}${origFmt}-a-${destFmt}?departureDate=${startRaw}&adults=1`; if (endRaw) { url += `&returnDate=${endRaw}`; } window.open(url, '_blank', 'noopener,noreferrer'); };
     
-    // ... (Il resto del codice rimane invariato, lo includo per completezza) ...
-
     // ==========================================================================
     // == INIZIALIZZAZIONE E EVENT LISTENER ==
     // ==========================================================================
@@ -431,16 +432,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // == PUNTO DI INGRESSO PRINCIPALE ==
     // ==========================================================================
     // Aggancia i listener per l'autenticazione una sola volta.
-    if (showSignupLink && signupForm && signupPromptP) { showSignupLink.addEventListener('click', (event) => { event.preventDefault(); if (signupForm.style.display === 'none') { signupForm.style.display = 'block'; signupPromptP.style.display = 'none'; if(passwordResetForm) passwordResetForm.style.display = 'none'; if(loginForm) loginForm.style.display = 'block'; showAuthError(''); showAuthSuccess(''); } }); }
-    if (forgotPasswordLink && passwordResetForm && loginForm) { forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); passwordResetForm.style.display = 'block'; loginForm.style.display = 'none'; if(signupForm) signupForm.style.display = 'none'; if(signupPromptP) signupPromptP.style.display = 'block'; showAuthError(''); showAuthSuccess(''); }); }
-    if (cancelResetBtn && passwordResetForm && loginForm) { cancelResetBtn.addEventListener('click', () => { passwordResetForm.style.display = 'none'; loginForm.style.display = 'block'; showAuthError(''); showAuthSuccess(''); }); }
+    if (showSignupLink) { showSignupLink.addEventListener('click', (event) => { event.preventDefault(); if (signupForm.style.display === 'none') { signupForm.style.display = 'block'; signupPromptP.style.display = 'none'; if(passwordResetForm) passwordResetForm.style.display = 'none'; if(loginForm) loginForm.style.display = 'block'; showAuthError(''); showAuthSuccess(''); } }); }
+    if (forgotPasswordLink) { forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); passwordResetForm.style.display = 'block'; loginForm.style.display = 'none'; if(signupForm) signupForm.style.display = 'none'; if(signupPromptP) signupPromptP.style.display = 'block'; showAuthError(''); showAuthSuccess(''); }); }
+    if (cancelResetBtn) { cancelResetBtn.addEventListener('click', () => { passwordResetForm.style.display = 'none'; loginForm.style.display = 'block'; showAuthError(''); showAuthSuccess(''); }); }
     if(passwordResetForm) passwordResetForm.addEventListener('submit', handlePasswordResetRequest);
     if(anonymousSigninBtn) anonymousSigninBtn.addEventListener('click', handleAnonymousSignIn);
     if(loginForm) loginForm.addEventListener('submit', handleSignIn);
     if(signupForm) signupForm.addEventListener('submit', handleSignUp);
-    if(logoutBtn) logoutBtn.addEventListener('click', handleSignOut);
 
-    // Inizializza gli altri listener dell'app
+    // Inizializza tutti gli altri listener dell'app
     initAppEventListeners();
 
     // Listener Stato Autenticazione Firebase
@@ -453,5 +453,4 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Auth non inizializzato.");
         showAuthError("Servizio di autenticazione non disponibile.");
     }
-
 }); // Fine DOMContentLoaded
