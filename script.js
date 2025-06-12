@@ -7,7 +7,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 import {
     getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification, sendPasswordResetEmail, signInAnonymously,
-    // NUOVO: Import per Account Linking
     linkWithCredential, EmailAuthProvider
 } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 
@@ -196,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderTripList = () => { const searchTerm = searchTripInput.value.toLowerCase(); tripListUl.innerHTML = ''; const filteredTrips = trips.filter(trip => !searchTerm || (trip.name || '').toLowerCase().includes(searchTerm) || (trip.destination || '').toLowerCase().includes(searchTerm)); filteredTrips.forEach(trip => tripListUl.appendChild(createTripListItem(trip))); noTripsMessage.style.display = trips.length === 0 ? 'block' : 'none'; };
     const createTripListItem = (trip) => { const li = document.createElement('li'); li.dataset.tripId = trip.id; li.innerHTML = `<span><i class="fas ${trip.members && trip.members[currentUserId] === 'owner' ? 'fa-user-crown' : 'fa-user-friends'}"></i> ${trip.name || 'Senza Nome'}</span>`; if (trip.id === currentTripId) li.classList.add('active'); li.addEventListener('click', () => selectTrip(trip.id)); return li; };
     
-    // MODIFICATO: per gestire l'abilitazione/disabilitazione dei bottoni
     const selectTrip = (id) => {
         if (!id) { deselectTrip(); return; }
         if (currentTripId === id && tripDetailsAreaDiv.style.display === 'flex') return;
@@ -236,7 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    // MODIFICATO: per gestire l'abilitazione/disabilitazione dei bottoni
     const deselectTrip = () => {
         if (currentTripUnsubscribe) { currentTripUnsubscribe(); currentTripUnsubscribe = null; }
         currentTripId = null;
@@ -268,7 +265,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
     const startEditItem = (listType, itemId) => { if (!currentTripId) return; const trip = findTripById(currentTripId); if (!trip) return; let itemToEdit = null; let list; switch (listType) { case 'participant': list = trip.participants || []; break; case 'reminder': list = trip.reminders || []; break; case 'transport': list = trip.transportations || []; break; case 'accommodation': list = trip.accommodations || []; break; case 'itinerary': list = trip.itinerary || []; break; case 'budget': list = trip.budget?.items || []; break; case 'packing': list = trip.packingList || []; break; default: return; } itemToEdit = list.find(item => item && item.id === itemId); if (!itemToEdit) { console.error(`Item ${itemId} non trovato in lista ${listType}`); return; } Object.keys(editingItemId).forEach(type => { if (type !== listType) resetEditState(type); }); editingItemId[listType] = itemId; const form = checkElement(`add-${listType}-item-form`) || checkElement(`add-${listType}-form`); const submitBtn = document.getElementById(`${listType}-submit-btn`); const cancelBtn = document.getElementById(`${listType}-cancel-edit-btn`); const hiddenInput = document.getElementById(`edit-${listType}-item-id`); if (hiddenInput) hiddenInput.value = itemId; try { switch (listType) { case 'participant': form.querySelector('#participant-name').value = itemToEdit.name || ''; form.querySelector('#participant-notes').value = itemToEdit.notes || ''; break; case 'reminder': form.querySelector('#reminder-description').value = itemToEdit.description || ''; form.querySelector('#reminder-due-date').value = itemToEdit.dueDate || ''; form.querySelector('#reminder-status').value = itemToEdit.status || 'todo'; break; case 'transport': form.querySelector('#transport-type').value = itemToEdit.type || 'Altro'; form.querySelector('#transport-description').value = itemToEdit.description || ''; form.querySelector('#transport-departure-loc').value = itemToEdit.departureLoc || ''; form.querySelector('#transport-departure-datetime').value = itemToEdit.departureDateTime || ''; form.querySelector('#transport-arrival-loc').value = itemToEdit.arrivalLoc || ''; form.querySelector('#transport-arrival-datetime').value = itemToEdit.arrivalDateTime || ''; form.querySelector('#transport-booking-ref').value = itemToEdit.bookingRef || ''; form.querySelector('#transport-cost').value = itemToEdit.cost ?? ''; form.querySelector('#transport-notes').value = itemToEdit.notes || ''; break; case 'accommodation': form.querySelector('#accommodation-name').value = itemToEdit.name || ''; form.querySelector('#accommodation-type').value = itemToEdit.type || 'Hotel'; form.querySelector('#accommodation-address').value = itemToEdit.address || ''; form.querySelector('#accommodation-checkin').value = itemToEdit.checkinDateTime || ''; form.querySelector('#accommodation-checkout').value = itemToEdit.checkoutDateTime || ''; form.querySelector('#accommodation-booking-ref').value = itemToEdit.bookingRef || ''; form.querySelector('#accommodation-cost').value = itemToEdit.cost ?? ''; form.querySelector('#accommodation-notes').value = itemToEdit.notes || ''; break; case 'itinerary': form.querySelector('#itinerary-day').value = itemToEdit.day || ''; form.querySelector('#itinerary-time').value = itemToEdit.time || ''; form.querySelector('#itinerary-activity').value = itemToEdit.activity || ''; form.querySelector('#itinerary-location').value = itemToEdit.location || ''; form.querySelector('#itinerary-booking-ref').value = itemToEdit.bookingRef || ''; form.querySelector('#itinerary-cost').value = itemToEdit.cost ?? ''; form.querySelector('#itinerary-notes').value = itemToEdit.notes || ''; break; case 'budget': form.querySelector('#budget-category').value = itemToEdit.category || 'Altro'; form.querySelector('#budget-description').value = itemToEdit.description || ''; form.querySelector('#budget-estimated').value = itemToEdit.estimated ?? ''; form.querySelector('#budget-actual').value = itemToEdit.actual ?? ''; form.querySelector('#budget-paid-by').value = itemToEdit.paidById || ''; form.querySelector('#budget-split-between').value = itemToEdit.splitBetween || ''; break; case 'packing': form.querySelector('#packing-item-name').value = itemToEdit.name || ''; form.querySelector('#packing-item-category').value = itemToEdit.category || 'Altro'; form.querySelector('#packing-item-quantity').value = itemToEdit.quantity || 1; break; } } catch (error) { console.error(`Errore popola form ${listType}:`, error); showToast(`Errore caricamento dati.`, 'error'); resetEditState(listType); return; } if (submitBtn) { submitBtn.innerHTML = '<i class="fas fa-save"></i> Salva Modifiche'; submitBtn.classList.remove('btn-secondary'); submitBtn.classList.add('btn-warning'); } if (cancelBtn) cancelBtn.style.display = 'inline-flex'; if (listType === 'transport') toggleSearchButtonsVisibility(); if (form) form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
     
-    // MODIFICATO: per usare updateDoc, arrayUnion e gestire ID per partecipanti/budget
     const handleItemFormSubmit = async (e, listType) => {
         e.preventDefault();
         if (!currentTripId) return;
@@ -354,7 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
         resetEditState(listType);
     };
 
-    // MODIFICATO: per usare arrayRemove per la cancellazione atomica
     const handleDeleteItem = async (listType, itemId) => {
         if (!currentTripId) return;
         const trip = findTripById(currentTripId);
@@ -385,7 +380,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    // MODIFICATO: per usare updateDoc e aggiornare solo la lista
     const handleTogglePacked = async (itemId, isPacked) => {
         if (!currentTripId) return;
         const trip = findTripById(currentTripId);
@@ -408,9 +402,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleImportPackingList = async (type) => { if (!currentTripId || !PREDEFINED_PACKING_LISTS[type]) return; const trip = findTripById(currentTripId); if (!trip) return; const predefined = PREDEFINED_PACKING_LISTS[type]; let itemsToAdd = []; const currentLower = (trip.packingList || []).map(i => (i?.name || '').toLowerCase()); predefined.forEach(predefItem => { if (!currentLower.includes(predefItem.name.toLowerCase())) { itemsToAdd.push({ id: generateId('pack'), name: predefItem.name, packed: false, category: predefItem.category || 'Altro', quantity: predefItem.quantity || 1 }); } }); if (itemsToAdd.length > 0) { await updateDoc(doc(db, 'trips', currentTripId), { packingList: arrayUnion(...itemsToAdd) }); showToast(`${itemsToAdd.length} oggetti aggiunti alla lista!`, 'success'); } else { showToast(`Nessun nuovo oggetto da aggiungere.`, 'info'); } };
-    const handleCalculateAndAddTransportCost = async () => { if (!currentTripId) return; const trip = findTripById(currentTripId); if (!trip || !Array.isArray(trip.transportations)) { showToast("Errore dati trasporti.", "error"); return; } let totalCost = 0; trip.transportations.forEach(item => { const cost = Number(item?.cost || 0); if (!isNaN(cost) && cost > 0) { totalCost += cost; } }); if (totalCost <= 0) { showToast("Nessun costo trasporto valido da aggiungere.", "info"); return; } const budgetItem = { id: generateId('budget'), category: "Trasporti", description: `Totale Costi Trasporti (del ${new Date().toLocaleDateString()})`, estimated: totalCost, actual: null, paidById: '', paidBy: '', splitBetween: '' }; await updateDoc(doc(db, 'trips', currentTripId), { 'budget.items': arrayUnion(budgetItem) }); showToast(`Costo trasporti (${formatCurrency(totalCost)}) aggiunto al budget!`, 'success'); switchTab('budget-tab'); };
+    const handleCalculateAndAddTransportCost = async () => { if (!currentTripId) return; const trip = findTripById(currentTripId); if (!trip || !Array.isArray(trip.transportations)) { showToast("Errore dati trasporti.", "error"); return; } let totalCost = 0; trip.transportations.forEach(item => { const cost = Number(item?.cost || 0); if (!isNaN(cost) && cost > 0) { totalCost += cost; } }); if (totalCost <= 0) { showToast("Nessun costo trasporto valido da aggiungere.", "info"); return; } const budgetItem = { id: generateId('budget'), category: "Trasporti", description: `Totale Costi Trasporti (del ${new Date().toLocaleDateString()})`, estimated: totalCost, actual: null, paidById: '', paidBy: '', splitBetween: '' }; await updateDoc(doc(db, 'trips', currentTripId), { 'budget.items': arrayUnion(budgetItem) }); showToast(`Costo trasporti (${formatCurrency(totalCost)}) aggiunto al budget!`, 'success'); tabsContainer.querySelector('[data-tab="budget-tab"]').click(); };
     
-    // MODIFICATO: per usare ID dei partecipanti, rendendolo robusto
     const calculateExpenseBalance = () => {
         if (!currentTripId) return { error: "Nessun viaggio selezionato." };
         const trip = findTripById(currentTripId);
@@ -490,11 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
     const renderTripDetails = (trip) => { 
         if (!tripDetailsAreaDiv || !trip) return;
-        
-        // Titolo
         tripTitleH2.textContent = trip.name || 'Dettagli Viaggio';
-        
-        // Info Generali
         const infoForm = checkElement('trip-info-form');
         infoForm.querySelector('#trip-name').value = trip.name || '';
         infoForm.querySelector('#trip-origin-city').value = trip.originCity || '';
@@ -502,11 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
         infoForm.querySelector('#trip-start-date').value = trip.startDate || '';
         infoForm.querySelector('#trip-end-date').value = trip.endDate || '';
         infoForm.querySelector('#trip-notes').value = trip.notes || '';
-    
-        // Popola Datalists e Select
         populateDatalists(trip);
-
-        // Render delle sezioni
         renderCollaborators(trip);
         renderParticipants(trip.participants);
         renderReminders(trip.reminders);
@@ -515,14 +500,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderItinerary(trip.itinerary);
         renderBudget(trip.budget);
         renderPackingList(trip.packingList);
-
-        // Reset balance tab on trip change
         checkElement('balance-results-container').style.display = 'none';
         checkElement('balance-results').innerHTML = '';
         checkElement('balance-summary').innerHTML = '';
     };
     
-    // MODIFICATO: per popolare il select del budget
     const populateDatalists = (trip) => {
         if (participantDatalist && trip.participants) {
             participantDatalist.innerHTML = trip.participants.map(p => `<option value="${p.name}"></option>`).join('');
@@ -553,63 +535,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderTransportations = (transportations = []) => { const ul = checkElement('transport-list'); const sorted = [...transportations].sort((a,b) => new Date(a.departureDateTime) - new Date(b.departureDateTime)); ul.innerHTML = sorted.length > 0 ? sorted.map(t => `<li><div class="item-details"><strong>${t.description} (${t.type})</strong><span class="meta"><i class="fas fa-plane-departure"></i> ${t.departureLoc || 'N/D'} (${formatDateTime(t.departureDateTime) || 'N/D'})</span><span class="meta"><i class="fas fa-plane-arrival"></i> ${t.arrivalLoc || 'N/D'} (${formatDateTime(t.arrivalDateTime) || 'N/D'})</span><span class="meta"><i class="fas fa-money-bill-wave"></i> Costo: ${t.cost ? formatCurrency(t.cost) : 'N/D'}</span><span class="meta"><i class="fas fa-ticket-alt"></i> Rif: ${t.bookingRef || 'N/D'}</span></div><div class="item-actions"><button class="btn-icon edit transport-edit-btn" data-item-id="${t.id}" title="Modifica"><i class="fas fa-pencil-alt"></i></button><button class="btn-icon delete transport-delete-btn" data-item-id="${t.id}" title="Elimina"><i class="fas fa-trash-alt"></i></button></div></li>`).join('') : ''; checkElement('no-transport-items').style.display = transportations.length === 0 ? 'block' : 'none'; };
     const renderAccommodations = (accommodations = []) => { const ul = checkElement('accommodation-list'); ul.innerHTML = accommodations.length > 0 ? accommodations.map(a => `<li><div class="item-details"><strong>${a.name} (${a.type})</strong><span class="meta"><i class="fas fa-map-marker-alt"></i> <a href="${createMapLink(a.address)}" target="_blank" rel="noopener noreferrer">${a.address || 'Indirizzo non specificato'}</a></span><span class="meta"><i class="fas fa-sign-in-alt"></i> Check-in: ${formatDateTime(a.checkinDateTime) || 'N/D'}</span><span class="meta"><i class="fas fa-sign-out-alt"></i> Check-out: ${formatDateTime(a.checkoutDateTime) || 'N/D'}</span><span class="meta"><i class="fas fa-money-bill-wave"></i> Costo: ${a.cost ? formatCurrency(a.cost) : 'N/D'}</span><span class="meta"><i class="fas fa-ticket-alt"></i> Rif: ${a.bookingRef || 'N/D'}</span></div><div class="item-actions"><button class="btn-icon edit accommodation-edit-btn" data-item-id="${a.id}" title="Modifica"><i class="fas fa-pencil-alt"></i></button><button class="btn-icon delete accommodation-delete-btn" data-item-id="${a.id}" title="Elimina"><i class="fas fa-trash-alt"></i></button></div></li>`).join('') : ''; checkElement('no-accommodation-items').style.display = accommodations.length === 0 ? 'block' : 'none'; };
     
-    // MODIFICATO: per usare sort e search
     const renderItinerary = (itinerary = []) => {
         const ul = checkElement('itinerary-list');
         let processed = [...itinerary];
-
-        // Search
         const searchTerm = currentSearchTerm.itinerary;
-        if (searchTerm) {
-            processed = processed.filter(i => 
-                (i.activity || '').toLowerCase().includes(searchTerm) ||
-                (i.location || '').toLowerCase().includes(searchTerm)
-            );
-        }
-
-        // Sort
+        if (searchTerm) { processed = processed.filter(i => (i.activity || '').toLowerCase().includes(searchTerm) || (i.location || '').toLowerCase().includes(searchTerm)); }
         const sortValue = currentSort.itinerary;
-        processed.sort((a,b) => {
-            if (sortValue === 'dateTime') {
-                const dateA = new Date(`${a.day}T${a.time || '00:00'}`);
-                const dateB = new Date(`${b.day}T${b.time || '00:00'}`);
-                return dateA - dateB;
-            }
-            if (sortValue === 'activity') {
-                return (a.activity || '').localeCompare(b.activity || '');
-            }
-            return 0;
-        });
-
+        processed.sort((a,b) => { if (sortValue === 'dateTime') { const dateA = new Date(`${a.day}T${a.time || '00:00'}`); const dateB = new Date(`${b.day}T${b.time || '00:00'}`); return dateA - dateB; } if (sortValue === 'activity') { return (a.activity || '').localeCompare(b.activity || ''); } return 0; });
         ul.innerHTML = processed.length > 0 ? processed.map(i => `<li><div class="item-details"><strong>${formatDate(i.day)} ${i.time || ''}: ${i.activity}</strong><span class="meta"><i class="fas fa-map-marker-alt"></i> <a href="${createMapLink(i.location)}" target="_blank" rel="noopener noreferrer">${i.location || 'N/D'}</a></span><span class="meta"><i class="fas fa-money-bill-wave"></i> Costo: ${i.cost ? formatCurrency(i.cost) : 'N/D'}</span><span class="meta"><i class="fas fa-sticky-note"></i> ${i.notes || ''}</span></div><div class="item-actions"><button class="btn-icon edit itinerary-edit-btn" data-item-id="${i.id}" title="Modifica"><i class="fas fa-pencil-alt"></i></button><button class="btn-icon delete itinerary-delete-btn" data-item-id="${i.id}" title="Elimina"><i class="fas fa-trash-alt"></i></button></div></li>`).join('') : '';
         checkElement('no-itinerary-items').style.display = itinerary.length === 0 ? 'block' : 'none';
     };
     
     const renderBudget = (budget = { items: [] }) => { const ul = checkElement('budget-list'); const items = budget.items || []; checkElement('budget-total-estimated').textContent = formatCurrency(budget.estimatedTotal); checkElement('budget-total-actual').textContent = formatCurrency(budget.actualTotal); checkElement('budget-difference').textContent = formatCurrency((budget.actualTotal || 0) - (budget.estimatedTotal || 0)); ul.innerHTML = items.length > 0 ? items.map(i => `<li class="budget-item"><div class="item-details"><strong>${i.description}</strong><span class="meta"><i class="fas fa-tag"></i> ${i.category}</span><span class="meta">Stimato: ${formatCurrency(i.estimated)} | Effettivo: ${formatCurrency(i.actual)}</span><span class="meta"><i class="fas fa-user-check"></i> Pagato da: ${i.paidBy || 'N/D'} | Diviso tra: ${i.splitBetween || 'Non diviso'}</span></div><div class="item-actions"><button class="btn-icon edit budget-edit-btn" data-item-id="${i.id}" title="Modifica"><i class="fas fa-pencil-alt"></i></button><button class="btn-icon delete budget-delete-btn" data-item-id="${i.id}" title="Elimina"><i class="fas fa-trash-alt"></i></button></div></li>`).join('') : ''; checkElement('no-budget-items').style.display = items.length === 0 ? 'block' : 'none'; };
     
-    // MODIFICATO: per usare sort e search
     const renderPackingList = (packingList = []) => {
         const ul = checkElement('packing-list');
         let processed = [...packingList];
-
         const searchTerm = currentSearchTerm.packing;
-        if (searchTerm) {
-            processed = processed.filter(i => (i.name || '').toLowerCase().includes(searchTerm));
-        }
-
+        if (searchTerm) { processed = processed.filter(i => (i.name || '').toLowerCase().includes(searchTerm)); }
         const sortValue = currentSort.packing;
-        processed.sort((a, b) => {
-            switch(sortValue) {
-                case 'category':
-                    return (a.category || 'zzz').localeCompare(b.category || 'zzz');
-                case 'status':
-                    return (a.packed ? 1 : 0) - (b.packed ? 1 : 0);
-                case 'name':
-                default:
-                    return (a.name || '').localeCompare(b.name || '');
-            }
-        });
-
+        processed.sort((a, b) => { switch(sortValue) { case 'category': return (a.category || 'zzz').localeCompare(b.category || 'zzz'); case 'status': return (a.packed ? 1 : 0) - (b.packed ? 1 : 0); case 'name': default: return (a.name || '').localeCompare(b.name || ''); } });
         ul.innerHTML = processed.length > 0 ? processed.map(createPackingListItem).join('') : '';
         checkElement('no-packing-items').style.display = packingList.length === 0 ? 'block' : 'none';
     };
@@ -623,7 +568,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const showAuthError = (msg) => { authErrorDiv.textContent = msg; authErrorDiv.style.display = msg ? 'block' : 'none'; if(msg) authSuccessDiv.style.display = 'none'; };
     const showAuthSuccess = (msg) => { authSuccessDiv.textContent = msg; authSuccessDiv.style.display = msg ? 'block' : 'none'; if(msg) authErrorDiv.style.display = 'none'; };
     
-    // MODIFICATO: per gestire l'Account Linking
     const handleSignUp = async (e) => {
         e.preventDefault();
         const email = signupForm.querySelector('#signup-email').value.trim();
@@ -685,7 +629,23 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteTripBtn.onclick = () => { if(currentTripId) handleDeleteTrip(currentTripId); };
         inviteCollaboratorForm.onsubmit = handleInviteCollaborator;
         collaboratorListUl.addEventListener('click', (e) => { const removeBtn = e.target.closest('.collaborator-delete-btn'); if(removeBtn) handleRemoveCollaborator(removeBtn.dataset.uid); });
-        tabsContainer.onclick = (e) => { const tl = e.target.closest('.tab-link'); if (tl?.dataset.tab) { document.querySelectorAll(".tab-content").forEach(t => t.style.display="none"); document.querySelectorAll(".tab-link").forEach(l => l.classList.remove("active")); checkElement(tl.dataset.tab).style.display = "block"; tl.classList.add("active"); }};
+        
+        // ================================================================
+        // == MODIFICA DEFINITIVA PER IL BUG DELLE SCHEDE CHE SCOMPAIONO ==
+        // ================================================================
+        tabsContainer.onclick = (e) => {
+            const tl = e.target.closest('.tab-link');
+            if (tl?.dataset.tab) {
+                // Il selettore ">" garantisce che selezioniamo solo le schede di contenuto
+                // dirette, non altri elementi che potrebbero avere la classe per errore.
+                document.querySelectorAll("#trip-details-area > .tab-content").forEach(t => t.style.display = "none");
+                
+                document.querySelectorAll(".tab-link").forEach(l => l.classList.remove("active"));
+                checkElement(tl.dataset.tab).style.display = "block";
+                tl.classList.add("active");
+            }
+        };
+
         tripDetailsAreaDiv.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.btn-icon.edit');
             const deleteBtn = e.target.closest('.btn-icon.delete');
@@ -718,7 +678,6 @@ document.addEventListener('DOMContentLoaded', () => {
         checkElement('calculate-balance-btn').onclick = () => { renderBalanceResults(calculateExpenseBalance()) };
         checkElement('add-transport-total-to-budget-btn').onclick = () => { handleCalculateAndAddTransportCost() };
 
-        // NUOVO: Listener per ordinamento e ricerca nelle liste
         const setupListControls = (type, renderFunction, listKey) => {
             const sortControl = document.getElementById(`${type}-sort-control`);
             const searchInput = document.getElementById(`search-${type}-input`);
