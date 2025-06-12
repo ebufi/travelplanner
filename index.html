@@ -130,6 +130,13 @@
                         </div>
                      </div>
     
+                     <!-- ================================================================ -->
+                     <!-- LA STRUTTURA CORRETTA È QUESTA:                             -->
+                     <!-- 1. La barra delle schede (<div class="tabs">)                    -->
+                     <!-- 2. Tutti i contenuti delle schede (<div class="tab-content">)    -->
+                     <!-- devono essere "fratelli", allo stesso livello.                -->
+                     <!-- ================================================================ -->
+
                      <div class="tabs">
                         <button class="tab-link active" data-tab="info-tab"><i class="fas fa-info-circle"></i> Info</button>
                         <button class="tab-link" data-tab="collaboration-tab"><i class="fas fa-user-friends"></i> Collabora</button>
@@ -143,11 +150,6 @@
                         <button class="tab-link" data-tab="packing-tab"><i class="fas fa-suitcase-rolling"></i> Packing List</button>
                      </div>
                     
-                     <!-- ================================================================ -->
-                     <!-- INIZIO CONTENUTO DELLE SCHEDE (TAB CONTENT)                      -->
-                     <!-- Ogni scheda è un <div class="tab-content"> che viene mostrato/nascosto -->
-                     <!-- ================================================================ -->
-
                      <div id="info-tab" class="tab-content card active">
                         <h3><i class="fas fa-info-circle"></i> Informazioni Generali</h3>
                         <form id="trip-info-form">
